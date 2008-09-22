@@ -14,7 +14,7 @@
 
 use strict;
 use warnings;
-use lib qw( ./lib ../lib );
+use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
     tests => 18,
     debug => 'Template::TT2::Cache',

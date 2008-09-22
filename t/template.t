@@ -4,7 +4,7 @@
 #
 # Test the Template module.
 #
-# Written by Andy Wardley <abw@kfs.org>
+# Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
 #

@@ -18,7 +18,7 @@ use Template::TT2::Class
     version   => 0.01,
     debug     => 0,
     base      => 'Template::TT2::Base',
-    words     => 'CACHE_SIZE',
+    words     => 'SIZE',
     constants => ':cache',
     constant  => {
         PREV  => 0,
@@ -27,23 +27,17 @@ use Template::TT2::Class
         NEXT  => 3,
     };
 
-our $CACHE_SIZE = CACHE_UNLIMITED;
-
+our $SIZE = CACHE_UNLIMITED;
 
 sub init {
     my ($self, $config) = @_;
 
-    # 'size' is the new skool name for the old skool CACHE_SIZE
-    $config->{ size } = $config->{ CACHE_SIZE }
-        if defined $config->{ CACHE_SIZE };
-
-    # if neither is defined in $config then we use $CACHE_SIZE
-    $config->{ size } = $self->class->any_var(CACHE_SIZE)
-        unless defined $config->{ size };
-    
-    $self->{ size } = $config->{ size };        # max slots allowed
     $self->{ slot } = { };                      # slot lookup by name
     $self->{ used } = 0;                        # number of slots used
+    $self->{ size } =                           # max slots allowed
+        defined $config->{ size }
+              ? $config->{ size }
+              : $self->class->any_var(SIZE);
 
     # TODO: add time?
 

@@ -6,7 +6,7 @@ use Badger::Factory::Class
     path      => 'Template::TT2',
     constants => 'HASH',
     modules   => {
-        templates => 'Template::TT2::Provider',
+#        templates => 'Template::TT2::Provider',
         constants => 'Template::TT2::Namespace::Constants',
     };
     

@@ -1,3 +1,21 @@
 * No DELIMITER option.  Use a list ref.
 
 * No PRE_DEFINE option.  Use VARIABLES.
+
+* Added Template::TT2::Cache.  It uses the same get()/set() API as 
+  Cache::Cache so you can use any of the Cache::Cache::* modules as a 
+  drop-in replacement for it.
+
+* Added CACHE option
+
+* DEBUG_PROVIDER is now DEBUG_TEMPLATES
+
+* In some places, DEBUG_XXXX options don't work.  Need to set DEBUG instead.
+
+* V1DOLLAR is no more
+
+TODO:
+ * remove magical 'import' from Stash, implement in context if necessary
+ * change stash getref() to get_ref(), get_later() or something like that
+ * add expose_objects option to stash
+ * fix DEBUG options

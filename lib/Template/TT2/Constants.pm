@@ -24,25 +24,30 @@ use Badger::Class
     utils    => 'looks_like_number',
     exports  => {
         tags => {
-            modules => 'TT2_EXCEPTION TT2_CONTEXT',
+            modules => 'TT2_MODULES TT2_CONTEXT TT2_DOCUMENT TT2_EXCEPTION',
             status  => 'STATUS_OK STATUS_RETURN STATUS_STOP STATUS_DONE
                         STATUS_DECLINED STATUS_ERROR',
             error   => 'ERROR_FILE ERROR_VIEW ERROR_UNDEF ERROR_PERL 
                         ERROR_RETURN ERROR_FILTER ERROR_PLUGIN',
             chomp   => 'CHOMP_NONE CHOMP_ALL CHOMP_ONE CHOMP_COLLAPSE 
                         CHOMP_GREEDY',
-            cache   => 'CACHE_UNLIMITED',
-            flow    => 'FLOW_STOP',
+            parse   => 'PARSE_CONTINUE PARSE_ACCEPT PARSE_ERROR PARSE_ABORT',
             debug   => 'DEBUG_OFF DEBUG_ON DEBUG_UNDEF DEBUG_VARS 
                         DEBUG_DIRS DEBUG_STASH DEBUG_CONTEXT DEBUG_PARSER
-                        DEBUG_PROVIDER DEBUG_PLUGINS DEBUG_FILTERS 
+                        DEBUG_TEMPLATES DEBUG_PLUGINS DEBUG_FILTERS 
                         DEBUG_SERVICE DEBUG_ALL DEBUG_CALLER DEBUG_FLAGS',
-        }
+            cache   => 'CACHE_UNLIMITED',
+            flow    => 'FLOW_STOP',
+            stash   => 'STASH_PRIVATE STASH_IMPORT',
+        },
+        any => 'MSWIN32 UNICODE',
     },
     constant => {
         # modules
-        TT2_EXCEPTION   => 'Badger::Exception',
+        TT2_MODULES     => 'Template::TT2::Modules',
         TT2_CONTEXT     => 'Template::TT2::Context',
+        TT2_DOCUMENT    => 'Template::TT2::Document',
+        TT2_EXCEPTION   => 'Badger::Exception',
         
         # STATUS constants returned by directives
         STATUS_OK       =>   0,         # ok
@@ -68,12 +73,11 @@ use Badger::Class
         CHOMP_COLLAPSE  => 2,           # collapse whitespace to a single space
         CHOMP_GREEDY    => 3,           # remove all whitespace including newlines
         
-        # CACHE controls
-        CACHE_UNLIMITED => -1,          # no limit to size of template cache
+        PARSE_CONTINUE  => 0,
+        PARSE_ACCEPT    => 1,
+        PARSE_ERROR     => 2,
+        PARSE_ABORT     => 3,
         
-        # special exceptions types that implement flow control
-        FLOW_STOP       => 'stop',      # stop execution, e.g. STOP directive
-
         # DEBUG constants to enable various debugging options
         DEBUG_OFF       =>    0,        # do nothing
         DEBUG_ON        =>    1,        # basic debugging flag
@@ -83,7 +87,7 @@ use Badger::Class
         DEBUG_STASH     =>   16,        # general stash debugging
         DEBUG_CONTEXT   =>   32,        # context debugging
         DEBUG_PARSER    =>   64,        # parser debugging
-        DEBUG_PROVIDER  =>  128,        # provider debugging
+        DEBUG_TEMPLATES =>  128,        # templates debugging
         DEBUG_PLUGINS   =>  256,        # plugins debugging
         DEBUG_FILTERS   =>  512,        # filters debugging
         DEBUG_SERVICE   => 1024,        # context debugging
@@ -92,6 +96,19 @@ use Badger::Class
         # extra debugging flags
         DEBUG_CALLER    => 4096,        # add caller file/line
         DEBUG_FLAGS     => 4096,        # bitmask to extract flags
+
+        # CACHE controls
+        CACHE_UNLIMITED => 0,           # no limit to size of template cache
+        
+        # special exceptions types that implement flow control
+        FLOW_STOP       => 'stop',      # stop execution, e.g. STOP directive
+
+        # stash defaults
+        STASH_PRIVATE   => qr/^[_.]/,   # private members begin with _ or .
+        STASH_IMPORT    => 'import',    # magical import variable
+
+        MSWIN32         => $^O eq 'MSWin32' ? 1 : 0,
+        UNICODE         => $] > 5.007       ? 1 : 0,
     };
 
 
