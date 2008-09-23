@@ -22,7 +22,7 @@ use Template::TT2::Test
     args  => \@ARGV;
 
 use Badger::Filesystem '$Bin Dir';
-my $tlib = Dir($Bin, 'templates', 'lib');
+my $tlib = Dir($Bin, 'templates');
 
 my $tt_shielded = Template::TT2->new(
     INCLUDE_PATH => $tlib,
