@@ -7,8 +7,19 @@ use Badger::Class
     constant => {
         FH2TEXT => 'Template::TT2::Utils::FH2Text',
         PERLFH  => \*Template::TT2::Perl::PERLOUT,
+    },
+    exports  => {
+        any => 'trim',
     };
 
+sub trim ($) {
+    my $text = shift;
+    for ($text) {
+        s/^\s+//;
+        s/\s+$//;
+    }
+    return $text;
+}
 
 sub fh2text {
     my $glob = shift || PERLFH;

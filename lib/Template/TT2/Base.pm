@@ -1,16 +1,18 @@
 package Template::TT2::Base;
 
 use Template::TT2::Class
-    version  => 0.01,
-    debug    => 0,
-    base     => 'Badger::Base',
-    import   => 'class',
-    words    => 'DEFAULTS',
-    messages => {
+    version   => 0.01,
+    debug     => 0,
+    base      => 'Badger::Base',
+    import    => 'class',
+    words     => 'DEFAULTS',
+    messages  => {
         deprecated => 'The %s option has been deprecated',
     };
 
 use Badger::Debug ':dump';
+use Template::TT2::Exception;
+our $EXCEPTION = 'Template::TT2::Exception';
 
 sub init_defaults {
     my ($self, $config) = @_;

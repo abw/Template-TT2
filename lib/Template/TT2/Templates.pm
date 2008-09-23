@@ -5,10 +5,10 @@ package Template::TT2::Templates;
 
 use Badger::Filesystem 
     'FS VFS Cwd Dir';
-
+use Badger::Debug 
+    ':debug';
 use Template::TT2::Constants  
     'SCALAR ARRAY GLOB BLANK UNICODE DEBUG_TEMPLATES DEBUG_FLAGS MSWIN32';
-    
 use Template::TT2::Class
     version   => 0.01,
     debug     => 0,
@@ -213,6 +213,7 @@ sub fetch_ref {
                 uri      => $uri,
                 name     => $alias,
                 text     => $text,
+                hello    => 'world',
                 loaded   => 0,      # not loaded from a file
                 modified => 0,      # modification time
             });
@@ -222,7 +223,8 @@ sub fetch_name {
     my ($self, $name) = @_;
     my ($data, $uri, $info, $file, $text);
 #    my $path   = $self->{ VFS }->absolute($name);   # TODO: should be URI space not, native FS
-    my $path = ($name =~ IS_ABS_URI) ? $name : URI_ROOT.$name;
+#    my $path = ($name =~ IS_ABS_URI) ? $name : URI_ROOT.$name;
+    my $path = $name;
 
     $self->debug("fetch_name($name) => $path\n") if DEBUG;
 
@@ -284,6 +286,8 @@ sub fetch_name {
 sub load {
     my ($self, $path) = @_;
     my $file = $self->{ VFS }->file($path);
+    return undef
+        unless $file->exists;
     my $uri  = $file->definitive;
     my $text = $file->text;
 
@@ -374,8 +378,9 @@ sub prepare {
     my $text = delete($args->{ text }) || return $self->error('No text to compile');
     my ($parser, $parsed, $doctype, $document);
 
-    $self->debug("prepare(", $self->dump_data_inline($args), ")\n")
-        if DEBUG;
+#    $self->debug_caller;
+#    $self->debug("prepare(", $self->dump_data_inline($args), ")\n")
+#        if DEBUG;          # NOTE: text has been deleted aready
 
     # load and instantiate parser class if not already an object
     $parser = $self->{ PARSER };
@@ -403,12 +408,14 @@ sub prepare {
         if $args->{ uri } && $self->{ CACHE };
 
     # add to LOOKUP table for faster path resolution next time
-    $self->add_path_lookup($args);
+    $self->add_lookup_path($args);
+
+    $self->debug("prepared document: $document\n") if DEBUG;
         
     return $document;
 }
 
-sub add_path_lookup {
+sub add_lookup_path {
     my ($self, $args) = @_;
 
     return 

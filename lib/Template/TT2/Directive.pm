@@ -62,6 +62,8 @@ sub {
     my \$stash   = \$context->stash;
     my \$output  = '';
     my \$_tt_error;
+    use strict;
+    use warnings;
     
     eval { BLOCK: {
 $block
@@ -406,8 +408,7 @@ do {
     my \$_tt_list = $list;
     
     unless (UNIVERSAL::isa(\$_tt_list, 'Template::Iterator')) {
-        \$_tt_list = Template::Config->iterator(\$_tt_list)
-            || die \$Template::Config::ERROR, "\\n"; 
+        \$_tt_list = Template::TT2::Modules->module( iterator => \$_tt_list );
     }
 
     (\$_tt_value, \$_tt_error) = \$_tt_list->get_first();
@@ -422,7 +423,7 @@ $block;
     };
     $loop_restore;
     die \$@ if \$@;
-    \$_tt_error = 0 if \$_tt_error && \$_tt_error eq Template::Constants::STATUS_DONE;
+    \$_tt_error = 0 if \$_tt_error && \$_tt_error eq Template::TT2::Constants::STATUS_DONE;
     die \$_tt_error if \$_tt_error;
 };
 EOF
@@ -605,7 +606,7 @@ sub try {
         push(@$handlers, "'$match'");
         $catchblock .= $n++ 
             ? "elsif (\$_tt_handler eq '$match') {\n$mblock\n}\n" 
-               : "if (\$_tt_handler eq '$match') {\n$mblock\n}\n";
+            :    "if (\$_tt_handler eq '$match') {\n$mblock\n}\n";
     }
     $catchblock .= "\$_tt_error = 0;";
     $catchblock = pad($catchblock, 3) if $PRETTY;
@@ -633,7 +634,7 @@ $block
         die \$_tt_error if \$_tt_error->type =~ /^return|stop\$/;
         \$stash->set('error', \$_tt_error);
         \$stash->set('e', \$_tt_error);
-        if (defined (\$_tt_handler = \$_tt_error->select_handler($handlers))) {
+        if (defined (\$_tt_handler = \$_tt_error->match_type($handlers))) {
 $catchblock
         }
 $default
@@ -705,7 +706,7 @@ sub break {
 #------------------------------------------------------------------------
 
 sub return {
-    return "\$context->throw('return', '', \\\$output);";
+    return '$context->flow_return(\$output);';
 }
 
 #------------------------------------------------------------------------
@@ -713,7 +714,7 @@ sub return {
 #------------------------------------------------------------------------
 
 sub stop {
-    return "\$context->throw('stop', '', \\\$output);";
+    return '$context->flow_stop(\$output);';
 }
 
 

@@ -17,7 +17,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests  => 25,
+    tests  => 24,
     debug  => 'Template::TT2::Base Template::TT2::Parser',
     args   => \@ARGV,
     import => 'callsign :default';
@@ -111,11 +111,6 @@ this is a
 this is a
 =
 end
-
--- test ANYCASE post-dot protection --
-[% data.first; ' to '; data.last %]
--- expect --
-11 to 42
 
 
 #------------------------------------------------------------------------

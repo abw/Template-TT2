@@ -1,10 +1,12 @@
 package Template::TT2::Test;
 
-use Badger::Test;
+use Badger::Test;       # to import ok(), is(), etc.
+use Template::TT2;
 use Template::TT2::Class
     version   => 0.01,
     base      => 'Badger::Test',
     constants => 'HASH',
+    utils     => 'trim',
     exports   => {
         all   => 'callsign test_expect',
     };
@@ -12,6 +14,7 @@ use Template::TT2::Class
 eval "use Algorithm::Diff qw( diff )";
 our $DIFF    = $@ ? 0 : 1;
 our $MAGIC   = '\s* -- \s*';
+our $ENGINE  = 'Template::TT2';
 our $HANDLER = \&test_handler;
 our $DATA;
 
@@ -70,16 +73,11 @@ sub data_tests {
             push(@exflags, $param);
             $exflag->{ $param } = $value;
         }
-            
-        for ($input, $expect) {
-            s/^\s+//;
-            s/\s+$//;
-        }
-
+        
         $test = {
             name    => $name,
-            input   => $input,
-            expect  => $expect,
+            input   => trim $input,
+            expect  => trim $expect,
             inflags => \@inflags,
             inflag  => $inflag,
             exflags => \@exflags,
@@ -130,17 +128,19 @@ sub test_expect {
 sub test_handler {
     my ($test, $config) = @_;
     my $engine = $config->{ engine }
-        || die "No engine specified\n";
+        ||= $ENGINE->new($config->{ config } || ());
 
     if (my $use = $test->{ inflag }->{ use }) {
         $engine = $config->{ engine } = $config->{ engines }->{ $use }
-            || die "Invalid engine specified: $use\n";
+            || die "Invalid engine specified: $use\nEngines available: ", 
+                    join(', ', keys %{ $config->{ engines } || { } }), 
+                    "\n";
     }
     my $in  = $test->{ input };
     my $out = '';
     
     $engine->process(\$in, $config->{ vars }, \$out);
-    return $out;
+    return trim $out;
 }
 
 sub diff_result {

@@ -6,9 +6,10 @@ use Badger::Factory::Class
     path      => 'Template::TT2',
     constants => 'HASH',
     modules   => {
-#        templates => 'Template::TT2::Provider',
         constants => 'Template::TT2::Namespace::Constants',
     };
+
+use Badger::Debug 'debug_args :dump';
     
 #our @PRELOAD = ( $CONTEXT, $FILTERS, $ITERATOR, $PARSER,
 #               $PLUGINS, $PROVIDER, $SERVICE, $STASH );
@@ -19,9 +20,10 @@ our $INSTDIR  = '';
 
 sub type_args {
     my $self = shift;
-    my $type = shift;
-    my $args = @_ && ref $_[0] eq HASH ? shift : { @_ };
-    return ($type, $args);
+    return @_;
+#    my $type = shift;
+#    my $args = (@_ == 1 && ref $_[0]) ? shift : { @_ };
+#    return ($type, $args);
 }
 
 

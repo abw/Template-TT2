@@ -9,7 +9,7 @@ use Template::TT2::Class
     words     => 'LOAD_',
     utils     => 'blessed',
     constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS 
-                  ARRAY DELIMITER :modules :status :error';
+                  ARRAY SCALAR DELIMITER :modules :status :error';
 
 our @LOADERS   = qw( templates plugins filters );
 
@@ -183,7 +183,9 @@ sub template {
         $self->debug("asking providers for [$shortname] [$blockname]") if DEBUG;
 
         foreach my $provider (@$providers) {
-            $template = $provider->fetch($shortname, $prefix);
+            $template = $provider->fetch($shortname, $prefix)
+                || next;
+            $self->debug("provider $provider returned compiled template $template\n") if DEBUG;
             if (length $blockname) {
                 return $template 
                     if $template = $template->blocks->{ $blockname };
@@ -286,6 +288,7 @@ sub process {
 
         foreach $name (@$template) {
             $compiled = shift @compiled;
+            $self->debug("compiled template: $name\n") if DEBUG;
             my $element = ref $compiled eq CODE 
                 ? { (name => (ref $name ? '' : $name), modtime => time()) }
                 : $compiled;
@@ -357,18 +360,30 @@ sub include {
     return $self->process($template, $params, 'localize me!');
 }
 
+sub flow_stop {
+    my ($self, $outref) = @_;
+    $self->throw( stop => 'STOP', body => $outref );
+}
+
+sub flow_return {
+    my ($self, $outref) = @_;
+    $self->throw( return => 'RETURN', body => $outref );
+}
+
 sub catch {
     my ($self, $error, $output) = @_;
 
+    $self->debug("catch('$error', '$output')\n") if DEBUG;
+    
     if (blessed $error && $error->isa(TT2_EXCEPTION)) {
-        $error->text($output) if $output;
+        $error->body($output) if $output;
         return $error;
     }
     else {
         return TT2_EXCEPTION->new( 
-            type   => ERROR_UNDEF, 
-            info   => $error, 
-            output => $output
+            type => ERROR_UNDEF, 
+            info => $error,
+            body => $output,
         );
     }
 }
@@ -503,14 +518,14 @@ sub throw {
 
     # die! die! die!
     if (UNIVERSAL::isa($error, 'Template::Exception')) {
-    die $error;
+        die $error;
     }
     elsif (defined $info) {
-    die (Template::Exception->new($error, $info, $output));
+        die (Template::Exception->new($error, $info, $output));
     }
     else {
-    $error ||= '';
-    die (Template::Exception->new('undef', $error, $output));
+        $error ||= '';
+        die (Template::Exception->new('undef', $error, $output));
     }
 
     # not reached

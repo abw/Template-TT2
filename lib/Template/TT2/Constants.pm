@@ -47,7 +47,7 @@ use Badger::Class
         TT2_MODULES     => 'Template::TT2::Modules',
         TT2_CONTEXT     => 'Template::TT2::Context',
         TT2_DOCUMENT    => 'Template::TT2::Document',
-        TT2_EXCEPTION   => 'Badger::Exception',
+        TT2_EXCEPTION   => 'Template::TT2::Exception',
         
         # STATUS constants returned by directives
         STATUS_OK       =>   0,         # ok

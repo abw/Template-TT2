@@ -109,6 +109,7 @@ sub process {
         if ($error = $@) {
             last SERVICE
                 unless defined ($procout = $self->recover($error));
+            
         }
         
         if (defined $procout) {
@@ -145,6 +146,8 @@ sub recover {
     my $context = $self->{ CONTEXT };
     my ($hkey, $handler);
 
+    $self->debug("recover($error)\n") if DEBUG;
+    
     # there shouldn't ever be a non-exception object received at this
     # point... unless a module like CGI::Carp messes around with the 
     # DIE handler. 
@@ -153,7 +156,7 @@ sub recover {
 
     # a 'stop' exception is thrown by [% STOP %] - we return the output
     # buffer stored in the exception object
-    return $error->text()
+    return $error->body()
         if $error->type() eq FLOW_STOP;
 
     my $handlers = $self->{ ERROR }
