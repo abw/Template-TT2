@@ -29,4 +29,12 @@ sub body {
     }
 }
 
+# for backwards compatability with TTv2 - not sure if anything uses it,
+# but there might be an app/module out there relying on it
+
+sub type_info {
+    my $self = shift;
+    return @$self{ qw( type info ) };
+}
+
 1;

@@ -1,3 +1,13 @@
+* Template::TT2::Exception expects named parameters to the constructor
+  rather than the more limited ($type, $info) position args of v2
+  Template::Exception.  as_string() is now text(), select_handler() is
+  now match_type()
+  
+* No ABSOLUTE option.  Put '/' in your INCLUDE_PATH (or should I do it for 
+  you if ABSOLUTE is set?)
+  
+* No RELATIVE option.  Put '.' in your INCLUDE_PATH (ditto).
+
 * No DELIMITER option.  Use a list ref.
 
 * No PRE_DEFINE option.  Use VARIABLES.
@@ -19,3 +29,4 @@ TODO:
  * change stash getref() to get_ref(), get_later() or something like that
  * add expose_objects option to stash
  * fix DEBUG options
+ * stop aliasing error to 'e'

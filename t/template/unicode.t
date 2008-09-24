@@ -29,7 +29,7 @@ use constant
 use bytes;
 
 if (UNICODE) {
-    plan(17);
+    plan(30);
 }
 else {
     skip_all("Insufficient Unicode support in this version of Perl");    
@@ -91,7 +91,6 @@ test_encodings("compiled and in memory", $ttb, $encodings, $moose);
 
 # at the end of it, we should have a compiled .ttc file in the tmp
 # directory for each encoding
-my $vfs = VFS->new( root => $tmp );
 foreach my $encoding (keys %$encodings) {
     my $uri = $tmp;
     $uri =~ s[:][]g if MSWIN32;

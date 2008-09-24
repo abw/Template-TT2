@@ -5,6 +5,7 @@ use Template::TT2::Class
     debug     => 0,
     base      => 'Template::TT2::Base',
     utils     => 'blessed reftype looks_like_number',
+    throws    => 'undef',           # default exception type
     constants => ':types :stash',
     constant  => {
         DOT   => 'dot',
@@ -92,10 +93,7 @@ sub new {
 
 sub clone {
     my $self   = shift;
-#    $self->debug_caller;
-#    $self->debug("args: ", $self->dump_data(@_), "\n");
     my $params = ref $_[0] eq HASH ? shift : { @_ };
-#    $self->debug("params: ", join(', ', %$params), "\n");
     my $import = $params->{ $IMPORT };
 
     # handle the magic 'import' variable
@@ -238,7 +236,6 @@ sub update {
     @$self{ keys %$params } = values %$params;
 }
 
-
 sub undefined {
     my ($self, $ident, $args);
     return '';
@@ -319,7 +316,7 @@ sub dot {
             # real throwing
 
             my $class = ref($root) || $root;
-            $self->error($@)
+            $self->throw("$@")
                 if ref($@) 
                    || ($@ !~ /^Can't locate object method/);
 
