@@ -11,8 +11,6 @@ use Template::TT2::Class
         all   => 'callsign test_expect',
     };
     
-eval "use Algorithm::Diff qw( diff )";
-our $DIFF    = $@ ? 0 : 1;
 our $MAGIC   = '\s* -- \s*';
 our $ENGINE  = 'Template::TT2';
 our $HANDLER = \&test_handler;
@@ -52,6 +50,11 @@ sub data_tests {
     foreach $test (@tests) {
         $test =~ s/ ^ \s* (.*?) $MAGIC \n //x;
         my $name = $1 || 'test ' . ++$count;
+        
+        unless (length $test) {
+            warn "Ignoring blank test\n";
+            next; 
+        }
         
         # split input by a line like "-- expect --"
         ($input, $expect) = 
@@ -110,17 +113,13 @@ sub test_expect {
 
         my $result = &$handler($test, $config);
         chomp $result;
-        
+
         if ($result eq $test->{ expect }) {
             ok(1, $test->{ name });
         }
         else {
             # pass it over to is() to make pretty 
             is( $result, $test->{ expect }, $test->{ name });
-            if ($DIFF) {
-                print STDERR "  diffs:\n";
-                diff_result($test->{ expect }, $result);
-            }
         }
     }
 }
@@ -128,7 +127,7 @@ sub test_expect {
 sub test_handler {
     my ($test, $config) = @_;
     my $engine = $config->{ engine }
-        ||= $ENGINE->new($config->{ config } || ());
+        ||= $ENGINE->new($config->{ config } || { });
 
     if (my $use = $test->{ inflag }->{ use }) {
         $engine = $config->{ engine } = $config->{ engines }->{ $use }
@@ -140,25 +139,15 @@ sub test_handler {
     my $out = '';
     
     $engine->process(\$in, $config->{ vars }, \$out);
-    return trim $out;
-}
 
-sub diff_result {
-    my ($expect, $result) = @_;
-
-    return warn "Algorithm:Diff not installed, cannot run diff_result()\n"
-        unless $DIFF;
-
-    my $diffs = diff( map { [ split(/\n/) ] } $expect, $result );
-    my $n = 0;
-    foreach my $hunk (@$diffs) {
-        print STDERR '     -- hunk ', ++$n, ' of ', scalar @$diffs, " --\n";
-        foreach my $diff (@$hunk) {
-            my $line = sprintf('%3d', $diff->[1]);
-            print STDERR "     $diff->[0] $line $diff->[2]\n";
-        }
-        print "\n";
+    if ($test->{ exflag }->{ process }) {
+        my ($expin, $expout);
+        $expin = $test->{ expect };
+        $engine->process(\$expin, $config->{ vars }, \$expout);
+        $test->{ expect } = $expout;
     }
+
+    return trim $out;
 }
 
 sub callsign {

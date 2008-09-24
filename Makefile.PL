@@ -6,7 +6,6 @@ use 5.006;
 use ExtUtils::MakeMaker;
 use Config;
 
-
 my %opts = (
     'NAME'         => 'Template-TT2',
     'VERSION_FROM' => 'lib/Template/TT2.pm',
@@ -15,7 +14,7 @@ my %opts = (
     'DIR'          => [ ],
     'PREREQ_PM'    => { 
         AppConfig  => 1.56,
-        Badger    => 0.03,
+        Badger     => 0.03,
     },
     'dist'         => {
         'COMPRESS' => 'gzip',
@@ -48,5 +47,4 @@ WriteMakefile( %opts );
 Configuration complete.  You should now run '$MAKE', '$MAKE test' and 
 then '$MAKE install'.   See the README file for further information.
 EOF
-
 

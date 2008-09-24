@@ -660,7 +660,7 @@ sub throw {
                                     # e.g. INCLUDE foo+bar+baz
 
     if (! $info) {
-        $args = "$type, undef";
+        $args = "$type, '', body => \\\$output";
     }
     elsif (@$hash || @$args) {
         local $" = ', ';
@@ -671,13 +671,13 @@ sub throw {
               . join(', ', 
                      (map { "'" . $i++ . "' => $_" } ($info, @$args)),
                      @$hash)
-              . ' }';
+              . ', body => \$output }';
     }
     else {
-        $args = "$type, $info";
+        $args = "$type, $info, body => \\\$output";
     }
     
-    return "\$context->throw($args, \\\$output);";
+    return "\$context->throw($args);";
 }
 
 

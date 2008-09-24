@@ -1,16 +1,28 @@
 package Template::TT2::Utils;
 
-use Badger::Class
-    version  => 0.01,
-    debug    => 0,
-    base     => 'Badger::Utils',
-    constant => {
-        FH2TEXT => 'Template::TT2::Utils::FH2Text',
-        PERLFH  => \*Template::TT2::Perl::PERLOUT,
+use Template::TT2::Class
+    version   => 0.01,
+    debug     => 0,
+    base      => 'Badger::Utils',
+    constants => 'REFS PKG UNICODE',
+    constant  => {
+        FH2TEXT   => 'Template::TT2::Utils::FH2Text',
+        PERLFH    => \*Template::TT2::Perl::PERLOUT,
+        FILE_TEMP => 'File::Temp',
     },
-    exports  => {
-        any => 'trim',
+    exports   => {
+        any   => 'trim',
+        hooks => {
+            tempfile => \&_export_file_temp,
+        },
     };
+
+sub _export_file_temp {
+    my ($class, $target, $symbol, $symbols) = @_;
+    require File::Temp;
+    no strict REFS;
+    $class->export_symbol($target, $symbol, \&{ FILE_TEMP.PKG.$symbol });
+}
 
 sub trim ($) {
     my $text = shift;

@@ -20,7 +20,8 @@ use Template::TT2::Constants qw( :status :debug );
 use Template::TT2::Stash;
 use Template::TT2::Test
     tests => 62,
-    debug => 'Template::TT2::Stash';
+    debug => 'Template::TT2::Stash',
+    args  => \@ARGV;
     
 # test modules defined in t/lib
 use NumberLike;

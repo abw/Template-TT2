@@ -4,17 +4,18 @@
 package Template::TT2::Templates;
 
 use Badger::Filesystem 
-    'FS VFS Cwd Dir';
+    'FS VFS Cwd Dir File';
 use Badger::Debug 
     ':debug';
 use Template::TT2::Constants  
-    'SCALAR ARRAY GLOB BLANK UNICODE DEBUG_TEMPLATES DEBUG_FLAGS MSWIN32';
+    'SCALAR ARRAY GLOB BLANK UNICODE DEBUG_TEMPLATES DEBUG_FLAGS 
+     TT2_DOCUMENT MSWIN32';
 use Template::TT2::Class
     version   => 0.01,
     debug     => 0,
     base      => 'Template::TT2::Base',
     import    => 'class',
-    utils     => 'blessed md5_hex',
+    utils     => 'blessed md5_hex textlike',
     codec     => 'unicode',
     constants => 'SCALAR HASH GLOB',
     constant  => {
@@ -27,16 +28,17 @@ use Template::TT2::Class
         IS_ABS_URI    => qr[^/],
     },
     defaults  => {
-        DOCUMENT      => 'Template::TT2::Document',  # use Template::Modules?
+        DOCUMENT      => TT2_DOCUMENT,      # TODO: use Template::Modules
         PARSER        => 'Template::TT2::Parser',
         CACHE         => 'Template::TT2::Cache',
+        STORE         => 'Template::TT2::Store',
         INCLUDE_PATH  => Cwd,
         DYNAMIC_PATH  => 0,
         MAX_DIRS      => 32,
         STAT_TTL      => 1,
         TOLERANT      => 0,
         COMPILE_EXT   => BLANK,
-        DEFAULT       => BLANK,
+        DEFAULT       => undef,
         UNICODE       => UNICODE,
     },
     messages => {
@@ -48,10 +50,6 @@ use Template::TT2::Class
     };
         
 use Template::TT2::Document;
-
-#use constant LOAD   => 3;   # mtime of template
-#use constant NEXT   => 4;   # link to next item in cache linked list
-#use constant STAT   => 5;   # Time last stat()ed
 
 # hack so that 'use bytes' will compile on versions of Perl earlier than
 # 5.6, even though we never call _decode_unicode() on those systems
@@ -148,22 +146,26 @@ sub init_cache {
 
 sub init_store {
     my ($self, $config) = @_;
-    my $cdir = $config->{ COMPILE_DIR }
-        || return;
-
-    $self->{ COMPILE_DIR } = $cdir;
+    my $store = $self->{ STORE };
+    my $cdir  = $config->{ COMPILE_DIR };
     
-    # create COMPILE_DIR and sub-directories representing each INCLUDE_PATH
-    # element in which to store compiled files
-    $self->debug("Initiating compiled template store in $cdir\n") if DEBUG;
-    $cdir = Dir($cdir)->must_exist(1);
-
-    foreach (@{ $self->{ PATH } }) {
-        next if ref $_;
-        my $dir  = $_;       # copy to avoid aliasing problems
-        $dir =~ s[:][]g if MSWIN32;
-        $self->debug("  + $dir\n") if DEBUG;
-        $cdir->directory($dir)->must_exist(1);
+    if (ref $store) {
+        # use store object provided
+        $self->error_msg( bad_store => $store ) unless blessed $store;
+        $self->debug("Using user-supplied template store: $store\n") if DEBUG;
+    }
+    elsif (defined $cdir) {
+        # create new store for compiled templates
+        $self->debug("Creating template store in $cdir\n") if DEBUG;
+        class($store)->load;
+        $self->{ STORE } = $store->new( 
+            directory => $cdir,
+            extension => $config->{ COMPILE_EXT },
+        );
+    }
+    else {
+        # we're not storing compiled templates
+        delete $self->{ STORE };
     }
 }
 
@@ -172,9 +174,12 @@ sub fetch {
 
     $self->debug("fetch($name)\n") if DEBUG;
 
-    return ref $name
-        ? $self->fetch_ref($name)
-        : $self->fetch_name($name);
+    return $self->fetch_ref($name)
+        if ref $name;
+
+    return $self->fetch_name($name)
+        || defined($self->{ DEFAULT })
+        && $self->fetch_name($self->{ DEFAULT });
 }
 
 sub fetch_ref {
@@ -222,8 +227,8 @@ sub fetch_ref {
 sub fetch_name {
     my ($self, $name) = @_;
     my ($data, $uri, $info, $file, $text);
-#    my $path   = $self->{ VFS }->absolute($name);   # TODO: should be URI space not, native FS
-#    my $path = ($name =~ IS_ABS_URI) ? $name : URI_ROOT.$name;
+#   my $path = $self->{ VFS }->absolute($name);   # TODO: should be URI space not, native FS
+#   my $path = ($name =~ IS_ABS_URI) ? $name : URI_ROOT.$name;
     my $path = $name;
 
     $self->debug("fetch_name($name) => $path\n") if DEBUG;
@@ -296,7 +301,7 @@ sub load {
     
     return {
         uri      => $uri,
-        name     => $uri,
+        name     => $file->name,
         path     => $path,
         text     => $text,
         loaded   => time,
@@ -352,24 +357,33 @@ sub cache_fetch {
         $self->debug("cached modification time $data->{ time } does not match $modified") if DEBUG;
     }
 
-    # TODO: else check store
+    if ($self->{ STORE } && ($data = $self->{ STORE }->get($id))) {
+        $self->debug("$id found in the store\n") if DEBUG;
+        # TODO: check modified time
+        return $data;
+    }
     
     return undef;
 }
 
+    
 sub cache_store {
     my ($self, $id, $data) = @_;
+    my $parsed = delete($data->{ parsed });     # we don't want this in memory
+    my $file;
 
-    # additional things we want to cache:
-    #  - stat time - so we know when to go and look at the source template
-    #  - compilation time - so we can tell if the source template
-    #    has changed
-
-    $self->{ CACHE }->set($id, $data) 
-        if $self->{ CACHE };
-
-    # add to store
+    if ($self->{ CACHE }) {
+        $self->debug("storing $id in memory cache\n") if DEBUG;
+        $self->{ CACHE }->set($id, $data);
+    }
     
+#    $self->debug("parsed data: ", $self->dump_data($parsed), "\n") if DEBUG;
+    
+    # add to store - this needs refactoring along with Template::TT2::Document
+    if ($parsed && $self->{ STORE }) {
+        $self->debug("storing $id in compiled template store\n") if DEBUG;
+        $self->{ STORE }->set($id, $parsed);
+    }
 }
 
 sub prepare {
@@ -392,13 +406,16 @@ sub prepare {
     $parsed = $parser->parse($text, $args)
         || return $self->error("Parser returned false value");  # shouldn't happen?
         
-    # augment metadata  (TODO: we copy rather than poke, is that necessary?)
+    # augment metadata with the name and modification time
     $parsed->{ METADATA } = {
         name     => $args->{ name     },
         modtime  => $args->{ modified },    # old skool
         modified => $args->{ modified },    # new skool
         %{ $parsed->{ METADATA } },
     };
+
+    # save the parsed data back into the args 
+    $args->{ parsed } = $parsed;
 
     # create document object
     $document = $args->{ document } = $self->{ DOCUMENT }->new($parsed);
