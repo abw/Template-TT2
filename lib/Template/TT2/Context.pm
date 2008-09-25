@@ -9,7 +9,7 @@ use Template::TT2::Class
     words     => 'LOAD_',
     utils     => 'blessed',
     constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS 
-                  ARRAY SCALAR DELIMITER :modules :status :error';
+                  ARRAY SCALAR DELIMITER MSWIN32 :modules :status :error';
 
 our @LOADERS   = qw( templates plugins filters );
 
@@ -179,7 +179,7 @@ sub template {
     # reference by name.  If
 
     $blockname = '';
-#    eval {
+
     while ($shortname) {
         $self->debug("asking providers for [$shortname] [$blockname]") if DEBUG;
 
@@ -200,14 +200,7 @@ sub template {
         $shortname =~ s{/([^/]+)$}{} || last;
         $blockname = length $blockname ? "$1/$blockname" : $1;
     }
-#    };
-#    return $self->throw(ERROR_FILE, $@) if $@;
-    # Use our custom exception thrower which is backwardly compatible
-    # with TTv2 (unlike Badger::Base::throw() which is a bit more advanced).
-    # In particular, we want parse errors to be thrown as parse errors
-    # rather than having them re-thrown as file.parse errors.  The latter
-    # is arguably more correct, but it could break old code.
-    
+
     $self->throw(ERROR_FILE, "$name: not found");
 }
 
@@ -260,6 +253,50 @@ sub filter {
 
     return $filter;
 }
+
+sub insert {
+    my ($self, $file) = @_;
+    my ($prefix, $providers, $data, $error);
+    my $output = '';
+
+    my $files = ref $file eq ARRAY ? $file : [ $file ];
+
+    $self->debug("insert([ ", join(', '), @$files, " ])") 
+        if DEBUG;
+
+    FILE: foreach $file (@$files) {
+        my $name = $file;
+
+        if (MSWIN32) {
+            # let C:/foo through
+            $prefix = $1 if $name =~ s/^(\w{2,})://o;
+        }
+        else {
+            $prefix = $1 if $name =~ s/^(\w+)://;
+        }
+
+        if (defined $prefix) {
+            $providers = $self->{ PREFIX_MAP }->{ $prefix } 
+                || return $self->throw(ERROR_FILE, "no providers for file prefix '$prefix'");
+        }
+        else {
+            $providers = $self->{ PREFIX_MAP }->{ default }
+                || $self->{ LOAD_TEMPLATES };
+        }
+
+        foreach my $provider (@$providers) {
+            next FILE if $data = $provider->load($name);
+            #$self->throw($text) if ref $text;
+            #$self->throw(Template::Constants::ERROR_FILE, $text);
+        }
+        $self->throw(ERROR_FILE, "$file: not found");
+    }
+    continue {
+        $output .= $data->{ text };
+    }
+    return $output;
+}
+
 
 sub process {
     my ($self, $template, $params, $localize) = @_;
@@ -460,8 +497,6 @@ __END__
 # save the returned filter in a local cache.
 #------------------------------------------------------------------------
 
-
-
 #------------------------------------------------------------------------
 # view(\%config)
 # 
@@ -476,62 +511,11 @@ sub view {
                         $Template::View::ERROR);
 }
 
-
-
-
 #------------------------------------------------------------------------
 # insert($file)
 #
 # Insert the contents of a file without parsing.
 #------------------------------------------------------------------------
-
-sub insert {
-    my ($self, $file) = @_;
-    my ($prefix, $providers, $text, $error);
-    my $output = '';
-
-    my $files = ref $file eq 'ARRAY' ? $file : [ $file ];
-
-    $self->debug("insert([ ", join(', '), @$files, " ])") 
-        if $self->{ DEBUG };
-
-
-    FILE: foreach $file (@$files) {
-    my $name = $file;
-
-    if ($^O eq 'MSWin32') {
-        # let C:/foo through
-        $prefix = $1 if $name =~ s/^(\w{2,})://o;
-    }
-    else {
-        $prefix = $1 if $name =~ s/^(\w+)://;
-    }
-
-    if (defined $prefix) {
-        $providers = $self->{ PREFIX_MAP }->{ $prefix } 
-        || return $self->throw(Template::Constants::ERROR_FILE,
-                   "no providers for file prefix '$prefix'");
-    }
-    else {
-        $providers = $self->{ PREFIX_MAP }->{ default }
-        || $self->{ LOAD_TEMPLATES };
-    }
-
-    foreach my $provider (@$providers) {
-        ($text, $error) = $provider->load($name, $prefix);
-        next FILE unless $error;
-        if ($error == Template::Constants::STATUS_ERROR) {
-        $self->throw($text) if ref $text;
-        $self->throw(Template::Constants::ERROR_FILE, $text);
-        }
-    }
-    $self->throw(Template::Constants::ERROR_FILE, "$file: not found");
-    }
-    continue {
-    $output .= $text;
-    }
-    return $output;
-}
 
 
 #------------------------------------------------------------------------

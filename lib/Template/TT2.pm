@@ -18,25 +18,34 @@
 
 package Template::TT2;
 
+use Template::TT2::Modules;
 use Template::TT2::Class
-    base       => 'Badger::Base',
+    version    => 0.01,         # constructs VERSION and $VERSION
     debug      => 0,
+    base       => 'Template::TT2::Base',
     constants  => ':types',
     filesystem => 'FS',
     import     => 'class',
     utils      => 'looks_like_number blessed',
+    constants  => 'TT2_MODULES',
     constant   => {
         PRINT_METHOD => 'print',
         SERVICE      => 'Template::TT2::Service',
+    },
+    exports    => {
+        any    => 'TT2_MODULES',
     };
 
-our $VERSION      = 0.01;       # here for ExtUtils::MakeMaker to find
+our $VERSION      = 0.01;       # for ExtUtils::MakeMaker - not DRY, yuk
 our $MKDIR        = 1           unless defined $MKDIR;
 our $ENCODING     = 0           unless defined $ENCODING;
 our $OUTPUT       = \*STDOUT    unless defined $OUTPUT;
 our $OUTPUT_PATH  = FS->cwd     unless defined $OUTPUT_PATH;
 our $SERVICE      = SERVICE     unless defined $SERVICE;
 our @ARGS         = qw( MKDIR ENCODING OUTPUT OUTPUT_PATH );
+
+# alias modules() to return Template::TT2::Modules class constant
+*modules = \&TT2_MODULES;
 
 sub init {
     my ($self, $config) = @_;
@@ -151,6 +160,10 @@ sub context {
     $_[0]->{ SERVICE }->context;
 }
 
+sub module {
+    my $self = shift;
+    TT2_MODULES->module(@_);
+}
 
 1;
 

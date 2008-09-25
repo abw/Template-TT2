@@ -809,7 +809,7 @@ $block
 
     eval \$output;
     select \$_tt_save_stdout;
-    \$context->throw(\$@) if \$@;
+    \$context->flow_throw(\$@) if \$@;
     \$_tt_result;
 };
 EOF

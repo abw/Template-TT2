@@ -19,23 +19,20 @@ our $INSTDIR  = '';
 
 
 sub type_args {
-    my $self = shift;
+    shift;
     return @_;
-#    my $type = shift;
-#    my $args = (@_ == 1 && ref $_[0]) ? shift : { @_ };
-#    return ($type, $args);
 }
 
 
 sub preload {
     my $class = shift;
+    $class->todo;
 
 #    foreach my $module (@PRELOAD, @_) {
 #        $class->load($module) || return;
 #    };
     return 1;
 }
-
 
 
 #------------------------------------------------------------------------
@@ -53,8 +50,6 @@ sub instdir {
     $inst .= "/$dir" if $dir;
     return $inst;
 }
-
-
 
 
 
