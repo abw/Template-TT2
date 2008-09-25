@@ -25,10 +25,8 @@ use Badger::Filesystem '$Bin Dir';
 use constant ENGINE => 'Template::TT2';
 
 my $dir    = Dir($Bin, 'templates')->must_exist;
-my $src    = $dir->dir('src');
-my $lib    = $dir->dir('lib');
 my $config = {
-    INCLUDE_PATH => [$src, $lib],
+    INCLUDE_PATH => $dir,
     PRE_PROCESS  => [ 'config', 'header' ],
     POST_PROCESS => 'footer',
     BLOCKS       => { 
