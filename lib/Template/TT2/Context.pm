@@ -179,6 +179,7 @@ sub template {
     # reference by name.  If
 
     $blockname = '';
+#    eval {
     while ($shortname) {
         $self->debug("asking providers for [$shortname] [$blockname]") if DEBUG;
 
@@ -199,7 +200,14 @@ sub template {
         $shortname =~ s{/([^/]+)$}{} || last;
         $blockname = length $blockname ? "$1/$blockname" : $1;
     }
-        
+#    };
+#    return $self->throw(ERROR_FILE, $@) if $@;
+    # Use our custom exception thrower which is backwardly compatible
+    # with TTv2 (unlike Badger::Base::throw() which is a bit more advanced).
+    # In particular, we want parse errors to be thrown as parse errors
+    # rather than having them re-thrown as file.parse errors.  The latter
+    # is arguably more correct, but it could break old code.
+    
     $self->throw(ERROR_FILE, "$name: not found");
 }
 
@@ -345,12 +353,13 @@ sub process {
         # ensure stash is delocalised before dying
         $self->{ STASH } = $self->{ STASH }->declone();
     }
-    
+
     $self->throw(
         ref $error 
           ? $error 
           : (ERROR_FILE, $error)
     ) if $error;
+    
     
     return $output;
 }
@@ -422,6 +431,12 @@ sub catch {
     }
 }
 
+
+sub eval_perl {
+    my $self = shift;
+    $self->debug("eval_perl: $self->{ EVAL_PERL }\n") if DEBUG;
+    $self->{ EVAL_PERL };
+}
 
 1;
 __END__

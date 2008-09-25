@@ -42,6 +42,7 @@ use Template::TT2::Class
         UNICODE       => UNICODE,
     },
     messages => {
+        deprecated    => "The %s option is deprecated.  The '%s' directory has been added to your INCLUDE_PATH instead.",
         no_absolute   => "The ABSOLUTE option has been deprecated.  Please add '/' to your INCLUDE_PATH",
         no_relative   => "The RELATIVE option has been deprecated.  Please add '.' to your INCLUDE_PATH",
         not_ref       => 'Template specified is not a reference: %s',
@@ -71,9 +72,6 @@ sub init {
     $self->init_store($config);
 
     # warn that the ABSOLUTE and RELATIVE options are deprecated
-    $self->warn_msg('no_absolute') if $config->{ ABSOLUTE };
-    $self->warn_msg('no_relative') if $config->{ RELATIVE };
-
     # save config for when we need to initiate a parser
     $self->{ config } = $config;
     
@@ -82,11 +80,28 @@ sub init {
 
 sub init_path {
     my ($self, $config) = @_;
-    my $path;
+    my ($path, $dir);
     
     # create a virtual filesystem across the INCLUDE_PATH
     $path = $config->{ INCLUDE_PATH } || $self->class->list_vars('INCLUDE_PATH');
     $path = [ $path ] unless ref $path eq ARRAY;
+
+    # ABSOLUTE option is officially deprecated, but we can emulate it by 
+    # adding '/' to the INCLUDE_PATH.  However, the handling of template
+    # paths in templates has changed so it's not exactly the same thing. 
+    if ($config->{ ABSOLUTE }) {
+        $dir = FS->root;
+        $self->warn_msg( deprecated => ABSOLUTE => $dir );
+        push(@$path, $dir);
+    }
+
+    # ditto RELATIVE
+    if ($config->{ RELATIVE }) {
+        $dir = FS->cwd;
+        $self->warn_msg( deprecated => RELATIVE => $dir );
+        push(@$path, $dir);
+    }
+
     $self->{ PATH } = $path;
     $self->{ FS   } = FS->new;
     $self->{ VFS  } = VFS->new( 
@@ -148,19 +163,20 @@ sub init_store {
     my ($self, $config) = @_;
     my $store = $self->{ STORE };
     my $cdir  = $config->{ COMPILE_DIR };
+    my $cext  = $config->{ COMPILE_EXT };
     
     if (ref $store) {
         # use store object provided
         $self->error_msg( bad_store => $store ) unless blessed $store;
         $self->debug("Using user-supplied template store: $store\n") if DEBUG;
     }
-    elsif (defined $cdir) {
+    elsif (defined $cdir || $cext) {
         # create new store for compiled templates
-        $self->debug("Creating template store in $cdir\n") if DEBUG;
+        $self->debug("Creating template store in $cdir / $cext\n") if DEBUG;
         class($store)->load;
         $self->{ STORE } = $store->new( 
             directory => $cdir,
-            extension => $config->{ COMPILE_EXT },
+            extension => $cext,
         );
     }
     else {
@@ -175,7 +191,7 @@ sub fetch {
     $self->debug("fetch($name)\n") if DEBUG;
 
     return $self->fetch_ref($name)
-        if ref $name;
+        unless textlike $name;          # allows objects which stringify
 
     return $self->fetch_name($name)
         || defined($self->{ DEFAULT })
@@ -352,15 +368,20 @@ sub cache_fetch {
 
             return $data->{ document };
         }
-
-        # modification times don't match so drop through
-        $self->debug("cached modification time $data->{ time } does not match $modified") if DEBUG;
+        $self->debug("cached modification time $data->{ modified } does not match $modified") if DEBUG;
     }
 
     if ($self->{ STORE } && ($data = $self->{ STORE }->get($id))) {
         $self->debug("$id found in the store\n") if DEBUG;
-        # TODO: check modified time
-        return $data;
+        
+        # as above with the only difference being that $data returned from
+        # the store is already a Template::TT2::Document object.
+        if (! $modified || $modified == $data->modified) {      # TODO: ->modified($modified)
+            $self->debug("returning $data\n") if DEBUG;
+            $self->add_lookup_path($data);
+            return $data;
+        }
+        $self->debug("stored modification time $data->{ modified } does not match $modified") if DEBUG;
     }
     
     return undef;
@@ -377,7 +398,7 @@ sub cache_store {
         $self->{ CACHE }->set($id, $data);
     }
     
-#    $self->debug("parsed data: ", $self->dump_data($parsed), "\n") if DEBUG;
+    $self->debug("parsed data: ", $self->dump_data($parsed), "\n") if DEBUG;
     
     # add to store - this needs refactoring along with Template::TT2::Document
     if ($parsed && $self->{ STORE }) {

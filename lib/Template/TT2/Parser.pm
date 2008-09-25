@@ -27,6 +27,7 @@ use Template::TT2::Class
         GRAMMAR     => 'Template::TT2::Grammar',
         TAG_STYLE   => 'default',
         FILE_INFO   => 1,
+        EVAL_PERL   => 0,
     };
 
 use Template::TT2::Grammar 
@@ -72,7 +73,7 @@ sub init {
 
     $self->init_defaults($config);
 
-    $self->{ FILEINFO } = [ ];
+    $self->{ info } = [ ];
 
 #    my ($tagstyle, $debug, $start, $end, $defaults, $grammar, $hash, $key, $udef);
 
@@ -183,11 +184,10 @@ sub parse {
 #    print "info: { ", join(', ', map { "$_ => $info->{ $_ }" } keys %$info), " }\n";
 
     # store for blocks defined in the template (see define_block())
-    my $defblock = $self->{ DEFBLOCK } = { };
-    my $metadata = $self->{ METADATA } = [ ];
-    $self->{ DEFBLOCKS } = [ ];
-
-    $self->{ _ERROR } = '';
+    my $defblock = local $self->{ DEFBLOCK } = { };
+    my $metadata = local $self->{ METADATA } = [ ];
+    local $self->{ DEFBLOCKS } = [ ];
+#   local $self->{ TEMPLATE_NAME } = 
 
     # split file into TEXT/DIRECTIVE chunks
     $tokens = $self->split_text($text)
@@ -195,12 +195,12 @@ sub parse {
 
     $self->debug("tokens: ", $self->dump_data($tokens), "\n") if DEBUG;
 
-    push(@{ $self->{ FILEINFO } }, $info);
+    push(@{ $self->{ info } }, $info);
 
     # parse chunks
     $block = $self->_parse($tokens, $info);
     
-    pop(@{ $self->{ FILEINFO } });
+    pop(@{ $self->{ info } });
 
     return undef unless $block;                             ## RETURN ##
 
@@ -614,7 +614,7 @@ sub location {
     my $self = shift;
     return "\n" unless $self->{ FILE_INFO };
     my $line = ${ $self->{ LINE } };
-    my $info = $self->{ FILEINFO }->[-1];
+    my $info = $self->{ info }->[-1];
     my $file = $info->{ path } || $info->{ name } 
         || '(unknown template)';
     $line =~ s/\-.*$//; # might be 'n-n'
@@ -658,9 +658,9 @@ sub _parse {
     $self->{ GRAMMAR }->install_factory($self->{ FACTORY });
 
     $line = $inperl = 0;
-    $self->{ LINE   } = \$line;
-    $self->{ FILE   } = $info->{ name };
-    $self->{ INPERL } = \$inperl;
+    local $self->{ LINE   } = \$line;
+    local $self->{ FILE   } = $info->{ name };
+    local $self->{ INPERL } = \$inperl;
 
     $status = PARSE_CONTINUE;
     my $in_string = 0;
@@ -836,6 +836,7 @@ sub _parse {
 
 sub _parse_error {
     my ($self, $msg, $text) = @_;
+    my $file = $self->{ FILE } || '';
     my $line = $self->{ LINE };
     $line = ref($line) ? $$line : $line;
     $line = 'unknown' unless $line;
@@ -843,7 +844,7 @@ sub _parse_error {
     $msg .= "\n  [% $text %]"
         if defined $text;
 
-    return $self->error("line $line: $msg");
+    return $self->error("$file line $line: $msg");
 }
 
 

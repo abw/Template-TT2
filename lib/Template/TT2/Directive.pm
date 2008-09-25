@@ -792,7 +792,7 @@ sub perl {
     return <<EOF;
 
 # PERL
-\$context->throw('perl', 'EVAL_PERL not set')
+\$context->throw( perl => 'EVAL_PERL not set' )
     unless \$context->eval_perl();
 
 $OUTPUT do {
@@ -804,7 +804,7 @@ $block
     local(\$Template::Perl::stash)   = \$stash;
 
     my \$_tt_result = '';
-    tie *Template::Perl::PERLOUT, 'Template::TieString', \\\$_tt_result;
+    tie *Template::Perl::PERLOUT, 'Template::TT2::Utils::FH2Text', \\\$_tt_result;
     my \$_tt_save_stdout = select *Template::Perl::PERLOUT;
 
     eval \$output;
@@ -822,7 +822,7 @@ EOF
 
 sub no_perl {
     my $class = shift;
-    return "\$context->throw('perl', 'EVAL_PERL not set');";
+    return '$context->throw( perl => "EVAL_PERL not set");';
 }
 
 

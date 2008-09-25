@@ -19,7 +19,10 @@ use Template::TT2::Class
     version   => 0.01,
     debug     => 0,
     base      => 'Template::TT2::Base',
-    constants => 'UNICODE :error';
+    constants => 'UNICODE :error',
+    accessors => 'modified';
+
+use Badger::Debug ':debug';
 
 our ($COMPERR, $AUTOLOAD);
 
@@ -61,13 +64,20 @@ sub new {
     }
 
     # same for any additional BLOCK definitions
-    @$defblocks{ keys %$defblocks } = 
-        # MORE BLIND UNTAINTING - turn away if you're squeamish
-        map { 
-            ref($_) 
-                ? $_ 
-                : ( /(.*)/s && eval($1) or return $class->error($@) )
-            } values %$defblocks;
+    my $perl;
+    $defblocks = {
+        map {
+            $perl = $defblocks->{ $_ };
+            unless (ref $perl) {
+                # MORE BLIND UNTAINTING - turn away if you're squeamish
+                $perl =~ /(.*)/s;
+                $perl = eval($1) 
+                    || return $class->error($@);
+            }
+            $_ => $perl
+        } 
+        keys %$defblocks
+    };
     
     bless {
         %$metadata,
@@ -116,6 +126,9 @@ sub AUTOLOAD {
     my $self   = shift;
     my $method = $AUTOLOAD;
 
+    die "Invalid class method $method called against $self\n"
+        unless ref $self;
+        
     $method =~ s/.*:://;
     return if $method eq 'DESTROY';
     return $self->{ $method };
@@ -176,6 +189,11 @@ sub as_perl {
 
     $block =~ s/\n/\n    /g;
     $block =~ s/\s+$//;
+
+    if (grep { ref $_ eq 'CODE' } values %$defblocks) {
+        $class->debug_caller();
+        $class->error("cannot compile CODE reference in DEFBLOCKS\n");
+    }
 
     $defblocks = join('', map {
         my $code = $defblocks->{ $_ };

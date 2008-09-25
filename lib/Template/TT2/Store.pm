@@ -4,7 +4,7 @@ use Template::TT2::Class
     version    => 0.01,
     debug      => 0,
     base       => 'Template::TT2::Base',
-    filesystem => 'VFS Dir',
+    filesystem => 'FS VFS Dir',
     utils      => 'tempfile',
     throws     => 'store',
     constants  => 'UNICODE TT2_DOCUMENT',
@@ -20,8 +20,8 @@ use Template::TT2::Document;        # find somewhere for this to go
 sub init {
     my ($self, $config) = @_;
     $self->{ extension  } = $config->{ extension } || $config->{ ext };
-    $self->{ directory  } = $config->{ directory } || $config->{ dir }
-        || return $self->error('no directory defined');
+    $self->{ directory  } = $config->{ directory } || $config->{ dir } || FS->root;
+        #return $self->error('no directory defined');
 
     # create virtual filesystem rooted at specified directory
     $self->{ filesystem } = VFS->new( root => $self->{ directory } );
