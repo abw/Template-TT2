@@ -18,7 +18,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 14,
+    tests => 5,
     debug => 'Template::TT2::Templates',
     args  => \@ARGV;
 
@@ -34,18 +34,19 @@ my $config = {
     ABSOLUTE     => 1,
 };
 
-$cache->delete;
+$cache->delete if $cache->exists;
+$cache->create;
 
-exit();
-# delete any existing cache files
-rmtree($cdir) if -d $cdir;
-mkpath($cdir);
-
-test_expect(\*DATA, $ttcfg, { root => abs_path($dir) } );
+test_expect(
+    config => $config,
+    vars   =>  {
+        blam => $incdir->file('blam'),
+    },
+);
 
 
 __DATA__
--- test --
+-- test INCLUDE foo --
 [% TRY %]
 [% INCLUDE foo %]
 [% CATCH file %]
@@ -54,7 +55,7 @@ Error: [% error.type %] - [% error.info %]
 -- expect --
 This is the foo file, a is 
 
--- test --
+-- test INCLUDE complex --
 [% META author => 'abw' version => 3.14 %]
 [% INCLUDE complex %]
 -- expect --
@@ -63,7 +64,7 @@ This is a more complex file which includes some BLOCK definitions
 This is the footer, author: abw, version: 3.14
 - 3 - 2 - 1 
 
--- test --
+-- test INCLUDE bar/baz --
 [% TRY %]
 [% INCLUDE bar/baz word = 'wibble' %]
 [% CATCH file %]
@@ -73,7 +74,12 @@ Error: [% error.type %] - [% error.info %]
 This is file baz
 The word is 'wibble'
 
--- test --
-[% INCLUDE "$root/src/blam" %]
+-- test absolute path not found --
+[% TRY; INCLUDE /no/where/no_such_file; CATCH; error; END %]
+-- expect --
+file error - /no/where/no_such_file: not found
+
+-- test absolute path --
+[% INCLUDE $blam %]
 -- expect --
 This is the blam file
