@@ -34,3 +34,4 @@ TODO:
  * fix DEBUG options
  * stop aliasing error to 'e'
  * stop dumping compiled templates in '/' !!!
+ * updated t/language/tied.t for XS stash

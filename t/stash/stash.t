@@ -15,13 +15,16 @@
 
 use strict;
 use warnings;
-use lib qw( t/lib ./lib ../lib ../../lib );
+use lib qw( t/lib ./lib ../lib ../../lib 
+            blib/lib blib/arch ../../blib/lib ../../blib/arch );
 use Template::TT2::Constants qw( :status :debug );
-use Template::TT2::Stash;
 use Template::TT2::Test
     tests => 62,
     debug => 'Template::TT2::Stash',
     args  => \@ARGV;
+
+use Template::TT2::Stash;
+our $STASH = 'Template::TT2::Stash';
     
 # test modules defined in t/lib
 use NumberLike;
@@ -31,7 +34,6 @@ use TextObject;
 use ListObject;
 use HashObject;
 
-our $STASH = 'Template::TT2::Stash';
 
 # define some data
 my $count = 1;
@@ -116,6 +118,7 @@ is( $stash->get('hash.code'), 30, 'got hash code' );
 # also try canonical form
 is( $stash->get([hash => 0, text => 0]), 'Hash text', 'got hash text from list ref' );
 is( $stash->get([hash => 0, hash => 0, 'foo']), 'bar', 'got hash hash text from list ref' );
+
 is( $stash->get([hash => 0, list => 0, 0]), 1.618, 'got hash list number from list ref' );
 is( $stash->get([hash => 0, list => 0, -1, 0]), 3.142, 'got hash list number from end from list ref' );
 is( $stash->get([hash => 0, code => 0]), 30, 'got hash code from list ref' );
@@ -209,6 +212,13 @@ is( $clone->get('number'), 420, 'got new number from clone' );
 is( $clone->get('answer'), 42, 'got answer from clone' );
 is( $stash->get('number'), 42, 'got unchanged number from original stash' );
 is( $stash->get('answer'), '', 'got no answer from original stash' );
+
+
+#-----------------------------------------------------------------------
+# set
+#-----------------------------------------------------------------------
+
+#is( $stash->set('x', 10), 10, 'set x to 10' );
 
 __END__
 
