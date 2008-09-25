@@ -38,3 +38,4 @@ ok( $ts, 'created Template::Templates' );
 my $one = $ts->fetch('one');
 ok( $one, 'got template one' );
 
+
