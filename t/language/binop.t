@@ -18,25 +18,27 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 24,
+    tests => 25,
     debug => 'Template::TT2::Parser',
     args  => \@ARGV;
 
 
 my $counter = 0;
 my $vars    = {
-    'yes'    => 1,
-    'no'     => 0,
-    'true'   => 'this is true',
-    'false'  => '0',
-    'happy'  => 'yes',
-    'sad'    => '',
-    'ten'    => 10,
-    'twenty' => 20,
-    'alpha'  => sub { return ++$counter },
-    'omega'  => sub { $counter += 10; return 0 },
-    'count'  => sub { return $counter },
-    'reset'  => sub { return $counter == 0 },
+    yes    => 1,
+    no     => 0,
+    true   => 'this is true',
+    false  => '0',
+    happy  => 'yes',
+    sad    => '',
+    ten    => 10,
+    twenty => 20,
+    alpha  => sub { return ++$counter },
+    omega  => sub { $counter += 10; return 0 },
+    count  => sub { return $counter },
+    reset  => sub { return $counter == 0 },
+    hai    => 'Hello ',
+    world  => 'World!'
 };
 
 my $config = { 
@@ -283,7 +285,6 @@ left: [% left +%]
 mult: [% mult +%]
 maxi: [% mult + 2 * 2 +%]
 mega: [% mult * 2 + 2 * 3 %]
-
 -- expect --
 both: 15
 less: 3
@@ -300,4 +301,8 @@ mega: 106
 2 2
 3 3
 
+-- test string concatenation --
+[% hai _ world %]
+-- expect --
+Hello World!
 

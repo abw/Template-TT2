@@ -1,7 +1,5 @@
 package Template::TT2::Test;
 
-use Badger::Test;       # to import ok(), is(), etc.
-use Template::TT2;
 use Template::TT2::Class
     version   => 0.01,
     base      => 'Badger::Test',
@@ -10,11 +8,15 @@ use Template::TT2::Class
     exports   => {
         all   => 'callsign test_expect',
     };
+
+use Badger::Test;       # to import ok(), is(), etc.
     
 our $MAGIC   = '\s* -- \s*';
 our $ENGINE  = 'Template::TT2';
 our $HANDLER = \&test_handler;
 our $DATA;
+
+require Template::TT2;
 
 sub data_text {
     return $DATA if defined $DATA;

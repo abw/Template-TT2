@@ -89,6 +89,7 @@ sub init {
     return $self;
 }
 
+use Badger::Debug ':debug';
 sub localise {
     my $self = shift;
     $self->{ STASH } = $self->{ STASH }->clone(@_);

@@ -93,8 +93,9 @@ sub new {
 
 sub clone {
     my $self   = shift;
-    my $params = ref $_[0] eq HASH ? shift : { @_ };
+    my $params = @_ == 1 ? shift : { @_ };
     my $import = $params->{ $IMPORT };
+    $params ||= { };
 
     # handle the magic 'import' variable
     if (defined $import && ref $import && reftype $import eq HASH) {

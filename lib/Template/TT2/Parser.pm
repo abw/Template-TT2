@@ -195,6 +195,7 @@ sub parse {
 
     $self->debug("tokens: ", $self->dump_data($tokens), "\n") if DEBUG;
 
+#    $self->debug("INFO: ", $self->dump_data($info), "\n");
     push(@{ $self->{ info } }, $info);
 
     # parse chunks

@@ -2,6 +2,9 @@
   rather than the more limited ($type, $info) position args of v2
   Template::Exception.  as_string() is now text(), select_handler() is
   now match_type()
+
+* parser errors are now reported as parse errors instead of file errors
+  with a parse error in the info field.
   
 * No ABSOLUTE option.  Put '/' in your INCLUDE_PATH (or should I do it for 
   you if ABSOLUTE is set?)
@@ -30,3 +33,4 @@ TODO:
  * add expose_objects option to stash
  * fix DEBUG options
  * stop aliasing error to 'e'
+ * stop dumping compiled templates in '/' !!!

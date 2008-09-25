@@ -24,7 +24,7 @@ use Template::TT2::Class
     debug      => 0,
     base       => 'Template::TT2::Base',
     constants  => ':types',
-    filesystem => 'FS',
+    filesystem => 'FS VFS',
     import     => 'class',
     utils      => 'looks_like_number blessed',
     constants  => 'TT2_MODULES',
@@ -36,13 +36,14 @@ use Template::TT2::Class
         any    => 'TT2_MODULES',
     };
 
-our $VERSION      = 0.01;       # for ExtUtils::MakeMaker - not DRY, yuk
-our $MKDIR        = 1           unless defined $MKDIR;
-our $ENCODING     = 0           unless defined $ENCODING;
-our $OUTPUT       = \*STDOUT    unless defined $OUTPUT;
-our $OUTPUT_PATH  = FS->cwd     unless defined $OUTPUT_PATH;
-our $SERVICE      = SERVICE     unless defined $SERVICE;
-our @ARGS         = qw( MKDIR ENCODING OUTPUT OUTPUT_PATH );
+our $VERSION       = 0.01;       # for ExtUtils::MakeMaker - not DRY, yuk
+our $MKDIR         = 1           unless defined $MKDIR;
+our $ENCODING      = 0           unless defined $ENCODING;
+our $OUTPUT        = \*STDOUT    unless defined $OUTPUT;
+our $OUTPUT_PATH   = undef       unless defined $OUTPUT_PATH;
+our $SERVICE       = SERVICE     unless defined $SERVICE;
+our $DEBUG_BINMODE = 0           unless defined $DEBUG_BINMODE;
+our @ARGS          = qw( MKDIR ENCODING OUTPUT OUTPUT_PATH );
 
 # alias modules() to return Template::TT2::Modules class constant
 *modules = \&TT2_MODULES;
@@ -66,9 +67,16 @@ sub init {
 
     # create Badger::Filesystem::Directory object for file output,
     # check it exists, do a mkdir if the MKDIR flags says that's OK
-    $self->{ OUTPUT_DIR } = 
-       FS->directory(  $self->{ OUTPUT_PATH } )
-         ->must_exist( $self->{ MKDIR       } );
+    if ($self->{ OUTPUT_PATH }) {
+        $self->debug("creating virtual filesystem for output in $self->{ OUTPUT_PATH }") if DEBUG;
+        my $dir = FS->directory(  $self->{ OUTPUT_PATH } )
+                    ->must_exist( $self->{ MKDIR       } );
+        $self->{ OUTPUT_FS } = VFS->new( root => $dir );
+    }
+    else {
+        $self->debug("output to filesystem") if DEBUG;
+        $self->{ OUTPUT_FS }  = FS;
+    }
     
     # load and instantiate service module
     my $service = $config->{ SERVICE } || $SERVICE;
@@ -96,12 +104,18 @@ sub output {
     # is a false value then we return the text generated
     return $text unless $dest;
 
-    # otherwise we can have a plain text file name or a reference of
-    # some kind
+    # Otherwise we can have a plain text file name or a reference of
+    # some kind.  If we have an object with an overloaded stringification
+    # method (like a Badger::Filesystem::File), as accepted by textlike(),
+    # then we use that as a filename instead of treating it as an object.
     my $type = ref $dest;
+#    $type = '' if textlike $dest;   # accept anything that has  file object
+
+    $self->debug("output [$type] => $dest\n") if DEBUG;
 
     if (! $type) {
         my $file = $self->output_file($dest);
+        $self->debug("output file: ", $file->definitive, "\n") if DEBUG;
         my $fh   = $file->write;
         my $enc  = defined $args->{ binmode  }
                          ? $args->{ binmode  } 
@@ -110,13 +124,16 @@ sub output {
                  :         $self->{ ENCODING };
 
         # TODO: move this into Badger::Filesystem:File
-        $fh->binmode($enc) if $enc;
-        return $fh->print($text);
+        $fh->binmode($enc eq '1' ? () : $enc) if $enc;
+        $self->debug("DEBUG_BINMODE: $DEBUG_BINMODE") if DEBUG;
+        $DEBUG_BINMODE->($enc) if $DEBUG_BINMODE;   # hack for testing
+        $fh->print($text);
+        $fh->close;
     }
     elsif (blessed $dest) {
         my $code = $dest->can(PRINT_METHOD)
             || return $self->error_msg( bad_output => $dest );
-        return $code->($text);          # call object's print() method
+        return $code->($dest, $text);          # call object's print() method
     }
     elsif ($type eq CODE) {
         return $dest->($text);          # call subroutine
@@ -139,18 +156,18 @@ sub output {
 
 sub output_file {
     my $self = shift;
-    my $path = $self->{ OUTPUT_DIR }->relative(@_);
-    
+    my $file = $self->{ OUTPUT_FS }->file(@_);
+
     # make sure any intermediate directories between the OUTPUT_DIR and 
     # final destination exist, or can be created if the MKDIR flag is set
-    $path->directory->must_exist($self->{ MKDIR });
+    $file->directory->must_exist($self->{ MKDIR });
     
-    return $path;
+    return $file;
 }
 
-sub output_dir {
-    shift->{ OUTPUT_DIR };
-}
+#sub output_dir {
+#    shift->{ OUTPUT_DIR };
+#}
 
 sub service {
     $_[0]->{ SERVICE };
