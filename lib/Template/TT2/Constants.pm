@@ -24,14 +24,16 @@ use Badger::Class
     utils    => 'looks_like_number',
     exports  => {
         tags => {
-            modules => 'TT2_MODULES TT2_CONTEXT TT2_DOCUMENT TT2_EXCEPTION',
+            modules => 'TT2_HUB TT2_MODULES TT2_CONTEXT TT2_DOCUMENT TT2_EXCEPTION
+                        TT2_PARSER TT2_CACHE TT2_STORE TT2_FILTER',
             status  => 'STATUS_OK STATUS_RETURN STATUS_STOP STATUS_DONE
                         STATUS_DECLINED STATUS_ERROR',
             error   => 'ERROR_FILE ERROR_VIEW ERROR_UNDEF ERROR_PERL 
                         ERROR_RETURN ERROR_FILTER ERROR_PLUGIN',
             chomp   => 'CHOMP_NONE CHOMP_ALL CHOMP_ONE CHOMP_COLLAPSE 
                         CHOMP_GREEDY',
-            parse   => 'PARSE_CONTINUE PARSE_ACCEPT PARSE_ERROR PARSE_ABORT',
+            parse   => 'PARSE_CONTINUE PARSE_ACCEPT PARSE_ERROR PARSE_ABORT
+                        STATE_DEFAULT STATE_ACTIONS STATE_GOTOS',
             debug   => 'DEBUG_OFF DEBUG_ON DEBUG_UNDEF DEBUG_VARS 
                         DEBUG_DIRS DEBUG_STASH DEBUG_CONTEXT DEBUG_PARSER
                         DEBUG_TEMPLATES DEBUG_PLUGINS DEBUG_FILTERS 
@@ -44,10 +46,15 @@ use Badger::Class
     },
     constant => {
         # modules
+        TT2_HUB         => 'Template::TT2::Hub',
         TT2_MODULES     => 'Template::TT2::Modules',
         TT2_CONTEXT     => 'Template::TT2::Context',
         TT2_DOCUMENT    => 'Template::TT2::Document',
         TT2_EXCEPTION   => 'Template::TT2::Exception',
+        TT2_PARSER      => 'Template::TT2::Parser',
+        TT2_CACHE       => 'Template::TT2::Cache',
+        TT2_STORE       => 'Template::TT2::Store',
+        TT2_FILTER      => 'Template::TT2::Filter',
         
         # STATUS constants returned by directives
         STATUS_OK       =>   0,         # ok
@@ -73,10 +80,16 @@ use Badger::Class
         CHOMP_COLLAPSE  => 2,           # collapse whitespace to a single space
         CHOMP_GREEDY    => 3,           # remove all whitespace including newlines
         
+        # parser constants
         PARSE_CONTINUE  => 0,
         PARSE_ACCEPT    => 1,
         PARSE_ERROR     => 2,
         PARSE_ABORT     => 3,
+        
+        # slots in the state table entries
+        STATE_DEFAULT   => 0,
+        STATE_ACTIONS   => 1,
+        STATE_GOTOS     => 2,
         
         # DEBUG constants to enable various debugging options
         DEBUG_OFF       =>    0,        # do nothing
