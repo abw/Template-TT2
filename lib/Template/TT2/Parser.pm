@@ -22,13 +22,13 @@ use Template::TT2::Class
     import    => 'class',
     constants => ':status :chomp :parse',
     throws    => 'parse',
-    defaults  => {
-        FACTORY     => 'Template::TT2::Directive',
-        GRAMMAR     => 'Template::TT2::Grammar',
-        TAG_STYLE   => 'default',
-        FILE_INFO   => 1,
-        EVAL_PERL   => 0,
-    };
+    config    => [
+        'FACTORY|class:FACTORY=Template::TT2::Directive',
+        'GRAMMAR|class:GRAMMAR=Template::TT2::Grammar',
+        'TAG_STYLE|class:TAG_STYLE=default',
+        'FILE_INFO=1',
+        'EVAL_PERL=0',
+    ];
 
 use Template::TT2::Grammar 
     '@TABLE_NAMES';
@@ -70,9 +70,7 @@ sub init {
 
     # copy this so that on_warn, etc., from Badger:Base work
     $self->{ config } = $config;
-
-    $self->init_defaults($config);
-
+    $self->configure($config);
     $self->{ info } = [ ];
 
 #    my ($tagstyle, $debug, $start, $end, $defaults, $grammar, $hash, $key, $udef);
@@ -84,7 +82,7 @@ sub init {
         unless ref $grammar;
     # load grammar rules, states and lex table
     @$self{ @TABLE_NAMES } = $grammar->tables;
- 
+
     use Data::Dumper;
 #    $self->debug( Dumper($self));
 #    $self->debug("setup {", join(",\n", map { "$_ => $self->{ $_ }" } keys %$self), "}\n");
