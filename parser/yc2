@@ -21,7 +21,7 @@
 : ${OUTPUT:="../lib/Template/TT2/Grammar2.pm"}
 : ${TEMPLATE:="Grammar2.pm.skel"}
 
-PERL5LIB="./lib:../lib:$PERL5LIB";
+export PERL5LIB="lib:../lib:$PERL5LIB";
 
 echo "Compiling parser grammar (${GRAMMAR} -> ${OUTPUT})"
 

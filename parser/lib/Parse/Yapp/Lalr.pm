@@ -10,6 +10,8 @@
 package Parse::Yapp::Lalr;
 @ISA=qw( Parse::Yapp::Grammar );
 
+print STDERR "Using modified Parse::Yapp::Lalr by abw\n";
+
 require 5.004;
 
 use Parse::Yapp::Grammar;

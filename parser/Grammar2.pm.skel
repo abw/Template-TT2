@@ -95,7 +95,7 @@ our ($factory, $rawstart);  # internal state vars used by parser rules
 
 sub init {
     my ($self, $config) = @_;
-    $self->init_defaults($config);
+    $self->configure($config);
     return $self;
 }
 
