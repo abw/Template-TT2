@@ -18,18 +18,25 @@ use Template::TT2::Class
     debug     => 0,
     base      => 'Template::TT2::Base',
     utils     => 'is_object',
-    import    => 'class',
-    constants => 'DELIMITER ARRAY HASH CODE DEBUG_SERVICE TT2_CONTEXT TT2_EXCEPTION FLOW_STOP',
-    constant  => {
-    };
-
-our $CONTEXT   = TT2_CONTEXT unless defined $CONTEXT;
+    mutators  => 'hub',
+    constants => 'DELIMITER ARRAY HASH CODE DEBUG_SERVICE TT2_EXCEPTION FLOW_STOP',
+    config    => [
+        'ERROR|ERRORS',
+        'AUTO_RESET=1',
+    ];
+ 
 our @LIST_ARGS = qw( PRE_PROCESS POST_PROCESS PROCESS WRAPPER );
+
 
 sub init {
     my ($self, $config) = @_;
     my ($key, $value, $context, $block, $blocks);
 
+    $self->debug("service config: ", $self->dump_data($config)) if DEBUG;
+
+    $self->configure($config);
+    $self->init_hub($config);
+    
     # coerce PRE_PROCESS, PROCESS and POST_PROCESS to arrays if necessary, 
     # by splitting on non-word characters
     foreach $key (@LIST_ARGS) {
@@ -47,29 +54,17 @@ sub init {
     $self->{ PROCESS } = undef
         unless defined $config->{ PROCESS };
     
-    $self->{ ERROR      } =  $config->{ ERROR } || $config->{ ERRORS };
-    $self->{ DEBUG      } = ($config->{ DEBUG } || 0) & DEBUG_SERVICE;
-    $self->{ AUTO_RESET } = 
-        defined $config->{ AUTO_RESET }
-              ? $config->{ AUTO_RESET } 
-              : 1;
-    
-    $context = $config->{ CONTEXT } 
-        || $self->class->any_var('CONTEXT');
-
-    $self->{ CONTEXT } = 
-        ref $context
-          ? $context
-          : class($context)->load->instance($config);
+    $self->{ DEBUG } = ($config->{ DEBUG } || 0) & DEBUG_SERVICE;
         
     return $self;
 }
+
 
 sub process {
     my $self    = shift;
     my $name    = shift;
     my $vars    = @_ == 1 && ref $_[0] eq HASH ? shift : { @_ };
-    my $context = $self->{ CONTEXT };
+    my $context = $self->context;
     my ($template, $item, $output, $procout, $error);
     $output = $procout = '';
 
@@ -141,9 +136,10 @@ sub process {
         : $output;
 }
 
+
 sub recover {
     my ($self, $error) = @_;
-    my $context = $self->{ CONTEXT };
+    my $context = $self->context;
     my ($hkey, $handler);
 
     $self->debug("recover($error)\n") if DEBUG;
@@ -185,9 +181,9 @@ sub recover {
 
 
 sub context {
-    return $_[0]->{ CONTEXT };
+    return $_[0]->{ context }
+       ||= $_[0]->hub->context;
 }
-
 
 
 sub _dump {
