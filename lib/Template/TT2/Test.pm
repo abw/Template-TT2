@@ -162,65 +162,6 @@ sub callsign {
     return \%callsign;
 }
 
-
 1;
-
-
-#------------------------------------------------------------------------
-# data_text()
-#
-# Returns the text from the DATA section and caches it locally so that
-# we can fetch it again and again.  It also looks for an extra __END__ tag
-# in the text (yes, an extra one coming after the first one), and removes
-# anything after it.
-#------------------------------------------------------------------------
-
-#------------------------------------------------------------------------
-# data_tests()
-#
-# Calls data_text() to read the text in the DATA section and splits it
-# into a number of tests.  Each test starts with "-- test something --"
-# where "something" (which can be anything) denotes the test name.
-# It can be followed by any number of "-- any_flag --" lines denoting
-# input flags.  Then the input text follows up to an "-- expect --"
-# line, which can also be followed by a number of flag lines, then 
-# the expected output from the test.  e.g.
-#
-#    -- test example --               # test name: "example"
-#    -- parse_foo --                  # input flag: "parse_foo"
-#    The [% a %] sat on the [% b %]   # test input
-#    -- expect --                     # start of expected text
-#    The cat sat on the mat           # expected test output
-#
-# Returns a list of tests, each of which is a hash array containing 
-# 'name', 'input', and 'expect' items, 'inflags' and 'exflags' which
-# are lists containing the input and output flags, and also 'inflag'
-# and 'outflag' which are hashes containing the input and output flags 
-# as keys so that you can C<if $test->{ inflag }->{ parse_foo }>, for 
-# example.
-#------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------
-# test_expect($config)
-#
-# Run each test in the data section and checks the output matches what
-# was expected.  List or hash of named parameters is passed, including
-# 'handler' as a reference to a subroutine which handles each test.
-#------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------
-# diff_result($expect, $result)
-#
-# Generate list of differences between expected and resultant output.
-#------------------------------------------------------------------------
-
-#------------------------------------------------------------------------
-# callsign()
-#
-# Returns a hash array mapping lower a..z to their phonetic alphabet 
-# equivalents.
-#------------------------------------------------------------------------
 
 
