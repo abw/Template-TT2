@@ -21,7 +21,8 @@ use Template::TT2::Test
     debug => 'Template::TT2::Templates',
     args  => \@ARGV;
 
-use Template::TT2 'TT2_MODULES';
+use Template::TT2::Modules;
+use constant TT2_MODULES => 'Template::TT2::Modules';
 use Badger::Filesystem '$Bin Dir';
 my $tdir = Dir($Bin, 'templates')->must_exist;
 

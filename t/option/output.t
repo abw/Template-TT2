@@ -17,8 +17,8 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 27,
-    debug => 'Template::TT2',
+    tests => 29,
+    debug => 'Template::TT2 Template::TT2::Hub',
     args  => \@ARGV;
 
 use Badger::Filesystem '$Bin Dir';
@@ -52,7 +52,7 @@ $file1->delete;
 #------------------------------------------------------------------------
 
 $tt = ENGINE->new({
-    INCLUDE_PATH => $src,,
+    INCLUDE_PATH => $src,
     OUTPUT_PATH  => $out,
 });
 
@@ -99,13 +99,14 @@ $file2->delete;
 
 # hack for testing
 our $MESSAGE = 'FAIL';
-$Template::TT2::DEBUG_BINMODE = sub { $MESSAGE = join('', @_) };
 
 my $tt3 = ENGINE->new({
     INCLUDE_PATH => $src,
     OUTPUT_PATH  => $out,
     OUTPUT       => $name2,
 });
+
+$tt3->hub->install_binmode_debugger(sub { $MESSAGE = join('', @_) });
 
 ok( $tt3->process('foo', &callsign, undef, { binmode => 1 }), 'processed in subclass' );
 ok( $file2->exists, 'output file exists' );
@@ -114,13 +115,23 @@ $file2->delete;
 
 $MESSAGE = 'reset';
 
-ok( $tt->process('foo', &callsign, $name2, binmode => ':utf8'), 'processed again' );
+ok( $tt3->process('foo', &callsign, $name2, binmode => ':utf8'), 'processed again' );
 ok( $file2->exists, 'output file exists' );
 is( $MESSAGE, ":utf8", 'set binmode via arglist' );
 $file2->delete;
 
 
+#-----------------------------------------------------------------------
+# try setting OUTPUT_PATH to 0 - this should prevent any file based 
+# output
+#-----------------------------------------------------------------------
 
+my $tt4 = ENGINE->new({
+    INCLUDE_PATH => $src,
+    OUTPUT_PATH  => 0,
+});
 
+ok( ! $tt4->try( process => 'foo', &callsign, $name2 ), 'process failed with OUTPUT_PATH disabled' );
+is( $tt4->reason->info, 'Cannot create filesystem output - OUTPUT_PATH is disabled', 'got filesystem error' );
 
 
