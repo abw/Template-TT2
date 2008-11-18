@@ -16,6 +16,7 @@
 use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
+
 use Template::TT2::Test
     tests  => 24,
     debug  => 'Template::TT2::Base Template::TT2::Parser',
