@@ -1,74 +1,84 @@
 package Template::TT2::VMethods;
 
 use Template::TT2::Class
-    version => 0.01,
-    constants => ':stash';
+    version   => 0.01,
+    constants => ':stash',
+    exports   => {
+        any   => '$ROOT_VMETHODS $TEXT_VMETHODS $HASH_VMETHODS $LIST_VMETHODS',
+    };
     
 our $PRIVATE = STASH_PRIVATE;
 
 our $ROOT_VMETHODS = {
-    inc     => \&root_inc,
-    dec     => \&root_dec,
+    inc         => \&root_inc,
+    dec         => \&root_dec,
 };
 
 our $TEXT_VMETHODS = {
-    item    => \&text_item,
-    list    => \&text_list,
-    hash    => \&text_hash,
-    length  => \&text_length,
-    size    => \&text_size,
-    defined => \&text_defined,
-    match   => \&text_match,
-    search  => \&text_search,
-    repeat  => \&text_repeat,
-    replace => \&text_replace,
-    remove  => \&text_remove,
-    split   => \&text_split,
-    chunk   => \&text_chunk,
-    substr  => \&text_substr,
+    item        => \&text_item,
+    list        => \&text_list,
+    hash        => \&text_hash,
+    length      => \&text_length,
+    size        => \&text_size,
+    defined     => \&text_defined,
+    match       => \&text_match,
+    search      => \&text_search,
+    repeat      => \&text_repeat,
+    replace     => \&text_replace,
+    remove      => \&text_remove,
+    split       => \&text_split,
+    chunk       => \&text_chunk,
+    substr      => \&text_substr,
+    # new vmethods: DOCS TODO
+    upper       => \&text_upper,
+    lower       => \&text_lower,
+    ucfirst     => \&text_ucfirst,
+    lcfirst     => \&text_lcfirst,
+    trim        => \&text_trim,
+    collapse    => \&text_collapse,
 };
 
 our $HASH_VMETHODS = {
-    item    => \&hash_item,
-    hash    => \&hash_hash,
-    size    => \&hash_size,
-    each    => \&hash_each,
-    keys    => \&hash_keys,
-    values  => \&hash_values,
-    items   => \&hash_items,
-    pairs   => \&hash_pairs,
-    list    => \&hash_list,
-    exists  => \&hash_exists,
-    defined => \&hash_defined,
-    delete  => \&hash_delete,
-    import  => \&hash_import,
-    sort    => \&hash_sort,
-    nsort   => \&hash_nsort,
+    item        => \&hash_item,
+    hash        => \&hash_hash,
+    size        => \&hash_size,
+    each        => \&hash_each,
+    keys        => \&hash_keys,
+    values      => \&hash_values,
+    items       => \&hash_items,
+    pairs       => \&hash_pairs,
+    list        => \&hash_list,
+    exists      => \&hash_exists,
+    defined     => \&hash_defined,
+    delete      => \&hash_delete,
+    import      => \&hash_import,
+    sort        => \&hash_sort,
+    nsort       => \&hash_nsort,
 };
 
 our $LIST_VMETHODS = {
-    item    => \&list_item,
-    list    => \&list_list,
-    hash    => \&list_hash,
-    push    => \&list_push,
-    pop     => \&list_pop,
-    unshift => \&list_unshift,
-    shift   => \&list_shift,
-    max     => \&list_max,
-    size    => \&list_size,
-    defined => \&list_defined,
-    first   => \&list_first,
-    last    => \&list_last,
-    reverse => \&list_reverse,
-    grep    => \&list_grep,
-    join    => \&list_join,
-    sort    => \&list_sort,
-    nsort   => \&list_nsort,
-    unique  => \&list_unique,
-    import  => \&list_import,
-    merge   => \&list_merge,
-    slice   => \&list_slice,
-    splice  => \&list_splice,
+    item        => \&list_item,
+    list        => \&list_list,
+    hash        => \&list_hash,
+    push        => \&list_push,
+    pop         => \&list_pop,
+    unshift     => \&list_unshift,
+    shift       => \&list_shift,
+    max         => \&list_max,
+    size        => \&list_size,
+    defined     => \&list_defined,
+    first       => \&list_first,
+    last        => \&list_last,
+    reverse     => \&list_reverse,
+    grep        => \&list_grep,
+    join        => \&list_join,
+    sort        => \&list_sort,
+    nsort       => \&list_nsort,
+    unique      => \&list_unique,
+    import      => \&list_import,
+    merge       => \&list_merge,
+    slice       => \&list_slice,
+    splice      => \&list_splice,
 };
 
 
@@ -238,6 +248,44 @@ sub text_substr {
     else {
         return substr( $text, $offset );
     }
+}
+
+
+#-----------------------------------------------------------------------
+# new text virtual methods (DOCS TODO)
+#-----------------------------------------------------------------------
+
+sub text_upper { 
+    uc $_[0] 
+}
+
+sub text_lower { 
+    lc $_[0] 
+}
+
+sub text_ucfirst { 
+    ucfirst $_[0];
+}
+
+sub text_lcfirst { 
+    lcfirst $_[0];
+}
+
+sub text_trim { 
+    for ($_[0]) { 
+        s/^\s+//; 
+        s/\s+$//;
+    }
+    return $_[0];
+}
+
+sub text_collapse { 
+    for ($_[0]) { 
+        s/^\s+//; 
+        s/\s+$//; 
+        s/\s+/ /g 
+    }
+    return $_[0];
 }
 
 
