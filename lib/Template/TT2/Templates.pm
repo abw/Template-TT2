@@ -3,22 +3,20 @@
 
 package Template::TT2::Templates;
 
-use Badger::Filesystem 
-    'FS VFS Cwd Dir File';
-use Badger::Debug 
-    ':debug';
-use Template::TT2::Constants  
-    'SCALAR ARRAY GLOB BLANK UNICODE DEBUG_TEMPLATES DEBUG_FLAGS 
-     TT2_DOCUMENT MSWIN32';
+use Badger::Debug ':debug';
 use Template::TT2::Class
-    version   => 0.01,
-    debug     => 0,
-    base      => 'Template::TT2::Base',
-    import    => 'class',
-    utils     => 'blessed md5_hex textlike',
-    codec     => 'unicode',
-    constants => 'SCALAR HASH GLOB',
-    constant  => {
+    version     => 0.01,
+    debug       => 0,
+    base        => 'Template::TT2::Base',
+    import      => 'class',
+    utils       => 'blessed md5_hex textlike',
+    codec       => 'unicode',
+    accessors   => 'hub',
+    filesystem  => 'FS VFS Cwd Dir File',
+    constants   => 
+       'SCALAR ARRAY HASH GLOB BLANK UNICODE DEBUG_TEMPLATES DEBUG_FLAGS 
+        TT2_DOCUMENT TT2_CACHE TT2_STORE MSWIN32',
+    constant    => {
         INPUT_TEXT    => 'input text',
         INPUT_FH      => 'input file handle',
         LOOKUP_PATH   => 0,     # slots in cached lookup results
@@ -27,20 +25,20 @@ use Template::TT2::Class
         URI_ROOT      => '/',
         IS_ABS_URI    => qr[^/],
     },
-    defaults  => {
-        DOCUMENT      => TT2_DOCUMENT,      # TODO: use Template::Modules
-        PARSER        => 'Template::TT2::Parser',
-        CACHE         => 'Template::TT2::Cache',
-        STORE         => 'Template::TT2::Store',
-        INCLUDE_PATH  => Cwd,
-        DYNAMIC_PATH  => 0,
-        MAX_DIRS      => 32,
-        STAT_TTL      => 1,
-        TOLERANT      => 0,
-        COMPILE_EXT   => BLANK,
-        DEFAULT       => undef,
-        UNICODE       => UNICODE,
-    },
+    config      => [
+        'DOCUMENT|class:DOCUMENT|method:TT2_DOCUMENT',
+#        'PARSER|class:PARSER|method:TT2_PARSER',
+        'CACHE|class:CACHE|method:TT2_CACHE',
+        'STORE|class:STORE|method:TT2_STORE',
+        'INCLUDE_PATH|class:INCLUDE_PATH|method:Cwd',
+        'DYNAMIC_PATH|class:DYNAMIC_PATH=0',
+        'MAX_DIRS|class:MAX_DIRS=32',
+        'STAT_TTL|class:STAT_TTL=1',
+        'TOLERANT|class:TOLERANT=0',            # NOT USED
+        'COMPILE_EXT|class:COMPILE_EXT|method:BLANK',
+        'DEFAULT|class:DEFAULT',
+        'UNICODE|method:UNICODE',
+    ],
     messages => {
         deprecated    => "The %s option is deprecated.  The '%s' directory has been added to your INCLUDE_PATH instead.",
         no_absolute   => "The ABSOLUTE option has been deprecated.  Please add '/' to your INCLUDE_PATH",
@@ -66,7 +64,8 @@ sub init {
     my ($self, $config) = @_;
     my $class = $self->class;
 
-    $self->init_defaults($config);          # from Template::TT2::Base
+    $self->configure($config);
+    $self->init_hub($config);
     $self->init_path($config);
     $self->init_cache($config);
     $self->init_store($config);
@@ -77,6 +76,7 @@ sub init {
     
     return $self;
 }
+
 
 sub init_path {
     my ($self, $config) = @_;
@@ -159,6 +159,7 @@ sub init_cache {
     }
 }
 
+
 sub init_store {
     my ($self, $config) = @_;
     my $store = $self->{ STORE };
@@ -185,6 +186,7 @@ sub init_store {
     }
 }
 
+
 sub fetch {
     my ($self, $name) = @_;
 
@@ -197,6 +199,7 @@ sub fetch {
         || defined($self->{ DEFAULT })
         && $self->fetch_name($self->{ DEFAULT });
 }
+
 
 sub fetch_ref {
     my ($self, $ref, $alias) = @_;
@@ -234,11 +237,12 @@ sub fetch_ref {
                 uri      => $uri,
                 name     => $alias,
                 text     => $text,
-                hello    => 'world',
+#                hello    => 'world',
                 loaded   => 0,      # not loaded from a file
                 modified => 0,      # modification time
             });
 }
+
 
 sub fetch_name {
     my ($self, $name) = @_;
@@ -304,6 +308,7 @@ sub fetch_name {
         || $self->prepare($data);                           # PREPARED AFRESH
 }
 
+
 sub load {
     my ($self, $path) = @_;
     my $file = $self->{ VFS }->file($path);
@@ -324,6 +329,7 @@ sub load {
         modified => $file->modified,
    };
 }
+
 
 sub missing {
     my ($self, $path) = @_;
@@ -348,6 +354,7 @@ sub text_id {
     my ($self, $textref) = @_;
     return $self->TEXT_PREFIX . md5_hex($$textref);
 }
+
 
 sub cache_fetch {
     my ($self, $id, $modified) = @_;
@@ -407,6 +414,7 @@ sub cache_store {
     }
 }
 
+
 sub prepare {
     my $self = shift;
     my $args = @_ && ref $_[0] eq HASH ? shift : { @_ };
@@ -417,11 +425,7 @@ sub prepare {
 #    $self->debug("prepare(", $self->dump_data_inline($args), ")\n")
 #        if DEBUG;          # NOTE: text has been deleted aready
 
-    # load and instantiate parser class if not already an object
-    $parser = $self->{ PARSER };
-    $parser = $self->{ PARSER }
-            = class($parser)->load->instance($self->{ config })
-              unless blessed $self->{ PARSER };
+    $parser = $self->parser;
 
     # have the parser parse the template
     $parsed = $parser->parse($text, $args)
@@ -452,6 +456,7 @@ sub prepare {
         
     return $document;
 }
+
 
 sub add_lookup_path {
     my ($self, $args) = @_;
@@ -527,6 +532,12 @@ sub OLD_fetch_path {
     $self->{ NOT_FOUND }->{ $path } = time;
 
     return $self->decline( not_found => template => $path );
+}
+
+
+sub parser {
+    return $_[0]->{ parser } 
+       ||= $_[0]->hub->module('parser');
 }
 
 1;
