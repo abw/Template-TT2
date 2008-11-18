@@ -1,5 +1,6 @@
 package Template::TT2::Context;
 
+use Badger::Debug ':debug';
 use Template::TT2::Modules;
 use Template::TT2::Class
     version   => 0.01,
@@ -8,6 +9,7 @@ use Template::TT2::Class
     import    => 'class',
     words     => 'LOAD_',
     utils     => 'blessed',
+    accessors => 'hub',
     constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS 
                   ARRAY SCALAR DELIMITER MSWIN32 :modules :status :error';
 
@@ -19,12 +21,14 @@ sub init {
     my $debug = $config->{ DEBUG } || $DEBUG;
     my ($key, $load_key, $value, $block, $blocks);
 
+    $self->init_hub($config);
+
     # LOAD_TEMPLATES, LOAD_PLUGINS, LOAD_FILTERS - lists of providers
     foreach $key (@LOADERS) {
         $load_key = LOAD_ . uc $key;
         $value = $config->{ $key }
               || $config->{ $load_key }
-              || TT2_MODULES->module( $key => $config );
+              || $self->{ hub }->module($key);
         $value = [ $value ] 
             unless ref $value eq ARRAY;
         $self->{ $load_key } = $value;
@@ -83,13 +87,13 @@ sub init {
     $self->{ DEBUG_FORMAT  } = $config->{ DEBUG_FORMAT };
     $self->{ DEBUG_DIRS    } = $debug & DEBUG_DIRS;
     $self->{ DEBUG         } = $debug & (DEBUG_CONTEXT | DEBUG_FLAGS);
+    $self->{ OUTPUT_FS     } = $config->{ OUTPUT_FS };
     $self->{ EXPOSE_BLOCKS } = defined $config->{ EXPOSE_BLOCKS }
                                      ? $config->{ EXPOSE_BLOCKS } : 0;
 
     return $self;
 }
 
-use Badger::Debug ':debug';
 sub localise {
     my $self = shift;
     $self->{ STASH } = $self->{ STASH }->clone(@_);
@@ -224,6 +228,7 @@ sub plugin {
     $self->throw( plugin => "$name: plugin not found" );
 }
 
+
 sub filter {
     my ($self, $name, $args, $alias) = @_;
     my ($provider, $filter, $error);
@@ -242,7 +247,7 @@ sub filter {
     
     # request the named filter from each of the FILTERS providers in turn
     foreach $provider (@{ $self->{ LOAD_FILTERS } }) {
-        last if $filter = $provider->fetch($name, $args, $self);
+        last if $filter = $provider->filter($name, $self, $args ? @$args : ());
     }
     
     return $self->throw( filter => "$name: filter not found" )
@@ -254,6 +259,17 @@ sub filter {
 
     return $filter;
 }
+
+
+sub define_filter {
+    my ($self, $name, $filter, $is_dynamic) = @_;
+    $filter = [ $filter, 1 ] if $is_dynamic;
+
+    return @{ $self->{ LOAD_FILTERS } }
+            ? $self->{ LOAD_FILTERS }->[0]->filters( $name => $filter )
+            : $self->throw( filter => "No FILTER providers defined to store filter: $name" );
+}
+
 
 sub insert {
     my ($self, $file) = @_;
@@ -476,27 +492,23 @@ sub eval_perl {
     $self->{ EVAL_PERL };
 }
 
+
+sub output_filesystem {
+    shift->hub->output_filesystem;
+}
+
+sub output_file {
+    shift->hub->output_file(@_);
+}
+
+sub output {
+    shift->hub->output(@_);
+}
+
+    
 1;
+
 __END__
-
-#------------------------------------------------------------------------
-# plugin($name, \@args)
-#
-# Calls on each of the LOAD_PLUGINS providers in turn to fetch() (i.e. load
-# and instantiate) a plugin of the specified name.  Additional parameters 
-# passed are propagated to the new() constructor for the plugin.  
-# Returns a reference to a new plugin object or other reference.  On 
-# error, undef is returned and the appropriate error message is set for
-# subsequent retrieval via error().
-#------------------------------------------------------------------------
-
-#------------------------------------------------------------------------
-# filter($name, \@args, $alias)
-#
-# Similar to plugin() above, but querying the LOAD_FILTERS providers to 
-# return filter instances.  An alias may be provided which is used to
-# save the returned filter in a local cache.
-#------------------------------------------------------------------------
 
 #------------------------------------------------------------------------
 # view(\%config)
@@ -512,90 +524,6 @@ sub view {
                         $Template::View::ERROR);
 }
 
-#------------------------------------------------------------------------
-# insert($file)
-#
-# Insert the contents of a file without parsing.
-#------------------------------------------------------------------------
-
-
-#------------------------------------------------------------------------
-# throw($type, $info, \$output)          [% THROW errtype "Error info" %]
-#
-# Throws a Template::Exception object by calling die().  This method
-# may be passed a reference to an existing Template::Exception object;
-# a single value containing an error message which is used to
-# instantiate a Template::Exception of type 'undef'; or a pair of
-# values representing the exception type and info from which a
-# Template::Exception object is instantiated.  e.g.
-#
-#   $context->throw($exception);
-#   $context->throw("I'm sorry Dave, I can't do that");
-#   $context->throw('denied', "I'm sorry Dave, I can't do that");
-#
-# An optional third parameter can be supplied in the last case which 
-# is a reference to the current output buffer containing the results
-# of processing the template up to the point at which the exception 
-# was thrown.  The RETURN and STOP directives, for example, use this 
-# to propagate output back to the user, but it can safely be ignored
-# in most cases.
-# 
-# This method rides on a one-way ticket to die() oblivion.  It does not 
-# return in any real sense of the word, but should get caught by a 
-# surrounding eval { } block (e.g. a BLOCK or TRY) and handled 
-# accordingly, or returned to the caller as an uncaught exception.
-#------------------------------------------------------------------------
-
-sub throw {
-    my ($self, $error, $info, $output) = @_;
-    local $" = ', ';
-
-    # die! die! die!
-    if (UNIVERSAL::isa($error, 'Template::Exception')) {
-        die $error;
-    }
-    elsif (defined $info) {
-        die (Template::Exception->new($error, $info, $output));
-    }
-    else {
-        $error ||= '';
-        die (Template::Exception->new('undef', $error, $output));
-    }
-
-    # not reached
-}
-
-
-#------------------------------------------------------------------------
-# catch($error, \$output)
-#
-# Called by various directives after catching an error thrown via die()
-# from within an eval { } block.  The first parameter contains the errror
-# which may be a sanitized reference to a Template::Exception object
-# (such as that raised by the throw() method above, a plugin object, 
-# and so on) or an error message thrown via die from somewhere in user
-# code.  The latter are coerced into 'undef' Template::Exception objects.
-# Like throw() above, a reference to a scalar may be passed as an
-# additional parameter to represent the current output buffer
-# localised within the eval block.  As exceptions are thrown upwards
-# and outwards from nested blocks, the catch() method reconstructs the
-# correct output buffer from these fragments, storing it in the
-# exception object for passing further onwards and upwards.
-#
-# Returns a reference to a Template::Exception object..
-#------------------------------------------------------------------------
-
-sub catch {
-    my ($self, $error, $output) = @_;
-
-    if (UNIVERSAL::isa($error, 'Template::Exception')) {
-    $error->text($output) if $output;
-    return $error;
-    }
-    else {
-    return Template::Exception->new('undef', $error, $output);
-    }
-}
 
 
 #------------------------------------------------------------------------
