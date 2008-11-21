@@ -24,8 +24,9 @@ use Badger::Class
     utils    => 'looks_like_number',
     exports  => {
         tags => {
-            modules => 'TT2_HUB TT2_MODULES TT2_CONTEXT TT2_DOCUMENT TT2_EXCEPTION
-                        TT2_PARSER TT2_CACHE TT2_STORE TT2_FILTER TT2_PLUGIN',
+            modules => 'TT2_HUB TT2_MODULES TT2_CONTEXT TT2_DOCUMENT 
+                        TT2_EXCEPTION TT2_ITERATOR TT2_PARSER TT2_CACHE 
+                        TT2_STORE TT2_FILTER TT2_PLUGIN',
             status  => 'STATUS_OK STATUS_RETURN STATUS_STOP STATUS_DONE
                         STATUS_DECLINED STATUS_ERROR',
             error   => 'ERROR_FILE ERROR_VIEW ERROR_UNDEF ERROR_PERL 
@@ -51,6 +52,7 @@ use Badger::Class
         TT2_CONTEXT     => 'Template::TT2::Context',
         TT2_DOCUMENT    => 'Template::TT2::Document',
         TT2_EXCEPTION   => 'Template::TT2::Exception',
+        TT2_ITERATOR    => 'Template::TT2::Iterator',
         TT2_PARSER      => 'Template::TT2::Parser',
         TT2_CACHE       => 'Template::TT2::Cache',
         TT2_STORE       => 'Template::TT2::Store',
