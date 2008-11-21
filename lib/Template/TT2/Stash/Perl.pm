@@ -18,6 +18,7 @@ our ($PRIVATE, $IMPORT, $ROOT_OPS, $SCALAR_OPS, $HASH_OPS, $LIST_OPS);
 *HASH_OPS   = \$Template::TT2::Stash::HASH_OPS;
 *LIST_OPS   = \$Template::TT2::Stash::LIST_OPS;
 
+
 sub get {
     my ($self, $ident, $opts) = @_;
     my $dot = $self->can(DOT);  # lookup method once and call direct
@@ -164,7 +165,7 @@ sub dot {
             # real throwing
 
             my $class = ref($root) || $root;
-            $self->throw("$@")
+            $self->throw($@)
                 if ref($@) 
                    || ($@ !~ /^Can't locate object method/);
 
