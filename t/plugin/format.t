@@ -19,7 +19,7 @@ use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
     tests => 4,
-    debug => 'Template::TT2::Plugin::Format Template::TT2::Parser',
+    debug => 'Template::TT2::Plugin::Format',
     args  => \@ARGV;
 
 my ($a, $b, $c, $d) = qw( alpha bravo charlie delta );
