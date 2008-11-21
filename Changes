@@ -27,6 +27,10 @@
 
 * V1DOLLAR is no more
 
+* Changed Math plugin to also define virtual methods.  Also removed 
+  Math::TrulyRandom.  I have no idea what it was doing there, but I can't 
+  imagine it has any practical value for the average TT user.  
+  
 TODO:
  * remove magical 'import' from Stash, implement in context if necessary
  * change stash getref() to get_ref(), get_later() or something like that
