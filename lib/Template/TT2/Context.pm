@@ -11,7 +11,10 @@ use Template::TT2::Class
     utils     => 'blessed',
     accessors => 'hub',
     constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS 
-                  ARRAY SCALAR DELIMITER MSWIN32 :modules :status :error';
+                  ARRAY SCALAR DELIMITER MSWIN32 :modules :status :error',
+    constant  => {
+        EXCEPTION => 'Badger::Exception',
+    };
 
 our @LOADERS   = qw( templates plugins filters );
 
@@ -118,6 +121,14 @@ sub stash {
     return $_[0]->{ STASH };
 }
 
+sub define_vmethod {
+    shift->stash->define_vmethod(@_);
+}
+
+sub define_vmethods {
+    shift->stash->define_vmethods(@_);
+}
+
 sub reset {
     my $self = shift;
     $self->{ BLKSTACK } = [ ];
@@ -221,8 +232,9 @@ sub plugin {
     
     # request the named plugin from each of the LOAD_PLUGINS providers in turn
     foreach my $provider (@{ $self->{ LOAD_PLUGINS } }) {
+        $self->debug("Asking plugin provider for $name\n") if DEBUG;
         return $plugin
-            if $plugin = $provider->fetch($name, $args, $self);
+            if $plugin = $provider->plugin($name, $self, $args ? @$args : ());
     }
     
     $self->throw( plugin => "$name: plugin not found" );
