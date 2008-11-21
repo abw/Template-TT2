@@ -28,6 +28,7 @@ use Badger::Factory::Class
         url             => \&encode_url,
         stderr          => \&stderr,
         null            => \&null,
+        hush            => \&null,
 
         html_entity     => [ \&html_entity_filter_factory, 1 ],
         format          => [ \&format_filter_factory,      1 ],
@@ -38,7 +39,7 @@ use Badger::Factory::Class
         truncate        => [ \&truncate_filter_factory,    1 ],
         stdout          => [ \&stdout_filter_factory,      1 ],
         redirect        => [ \&redirect_filter_factory,    1 ],
-
+        file            => [ \&redirect_filter_factory,    1 ],  # alias
         eval            => [ \&eval_filter_factory,        1 ],
         evaltt          => [ \&eval_filter_factory,        1 ],  # alias
         perl            => [ \&perl_filter_factory,        1 ],
@@ -119,19 +120,6 @@ sub found_ref_object {
         : $self->error_msg( bad_filter => $name, $item );
 }
 
-
-
-
-sub construct {
-    my ($self, $filter, @args) = @_;
-    $self->debug("construct()");
-    if (ref $filter eq CODE) {
-        $self->debug("Found code: $filter");
-    }
-    else {
-        return $self->todo('non-code refs');
-    }
-}
 
 
 #-----------------------------------------------------------------------
@@ -255,7 +243,7 @@ sub truncate_filter_factory {
 
 
 #-----------------------------------------------------------------------
-# special handling for html_entity
+# special handling for html_entity (move into Badger::Codec::HTML?)
 #-----------------------------------------------------------------------
 
 sub use_html_entities {
@@ -263,11 +251,13 @@ sub use_html_entities {
     return ($DELEGATE->{ HTML_ENTITY } = \&HTML::Entities::encode_entities);
 }
 
+
 sub use_apache_util {
     require Apache::Util;
     Apache::Util::escape_html('');      # TODO: explain this
     return ($DELEGATE->{ HTML_ENTITY } = \&Apache::Util::escape_html);
 }
+
 
 sub html_entity_filter_factory {
     my $context = shift;
@@ -293,10 +283,12 @@ sub null {
     return '';
 }
 
+
 sub stderr {
     print STDERR @_; 
     return '';
 }
+
 
 sub stdout_filter_factory {
     my ($context, $options) = @_;
@@ -311,6 +303,7 @@ sub stdout_filter_factory {
     }
 }
 
+
 sub redirect_filter_factory {
     my ($context, $path, $options) = @_;
     
@@ -321,12 +314,10 @@ sub redirect_filter_factory {
     $context->throw( redirect => "Relative filenames are not supported for redirects: $path")
         if $path =~ m{(^|/)\.\./};
 
-    # TODO: handle options, merge code with that in Template::TT2
-    
-    # $options = { binmode => $options } unless ref $options;
+    $options = { binmode => $options } unless ref $options;
     
     sub {
-        $context->output_file($path, shift);
+        $context->output_file($path, shift, $options);
         return '';
     }
 }
@@ -344,6 +335,7 @@ sub eval_filter_factory {
         $context->process(\$text);
     }
 }
+
 
 sub perl_filter_factory {
     my $context = shift;
@@ -371,7 +363,7 @@ EOF
 
 
 1;
-__END__;
+__END__
 
 our $FILTERS = {
     'redirect'    => [ \&redirect_filter_factory,    1 ],
@@ -403,55 +395,4 @@ sub OLD_fetch {
     }
     ...etc...
 }
-
-
-
-sub _init {
-    my ($self, $params) = @_;
-
-    $self->{ FILTERS  } = $params->{ FILTERS } || { };
-    $self->{ TOLERANT } = $params->{ TOLERANT }  || 0;
-    $self->{ DEBUG    } = ( $params->{ DEBUG } || 0 )
-                          & Template::Constants::DEBUG_FILTERS;
-
-
-    return $self;
-}
-
-
-
-sub _dump {
-    my $self = shift;
-    my $output = "[Template::Filters] {\n";
-    my $format = "    %-16s => %s\n";
-    my $key;
-
-    foreach $key (qw( TOLERANT )) {
-        my $val = $self->{ $key };
-        $val = '<undef>' unless defined $val;
-        $output .= sprintf($format, $key, $val);
-    }
-
-    my $filters = $self->{ FILTERS };
-    $filters = join('', map { 
-        sprintf("    $format", $_, $filters->{ $_ });
-    } keys %$filters);
-    $filters = "{\n$filters    }";
-    
-    $output .= sprintf($format, 'FILTERS (local)' => $filters);
-
-    $filters = $FILTERS;
-    $filters = join('', map { 
-        my $f = $filters->{ $_ };
-        my ($ref, $dynamic) = ref $f eq 'ARRAY' ? @$f : ($f, 0);
-        sprintf("    $format", $_, $dynamic ? 'dynamic' : 'static');
-    } sort keys %$filters);
-    $filters = "{\n$filters    }";
-    
-    $output .= sprintf($format, 'FILTERS (global)' => $filters);
-
-    $output .= '}';
-    return $output;
-}
-
 
