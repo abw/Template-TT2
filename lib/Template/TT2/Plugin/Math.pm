@@ -1,21 +1,3 @@
-#============================================================= -*-Perl-*-
-#
-# Template::TT2::Plugin::Math
-#
-# DESCRIPTION
-#   Plugin implementing numerous mathematical functions.
-#
-# AUTHORS
-#   Andy Wardley   <abw@wardley.org>
-#
-# COPYRIGHT
-#   Copyright (C) 2002-2008 Andy Wardley.  All Rights Reserved.
-#
-#   This module is free software; you can redistribute it and/or
-#   modify it under the same terms as Perl itself.
-#
-#============================================================================
-
 package Template::TT2::Plugin::Math;
 
 use Template::TT2::Class
@@ -218,14 +200,14 @@ Andy Wardley E<lt>abw@wardley.orgE<gt> L<http://wardley.org/>
 
 =head1 COPYRIGHT
 
-Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Template::Plugin>
+L<Template::TT2::Plugin>
 
 =cut
 

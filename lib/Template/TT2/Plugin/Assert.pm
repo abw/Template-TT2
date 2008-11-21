@@ -1,6 +1,6 @@
 package Template::TT2::Plugin::Assert;
 
-use Badger::Class
+use Template::TT2::Class
     version  => 0.01,
     debug    => 0,
     base     => 'Template::TT2::Plugin',
@@ -8,6 +8,7 @@ use Badger::Class
     constant => {
         MONAD => 'Template::TT2::Monad::Assert',
     };
+    
     
 sub load {
     my $class   = shift;
@@ -29,6 +30,7 @@ sub load {
     return $class;
 }
 
+
 sub new {
     my ($class, $context, @args) = @_;
     # create an assert plugin object which will handle simple variable
@@ -36,6 +38,7 @@ sub new {
     # TODO: weaken
     return bless { _CONTEXT => $context }, $class;
 }
+
 
 sub AUTOLOAD {
     my ($self, @args) = @_;
@@ -62,10 +65,12 @@ use Badger::Class
     base    => 'Template::TT2::Base',
     vars    => 'AUTOLOAD';
 
+
 sub new {
     my ($class, $stash, $this) = @_;
     bless [$stash, $this], $class;
 }
+
 
 sub AUTOLOAD {
     my ($self, @args) = @_;
