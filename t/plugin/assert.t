@@ -16,10 +16,13 @@
 
 use strict;
 use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use lib '/home/abw/projects/badger/lib';
+use lib qw( ./lib ../lib ../../lib ../../blib/arch );
 use Template::TT2::Test
-    tests => 20,
+    debug => "Badger::Base Template::TT2::Parser",
+    tests => 7,
     args  => \@ARGV;
+
 
 #------------------------------------------------------------------------
 # definition of test object class
@@ -71,8 +74,8 @@ Hello World
 
 -- test object assert -- 
 [% USE assert;
-   TRY; object.assert.nil; CATCH; error; END; "\n";
-   TRY; object.assert.zip; CATCH; error; END;
+   TRY; object.assert.nil; 'NOT REACHED'; CATCH; error; END; "\n";
+   TRY; object.assert.zip; 'NOT REACHED'; CATCH; error; END;
 %]
 -- expect --
 assert error - undefined value for nil
@@ -87,7 +90,7 @@ assert error - undefined value for zip
 assert error - undefined value for bar
 assert error - undefined value for bam
 
--- test -- 
+-- test list assert -- 
 [% USE assert;
    TRY; list.assert.0;     CATCH; error; END; "\n";
    TRY; list.assert.first; CATCH; error; END;
@@ -96,23 +99,14 @@ assert error - undefined value for bam
 assert error - undefined value for 0
 assert error - undefined value for first
 
--- test -- 
-[% USE assert;
-   TRY; list.assert.0;     CATCH; error; END; "\n";
-   TRY; list.assert.first; CATCH; error; END;
-%]
--- expect --
-assert error - undefined value for 0
-assert error - undefined value for first
-
--- test -- 
+-- test assert.nothing -- 
 [% USE assert;
    TRY; assert.nothing; CATCH; error; END;
 %]
 -- expect --
 assert error - undefined value for nothing
 
--- test -- 
+-- test assert.subref -- 
 [% USE assert;
    TRY; assert.subref; CATCH; error; END;
 %]
