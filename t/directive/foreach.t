@@ -34,8 +34,6 @@ my @people   = ( { 'id' => 'abw', 'name' => 'Andy Wardley' },
                  { 'id' => 'sam', 'name' => 'Simon Matthews' } );
 my @seta     = ( $a, $b, $w );
 my @setb     = ( $c, $l, $o, $u, $d );
-
-
 my $params   = {
     'a'      => $a,
     'b'      => $b,
@@ -77,7 +75,7 @@ sub format {
     my $format = shift;
     $format = '%s' unless defined $format;
     return sub {
-	sprintf($format, shift);
+	    sprintf($format, shift);
     }
 }
 
@@ -307,14 +305,15 @@ tom
 
 -- test format --
 [% ulist = [ b c d a 'Andy' ] %]
-[% USE f = format("[- %-7s -]\n") %]
-[% f(item) FOREACH item = ulist.sort %]
+[% USE f=format("[- %-7s -]\n") %]
+[% f(item) FOREACH item IN ulist.sort %]
 -- expect --
 [- alpha   -]
 [- Andy    -]
 [- bravo   -]
 [- charlie -]
 [- delta   -]
+
 
 -- test loop.size --
 [% FOREACH item = [ a b c d ] %]
