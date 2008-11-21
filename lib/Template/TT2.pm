@@ -141,7 +141,7 @@ sub module {
 
 sub destroy {
     my $self = shift;
-    $self->{ hub }->destroy;
+    $self->{ hub }->destroy if $self->{ hub };
     delete $self->{ hub };
     return ();
 }
