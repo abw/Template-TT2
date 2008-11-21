@@ -1,7 +1,6 @@
 package Template::TT2::Plugin::Format;
 
-
-use Badger::Class
+use Template::TT2::Class
     version  => 0.01,
     debug    => 0,
     base     => 'Template::TT2::Plugin';

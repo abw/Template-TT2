@@ -1,9 +1,8 @@
 package Template::TT2::Hub;
 
-use Badger::Class
+use Template::TT2::Class
     version    => 0.01,
     debug      => 0,
-#    base       => 'Badger::Prototype',
     base       => 'Template::TT2::Modules',
     utils      => 'blessed',
     filesystem => 'VFS FS',
