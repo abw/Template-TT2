@@ -260,7 +260,7 @@ static SV *dotop(pTHX_ SV *root, SV *key_sv, AV *args, int flags) {
             
             if ((gv = gv_fetchmethod_autoload(stash, item, 1))) {
                 /* eval { @result = $root->$item(@$args); }; */
-                
+
                 PUSHMARK(SP);
                 XPUSHs(root);
                 n = (args && args != Nullav) ? av_len(args) : -1;
@@ -275,7 +275,7 @@ static SV *dotop(pTHX_ SV *root, SV *key_sv, AV *args, int flags) {
                     (void) POPs;                /* remove undef from stack */
                     PUTBACK;
                     result = NULL;
-                    
+
                     /* if we get an exception object throw ($@ is a
                      * ref) or a error other than "Can't locate object
                      * method "blah"" then it's a real error that need
@@ -1268,7 +1268,7 @@ dot(self, root, item, ...)
     RETVAL = dotop(aTHX_ root, item, args, lvalue);
 
     if (!SvOK(RETVAL))
-        RETVAL = newSVpvn("", 0);       /* new empty string */
+        RETVAL = &PL_sv_undef;
     else
         RETVAL = SvREFCNT_inc(RETVAL);
 
