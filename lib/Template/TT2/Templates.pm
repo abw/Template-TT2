@@ -83,7 +83,7 @@ sub init_path {
     my ($path, $dir);
     
     # create a virtual filesystem across the INCLUDE_PATH
-    $path = $config->{ INCLUDE_PATH } || $self->class->list_vars('INCLUDE_PATH');
+    $path = $self->{ INCLUDE_PATH } || $self->class->list_vars('INCLUDE_PATH');
     $path = [ $path ] unless ref $path eq ARRAY;
 
     # ABSOLUTE option is officially deprecated, but we can emulate it by 
