@@ -76,7 +76,7 @@ sub new {
         : $class;
     $class->debug("creating $backend stash") if DEBUG;
     bless {
-        global    => { },
+        global  => { },
         %$params,
         %$ROOT_OPS,
         _PARENT => undef,
@@ -191,7 +191,7 @@ sub define_vmethod {
         $op = $LIST_OPS;
     }
     else {
-        die "invalid vmethod type: $type\n";
+        $class->error("Invalid vmethod type: $type");
     }
 
     $op->{ $name } = $sub;
@@ -199,6 +199,12 @@ sub define_vmethod {
     return 1;
 }
 
+sub define_vmethods {
+    my ($class, $type, $vmethods) = @_;
+    while (my ($name, $code) = each %$vmethods) {
+        $class->define_vmethod($type, $name, $code);
+    }
+}
 
 1;
 
