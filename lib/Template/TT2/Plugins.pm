@@ -14,7 +14,9 @@ use Template::TT2::Class
 use Badger::Factory::Class
     item      => 'plugin',
     path      => 'Template::TT2::Plugin Template::Plugin',
-    plugins   => { e => '10' };
+    plugins   => { 
+        cgi   => 'Template::TT2::Plugin::CGI',
+    };
 
 
 sub type_args {
@@ -33,6 +35,5 @@ sub init {
     $config->{ plugins } ||= $config->{ PLUGINS };
     return $self->init_factory($config);
 }
-
 
 1;
