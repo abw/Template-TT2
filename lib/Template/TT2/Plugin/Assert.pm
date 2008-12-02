@@ -95,7 +95,7 @@ __END__
 
 =head1 NAME
 
-Template::Plugin::TT2::Assert - trap undefined values
+Template::TT2::Plugin::Assert - trap undefined values
 
 =head1 SYNOPSIS
 

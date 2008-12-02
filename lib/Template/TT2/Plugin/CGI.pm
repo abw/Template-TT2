@@ -39,7 +39,7 @@ __END__
 
 =head1 NAME
 
-Template::Plugin::TT2::CGI - Interface to the CGI module
+Template::TT2::Plugin::CGI - Interface to the CGI module
 
 =head1 SYNOPSIS
 
