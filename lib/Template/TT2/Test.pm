@@ -97,12 +97,21 @@ sub test_expect {
     my $config  = @_ && ref $_[0] eq HASH ? shift : { @_ };
     my $tests   = $config->{ tests   } || data_tests();
     my $handler = $config->{ handler } || $HANDLER;
+    my $guard;
 
     foreach my $test (@$tests) {
+        # handle -- skip -- flag
         if (grep(/skip/, @{ $test->{ inflags } })) {
             my $msg = $test->{ inflag }->{ skip };
             $msg = $msg eq '1' ? '' : " ($msg)";
-            skip("$test->{ name }$msg");
+            skip_some(1, "$test->{ name }$msg");
+            next;
+        }
+        
+        # handle -- only something -- flag
+        if ( ($guard = $test->{ inflag }->{ only })  
+        && ! $config->{ vars }->{ $guard } ) {
+            skip_some(1, "$test->{ name } (only for $guard)");
             next;
         }
 
