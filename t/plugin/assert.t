@@ -16,7 +16,6 @@
 
 use strict;
 use warnings;
-use lib '/home/abw/projects/badger/lib';
 use lib qw( ./lib ../lib ../../lib ../../blib/arch );
 use Template::TT2::Test
     debug => "Badger::Base Template::TT2::Parser",
