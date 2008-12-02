@@ -28,7 +28,7 @@ sub load {
         # the new() method is used by TT to create a plugin object instance
         new => sub {
             my $this;
-            $class->debug("Creating new $class instance '$AUTOLOAD' in '$class'") if DEBUG;
+            $class->debug("Creating new $class instance") if DEBUG;
             bless \$this, $_[0];
         },
 
@@ -39,7 +39,7 @@ sub load {
                
             return if $name eq 'DESTROY';
 
-            $class->debug("Calling '$name' in '$class'") if DEBUG;
+            $class->debug("Constructing method for '$name' in '$class'") if DEBUG;
 
             # fetch the code reference for the function
             my $function = $class->can($name)
@@ -49,6 +49,7 @@ sub load {
             # the object reference but forwards all other arguments
             my $method = sub {
                 shift @_;
+                $class->debug("Called $name()") if DEBUG;
                 return $function->(@_);
             };
             
