@@ -102,6 +102,7 @@ Directory error on /no/such/place
 -- expect --
    - udata1
    - udata2
+   * images
    * subdir1
    * subdir2
 
@@ -123,6 +124,9 @@ Directory error on /no/such/place
 * data
     - udata1
     - udata2
+    * images
+        - tt2_powered_grey.png
+        - tt2_powered_orange.png
     * subdir1
         - bar
         - foo
@@ -148,6 +152,9 @@ Directory error on /no/such/place
 -- expect --
 -- process --
 * [% dir %]
+    * images
+        - tt2_powered_grey.png
+        - tt2_powered_orange.png
     * subdir1
         - bar
         - foo
@@ -168,6 +175,7 @@ Directory error on /no/such/place
 -- expect --
    - udata1
    - udata2
+   * images
    * subdir1
    * subdir2
 
@@ -189,6 +197,9 @@ Directory error on /no/such/place
 -- expect --
 -- process --
 * [% dir %]
+    * images => [% dir %]/images => [% dir %]/images
+        - tt2_powered_grey.png => [% dir %]/images/tt2_powered_grey.png => [% dir %]/images/tt2_powered_grey.png
+        - tt2_powered_orange.png => [% dir %]/images/tt2_powered_orange.png => [% dir %]/images/tt2_powered_orange.png
     * subdir1 => [% dir %]/subdir1 => [% dir %]/subdir1
         - bar => [% dir %]/subdir1/bar => [% dir %]/subdir1/bar
         - foo => [% dir %]/subdir1/foo => [% dir %]/subdir1/foo
@@ -217,6 +228,9 @@ cwd: [% cwd %]
 -- process --
 cwd: [% cwd %]
 * [% dir %]
+    * images => [% dot %]
+        - tt2_powered_grey.png => [% dot %]/..
+        - tt2_powered_orange.png => [% dot %]/..
     * subdir1 => [% dot %]
         - bar => [% dot %]/..
         - foo => [% dot %]/..
@@ -245,6 +259,13 @@ udata1
 - udata2
 
 
+-- test TODO: get VIEW working --
+TODO: get VIEW working
+-- expect --
+This test will fail
+
+-- stop --
+
 -- test --
 [% VIEW filelist -%]
 
@@ -265,6 +286,9 @@ d [% item.name %] => [% item.path %]
 d dir => [% dir %]
     f file1 => [% dir %]/file1
     f file2 => [% dir %]/file2
+    d images => [% dir %]/images
+        f tt2_powered_grey.png => [% dir %]/images/tt2_powered_grey.png
+        f tt2_powered_orange.png => [% dir %]/images/tt2_powered_orange.png
     d sub_one => [% dir %]/sub_one
         f bar => [% dir %]/sub_one/bar
         f foo => [% dir %]/sub_one/foo
