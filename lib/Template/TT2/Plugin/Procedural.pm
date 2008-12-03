@@ -29,7 +29,7 @@ sub load {
             my $this;
             $class->debug("Creating new $class instance") if DEBUG;
             bless \$this, $_[0];
-        },
+        }
     ) unless $proxy->method('new');
     
 
@@ -57,11 +57,11 @@ sub load {
             
             # now install that wrapper into the proxy symbol table so that
             # we can bypass this AUTOLOAD next time
-            $proxy->add_methods( $name => $method );
+            $proxy->method( $name => $method );
 
             # now call the method we just created
             return $method->(@_);
-        },
+        }
     ) unless $proxy->method('AUTOLOAD');
 
     # return the proxy class name for TT to call new() against
