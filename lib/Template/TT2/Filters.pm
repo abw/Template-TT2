@@ -7,10 +7,10 @@ use Template::TT2::Class
     version   => 0.01,
     debug     => 0,
     base      => 'Template::TT2::Base',
-    constants => 'HASH CODE TT2_FILTER',
     codecs    => 'uri url',
     accessors => 'hub',
     utils     => 'is_object',
+    constants => 'HASH ARRAY CODE TT2_FILTER',
     messages  => {
         bad_filter => "Invalid filter definition for '%s' (%s)",
     };
@@ -52,6 +52,11 @@ use Badger::Factory::Class
         qw( upper lower ucfirst lcfirst trim collapse )
     };
 
+# plugin objects that can yield filters via a factory() method
+our @PLUGIN_FILTERS = qw(
+    Template::Plugin::Filter
+    Template::TT2::Plugin::Filter
+);
 
 # For some filters (like html_entity), we can select one or other delegate
 # module depending on what's available and/or what the user requests. 
@@ -78,6 +83,7 @@ sub found_ref_ARRAY {
     # if the filters table contains an array ref, then it can be a dynamic
     # filter (in classic TT2 style): [&code, 1], or a module and class name
     # pair (in modern Badger::Factory style): ['My::Module', 'My::Module::Class']
+    $self->debug("Found ref ARRAY: ", join(', ', @$list)) if DEBUG;
 
     if (ref $list->[0] eq CODE) {
         # classic TT2 style: [\&coderef, $is_dynamic]
@@ -114,10 +120,36 @@ sub found_ref_CODE {
 
 
 sub found_ref_object {
-    my ($self, $name, $item) = @_;
-    return is_object(TT2_FILTER, $item)
-        ? $item
-        : $self->error_msg( bad_filter => $name, $item );
+    my ($self, $name, $item, @args) = @_;
+
+    $self->debug("Filter ref object: $name => $item") if DEBUG;
+    
+    # accept if if it's a Template::TT2::Filter object
+    return $item 
+        if is_object(TT2_FILTER, $item);            # TODO: make/check filter objects work
+    
+    # otherwise see if it's a plugin filter
+    foreach (@PLUGIN_FILTERS) {
+        $self->debug("isa $_ ?") if DEBUG;
+
+        if (is_object($_, $item)) {
+            my $filter = $item->factory;
+            
+            # factory method can return a static filter sub...
+            return $filter 
+                if ref $filter eq CODE;
+                
+            # ...or a dynamic filter array ref
+            return $self->found_ref_ARRAY($name, $filter, @args)
+                if ref $filter eq ARRAY;
+            
+            # Bad filter.  No text for you.
+            return $self->error_msg( bad_filter => $name, $item );
+        }
+    }
+            
+    # Kill it!  Kill it with fire!
+    return $self->error_msg( bad_filter => $name, $item );
 }
 
 
