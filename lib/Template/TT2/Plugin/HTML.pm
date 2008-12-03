@@ -10,10 +10,9 @@ use Template::TT2::Class
 sub new {
     my ($class, $context, @args) = @_;
     my $hash = @_ && ref $args[LAST] eq HASH ? pop @args : { };
-    my $html = $context->filter('html');
     bless {
         _SORTED => $hash->{ sorted } || 0,
-        _FILTER => $html,
+        _FILTER => $context->filter('html'),
     }, $class;
 }
 
