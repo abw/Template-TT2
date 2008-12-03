@@ -23,15 +23,17 @@ sub load {
 
     # Define new() and AUTOLOAD() methods for the proxy class if
     # they haven't already been created by a previous invocation
-    $proxy->add_methods(
-
+    $proxy->method(
         # the new() method is used by TT to create a plugin object instance
         new => sub {
             my $this;
             $class->debug("Creating new $class instance") if DEBUG;
             bless \$this, $_[0];
         },
+    ) unless $proxy->method('new');
+    
 
+    $proxy->method(
         # the AUTOLOAD() gets called for every method called against it
         AUTOLOAD => sub {
             my $name = $AUTOLOAD; 
@@ -60,7 +62,7 @@ sub load {
             # now call the method we just created
             return $method->(@_);
         },
-    );
+    ) unless $proxy->method('AUTOLOAD');
 
     # return the proxy class name for TT to call new() against
     return $proxy->name;
