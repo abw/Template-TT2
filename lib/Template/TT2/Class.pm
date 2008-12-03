@@ -12,13 +12,15 @@ use Badger::Class
     };
 
 
-sub add_methods {
-    my ($self, $params) = self_params(@_);
-    while (my ($name, $code) = each %$params) {
-        $self->method($name => $code)
-            unless $self->method($name);
-    }
-    return $self;
-}
+# NOT USED ANY MORE
+#sub add_methods {
+#    my ($self, $params) = self_params(@_);
+#    while (my ($name, $code) = each %$params) {
+#        $self->method($name => $code)
+#            unless $self->method($name);
+#    }
+#    return $self;
+#}
+
 
 1;
