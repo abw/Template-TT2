@@ -16,7 +16,7 @@
 
 use strict;
 use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use lib qw( t/lib ./lib ../lib ../../lib );
 use Template::TT2::Test
     debug => "Template::TT2::Plugin::Procedural",
     tests => 9,
