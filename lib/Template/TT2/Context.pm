@@ -17,7 +17,19 @@ use Template::TT2::Class
         EXCEPTION => 'Badger::Exception',
     };
 
-our @LOADERS   = qw( templates plugins filters );
+our @LOADERS = qw( templates plugins filters );
+
+# generate lower_case accessor method to access UPPER_CASE items
+# (a good reason why TT3 will be switching to lower case config options)
+
+class->methods(
+    map {
+        my $m = uc $_;              # lexically scoped copy
+        $_ => sub { $_[0]->{ $m } }
+    }
+    qw( stash blocks trim eval_perl load_perl )
+);
+
 
 sub init {
     my ($self, $config) = @_;
@@ -99,51 +111,9 @@ sub init {
 }
 
 
-sub localise {
-    my $self = shift;
-    $self->{ STASH } = $self->{ STASH }->clone(@_);
-}
-
-
-sub delocalise {
-    my $self = shift;
-    $self->{ STASH } = $self->{ STASH }->declone();
-}
-
-
-sub visit {
-    my ($self, $document, $blocks) = @_;
-    unshift(@{ $self->{ BLKSTACK } }, $blocks)
-}
-
-
-sub leave {
-    my $self = shift;
-    shift(@{ $self->{ BLKSTACK } });
-}
-
-
-sub reset {
-    my $self = shift;
-    $self->{ BLKSTACK } = [ ];
-    $self->{ BLOCKS   } = { %{ $self->{ INIT_BLOCKS } } };
-}
-
-
-sub stash {
-    return $_[0]->{ STASH };
-}
-
-
-sub define_vmethod {
-    shift->stash->define_vmethod(@_);
-}
-
-
-sub define_vmethods {
-    shift->stash->define_vmethods(@_);
-}
-
+#-----------------------------------------------------------------------
+# Template methods
+#-----------------------------------------------------------------------
 
 sub template {
     my ($self, $name) = @_;
@@ -231,66 +201,14 @@ sub template {
 }
 
 
-sub plugin {
-    my ($self, $name, $args) = @_;
-    my ($provider, $plugin, $error);
-    
-    $self->debug(
-        "plugin($name, ", 
-        $self->dump_data_inline($args), 
-        ')' 
-    ) if DEBUG;
-    
-    # request the named plugin from each of the LOAD_PLUGINS providers in turn
-    foreach my $provider (@{ $self->{ LOAD_PLUGINS } }) {
-        $self->debug("Asking plugin provider for $name\n") if DEBUG;
-        return $plugin
-            if $plugin = $provider->plugin($name, $self, $args ? @$args : ());
-    }
-    
-    $self->throw( plugin => "$name: plugin not found" );
-}
+sub define_block {
+    my ($self, $name, $block) = @_;
 
+    # TODO: assert that refs are template objects or subs
+    $block = $self->template(\$block)
+        unless ref $block;
 
-sub filter {
-    my ($self, $name, $args, $alias) = @_;
-    my ($provider, $filter, $error);
-    
-    $self->debug(
-        "filter($name, ", 
-        $self->dump_data_inline($args),
-        defined $alias ? $alias : '<no alias>', 
-        ')'
-    ) if $DEBUG;
-    
-    # use any cached version of the filter if no params provided
-    return $filter 
-        if ! $args && ! ref $name
-            && ($filter = $self->{ FILTER_CACHE }->{ $name });
-    
-    # request the named filter from each of the FILTERS providers in turn
-    foreach $provider (@{ $self->{ LOAD_FILTERS } }) {
-        last if $filter = $provider->filter($name, $self, $args ? @$args : ());
-    }
-    
-    return $self->throw( filter => "$name: filter not found" )
-        unless $filter;
-    
-    # cache FILTER if alias is valid
-    $self->{ FILTER_CACHE }->{ $alias } = $filter
-        if $alias;
-
-    return $filter;
-}
-
-
-sub define_filter {
-    my ($self, $name, $filter, $is_dynamic) = @_;
-    $filter = [ $filter, 1 ] if $is_dynamic;
-
-    return @{ $self->{ LOAD_FILTERS } }
-            ? $self->{ LOAD_FILTERS }->[0]->filters( $name => $filter )
-            : $self->throw( filter => "No FILTER providers defined to store filter: $name" );
+    $self->{ BLOCKS }->{ $name } = $block;
 }
 
 
@@ -326,8 +244,6 @@ sub insert {
 
         foreach my $provider (@$providers) {
             next FILE if $data = $provider->load($name);
-            #$self->throw($text) if ref $text;
-            #$self->throw(Template::Constants::ERROR_FILE, $text);
         }
         $self->throw(ERROR_FILE, "$file: not found");
     }
@@ -449,8 +365,95 @@ sub include {
 
 
 #-----------------------------------------------------------------------
-# Using exceptions for flow control is usually to be avoided.  However,
-# we have little choice in this case because it's the only way to escape
+# Variable methods
+#-----------------------------------------------------------------------
+
+sub define_vmethod {
+    shift->stash->define_vmethod(@_);
+}
+
+
+sub define_vmethods {
+    shift->stash->define_vmethods(@_);
+}
+
+
+#-----------------------------------------------------------------------
+# Filter methods
+#-----------------------------------------------------------------------
+
+sub filter {
+    my ($self, $name, $args, $alias) = @_;
+    my ($provider, $filter, $error);
+    
+    $self->debug(
+        "filter($name, ", 
+        $self->dump_data_inline($args),
+        defined $alias ? $alias : '<no alias>', 
+        ')'
+    ) if $DEBUG;
+    
+    # use any cached version of the filter if no params provided
+    return $filter 
+        if ! $args && ! ref $name
+            && ($filter = $self->{ FILTER_CACHE }->{ $name });
+    
+    # request the named filter from each of the FILTERS providers in turn
+    foreach $provider (@{ $self->{ LOAD_FILTERS } }) {
+        last if $filter = $provider->filter($name, $self, $args ? @$args : ());
+    }
+    
+    return $self->throw( filter => "$name: filter not found" )
+        unless $filter;
+    
+    # cache FILTER if alias is valid
+    $self->{ FILTER_CACHE }->{ $alias } = $filter
+        if $alias;
+
+    return $filter;
+}
+
+
+sub define_filter {
+    my ($self, $name, $filter, $is_dynamic) = @_;
+    $filter = [ $filter, 1 ] if $is_dynamic;
+
+    return @{ $self->{ LOAD_FILTERS } }
+            ? $self->{ LOAD_FILTERS }->[0]->filters( $name => $filter )
+            : $self->throw( filter => "No FILTER providers defined to store filter: $name" );
+}
+
+
+#-----------------------------------------------------------------------
+# Plugin methods.  TODO: should we have define_plugin() ?
+#-----------------------------------------------------------------------
+
+sub plugin {
+    my ($self, $name, $args) = @_;
+    my ($provider, $plugin, $error);
+    
+    $self->debug(
+        "plugin($name, ", 
+        $self->dump_data_inline($args), 
+        ')' 
+    ) if DEBUG;
+    
+    # request the named plugin from each of the LOAD_PLUGINS providers in turn
+    foreach my $provider (@{ $self->{ LOAD_PLUGINS } }) {
+        $self->debug("Asking plugin provider for $name\n") if DEBUG;
+        return $plugin
+            if $plugin = $provider->plugin($name, $self, $args ? @$args : ());
+    }
+    
+    $self->throw( plugin => "$name: plugin not found" );
+}
+
+
+#-----------------------------------------------------------------------
+# Flow control and exception handling methods.
+#
+# Using exceptions for flow control is usually something to be avoided.  
+# However, we have little choice here because it's the only way to escape
 # the pre-defined flow control (i.e. caller stack in Perl) in order to 
 # implement directives like STOP and RETURN.  We also use it for THROW
 # but that's more in keeping with what exceptions should be used for.
@@ -522,12 +525,9 @@ sub catch {
 }
 
 
-sub eval_perl {
-    my $self = shift;
-    $self->debug("eval_perl: $self->{ EVAL_PERL }\n") if DEBUG;
-    $self->{ EVAL_PERL };
-}
-
+#-----------------------------------------------------------------------
+# All output functionality is delegated to the central hub.
+#-----------------------------------------------------------------------
 
 sub output_filesystem {
     shift->hub->output_filesystem;
@@ -544,6 +544,45 @@ sub output {
 }
 
 
+#-----------------------------------------------------------------------
+# Methods relating to variable and template scope.
+#-----------------------------------------------------------------------
+
+sub localise {
+    my $self = shift;
+    $self->{ STASH } = $self->{ STASH }->clone(@_);
+}
+
+
+sub delocalise {
+    my $self = shift;
+    $self->{ STASH } = $self->{ STASH }->declone();
+}
+
+
+sub visit {
+    my ($self, $document, $blocks) = @_;
+    unshift(@{ $self->{ BLKSTACK } }, $blocks)
+}
+
+
+sub leave {
+    my $self = shift;
+    shift(@{ $self->{ BLKSTACK } });
+}
+
+
+sub reset {
+    my $self = shift;
+    $self->{ BLKSTACK } = [ ];
+    $self->{ BLOCKS   } = { %{ $self->{ INIT_BLOCKS } } };
+}
+
+
+#-----------------------------------------------------------------------
+# Miscellaneous methods provided for generated template code to call.
+#-----------------------------------------------------------------------
+
 sub iterator {
     my ($self, $data) = @_;
 
@@ -551,6 +590,14 @@ sub iterator {
         ? $data
         : TT2_ITERATOR->new($data);
 }
+
+
+sub view {
+    class(TT2_VIEW)->load->instance(@_);
+}
+
+
+
     
 1;
 
@@ -562,13 +609,6 @@ __END__
 # Create a new Template::View bound to this context.
 #------------------------------------------------------------------------
 
-sub view {
-    my $self = shift;
-    require Template::View;
-    return Template::View->new($self, @_)
-        || $self->throw(&Template::Constants::ERROR_VIEW, 
-                        $Template::View::ERROR);
-}
 
 
 
@@ -589,40 +629,6 @@ sub define_block {
     || return undef
         unless ref $block;
     $self->{ BLOCKS }->{ $name } = $block;
-}
-
-
-#------------------------------------------------------------------------
-# define_filter($name, $filter, $is_dynamic)
-#
-# Adds a new FILTER definition to the local FILTER_CACHE.
-#------------------------------------------------------------------------
-
-sub define_filter {
-    my ($self, $name, $filter, $is_dynamic) = @_;
-    my ($result, $error);
-    $filter = [ $filter, 1 ] if $is_dynamic;
-
-    foreach my $provider (@{ $self->{ LOAD_FILTERS } }) {
-    ($result, $error) = $provider->store($name, $filter);
-    return 1 unless $error;
-    $self->throw(&Template::Constants::ERROR_FILTER, $result)
-        if $error == &Template::Constants::STATUS_ERROR;
-    }
-    $self->throw(&Template::Constants::ERROR_FILTER, 
-         "FILTER providers declined to store filter $name");
-}
-
-
-
-#------------------------------------------------------------------------
-# define_vmethod($type, $name, \&sub)
-#
-# Passes $type, $name, and &sub on to stash->define_vmethod().
-#------------------------------------------------------------------------
-sub define_vmethod {
-    my $self = shift;
-    $self->stash->define_vmethod(@_);
 }
 
 
