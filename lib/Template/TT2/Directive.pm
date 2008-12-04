@@ -392,8 +392,6 @@ sub foreach {
     }
     else {
         $loop_save    = '$stash = $context->localise()';
-#       $loop_set     = "\$stash->set('import', \$_tt_value) "
-#                       . "if ref \$value eq 'HASH'";
         $loop_set     = "\$stash->get(['import', [\$_tt_value]]) "
                         . "if ref \$_tt_value eq 'HASH'";
         $loop_restore = '$stash = $context->delocalise()';
@@ -405,11 +403,7 @@ sub foreach {
 # FOREACH 
 do {
     my (\$_tt_value, \$_tt_error, \$_tt_oldloop);
-    my \$_tt_list = $list;
-    
-    unless (UNIVERSAL::isa(\$_tt_list, 'Template::Iterator')) {
-        \$_tt_list = Template::TT2::Modules->module( iterator => \$_tt_list );
-    }
+    my \$_tt_list = \$context->iterator($list);
 
     (\$_tt_value, \$_tt_error) = \$_tt_list->get_first();
     $loop_save;
