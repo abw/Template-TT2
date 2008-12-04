@@ -17,7 +17,6 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 7,
     debug => 'Template::TT2::Plugin::Pod',
     args  => \@ARGV;
 
@@ -26,8 +25,12 @@ my $pod       = Dir($Bin, 'pod')->must_exist;
 my $templates = $pod->dir('templates')->must_exist;
 
 eval "use Pod::POM";
+
 if ($@) {
     skip_all('Pod::POM not installed');
+}
+else {
+    plan(7);
 }
 
 my $config = {
