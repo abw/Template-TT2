@@ -36,6 +36,9 @@ sub install_binmode_debugger {
 sub type_args {
     my $self = shift;
     my $type = shift;
+    # Hmmm... this isn't quite right.  It works fine for creating
+    # sub-systems that need to share the master config, but it fails
+    # if we want to create, say, an iterator, providing our own data
     $self->warn("Ignoring additional arguments to create $type") if @_;
     return ($type, $self->{ config });
 }
