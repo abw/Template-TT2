@@ -16,6 +16,7 @@ use Badger::Factory::Class
     path      => 'Template::TT2::Plugin Template::Plugin',
     plugins   => { 
         cgi   => 'Template::TT2::Plugin::CGI',
+        url   => 'Template::TT2::Plugin::URL',
         html  => 'Template::TT2::Plugin::HTML',
     };
 

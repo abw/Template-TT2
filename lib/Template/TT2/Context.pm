@@ -2,6 +2,7 @@ package Template::TT2::Context;
 
 use Badger::Debug ':debug';
 use Template::TT2::Modules;
+use Template::TT2::Iterator;
 use Template::TT2::Class
     version   => 0.01,
     debug     => 0,
