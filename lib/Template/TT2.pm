@@ -86,28 +86,18 @@ sub init {
 #    $config->{ DEBUG } = debug_flags($self, $debug)
 #        if defined $debug && ! looks_like_number $debug;
 
-    # TODO: delete this, make the hub create other objects and pass 
-    # hub reference along to context, filters, plugins, etc
-
-    # create Badger::Filesystem::Directory object for file output,
-    # check it exists, do a mkdir if the MKDIR flags says that's OK
-#    if ($self->{ OUTPUT_PATH }) {
-#        $self->debug("creating virtual filesystem for output in $self->{ OUTPUT_PATH }") if DEBUG;
-#        my $dir = FS->directory(  $self->{ OUTPUT_PATH } )
-#                    ->must_exist( $self->{ MKDIR       } );
-#        $self->{ OUTPUT_FS } = VFS->new( root => $dir );
-#    }
-#    else {
-#        $self->debug("output to filesystem") if DEBUG;
-#        $self->{ OUTPUT_FS }  = FS;
-#    }
-#    # save output filesystem back into config for context to share
-#    # with plugins, filters, etc., (e.g. redirect filter)
-#    $config->{ OUTPUT_FS } = $self->{ OUTPUT_FS };
-#    
+    # Trigger initialisation of service and context so that we can sample
+    # any package variable default now before they go changing.  This is 
+    # unlikely to affect anyone in the Real World, but we rely on this 
+    # behaviour in the t/plugin/plugins.t test
+    $self->context;
 
     return $self;
 }
+
+
+# TODO: this looks right to me (needs proto).  I wonder why I commented
+# it out and replaced it with a mutator?
 
 #sub hub {
 #    return ref $_[0] eq HASH
