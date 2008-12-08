@@ -295,6 +295,7 @@ sub fetch_name {
 
     $data = $self->load($path)
         || return $self->missing($path);                    # NOT FOUND
+
     $uri = $data->{ uri } 
         ||= $path;
         

@@ -33,6 +33,7 @@ sub trim ($) {
     return $text;
 }
 
+
 sub fh2text {
     my $glob = shift || PERLFH;
     my $text = @_ ? shift : '';

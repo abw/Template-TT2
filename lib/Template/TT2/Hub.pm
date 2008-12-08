@@ -43,7 +43,7 @@ sub type_args {
     return ($type, $self->{ config });
 }
 
-sub found_ref_object {
+sub found_object {
 #   my ($self, $name, $item, @args) = @_;
     return $_[2];
 }

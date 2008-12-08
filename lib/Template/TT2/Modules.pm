@@ -18,12 +18,6 @@ use Badger::Debug 'debug_args :dump';
 our $INSTDIR  = '';
 
 
-sub type_args {
-    shift;
-    return @_;
-}
-
-
 sub preload {
     my $class = shift;
     $class->todo;

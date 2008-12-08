@@ -70,14 +70,8 @@ sub init {
 }
 
 
-sub type_args {
-    shift;
-    return (@_);
-}
-
-
-sub found_ref_ARRAY {
-    my ($self, $name, $list, @args) = @_;
+sub found_array {
+    my ($self, $name, $list, $args) = @_;
     my $filter;
     
     # if the filters table contains an array ref, then it can be a dynamic
@@ -90,7 +84,7 @@ sub found_ref_ARRAY {
         if ($list->[1]) {
             # if the dynamic flag is set then the sub-routine is a factory 
             # which should be called to create the filter function
-            $filter = $list->[0]->(@args);
+            $filter = $list->[0]->(@$args);
             
             return $self->error_msg( bad_filter => $name, $filter )
                 unless $filter && ref($filter) eq CODE;
@@ -102,25 +96,27 @@ sub found_ref_ARRAY {
     }
     elsif (! ref $list->[0]) {
         # new-skool Badger::Factory style: ['Module::Name', 'Class::Name']
-        return $self->SUPER::found_ref_ARRAY($list, @args);
+        return $self->SUPER::found_array($list, @$args);
     }
     else {
         return $self->error_msg( bad_filter => $name, $list->[0] );
     }
 
+    $self->debug("returning filter: $filter") if DEBUG;
+    
     return $filter;
 }
 
 
-sub found_ref_CODE {
+sub found_code {
     # if the filters table contains a code ref, then it's a static filter
     # $self, $name, $code = @_;
     return $_[2];
 }
 
 
-sub found_ref_object {
-    my ($self, $name, $item, @args) = @_;
+sub found_object {
+    my ($self, $name, $item, $args) = @_;
 
     $self->debug("Filter ref object: $name => $item") if DEBUG;
     
@@ -140,7 +136,7 @@ sub found_ref_object {
                 if ref $filter eq CODE;
                 
             # ...or a dynamic filter array ref
-            return $self->found_ref_ARRAY($name, $filter, @args)
+            return $self->found_array($name, $filter, $args)
                 if ref $filter eq ARRAY;
             
             # Bad filter.  No text for you.
@@ -338,7 +334,7 @@ sub stdout_filter_factory {
 
 sub redirect_filter_factory {
     my ($context, $path, $options) = @_;
-    
+
     # see if an output filesystem is available (i.e. OUTPUT_PATH is defined)
     $context->try('output_filesystem')
         || return $context->throw( redirect => $context->reason->info );
