@@ -13,8 +13,8 @@ my %opts = (
     'PMLIBDIRS'    => [ 'lib' ], 
     'DIR'          => ['xs'],
     'PREREQ_PM'    => { 
-        AppConfig  => 1.56,
-        Badger     => 0.03,
+#        AppConfig  => 1.56,
+        Badger     => 0.04,
     },
     'dist'         => {
         'COMPRESS' => 'gzip',

@@ -1,3 +1,11 @@
+* All methods now throw exceptions on error.  
+
+* Template::Provider has been renamed Template::TT2::Templates. In-memory
+  caching functionality has been moved into Template::TT2::Cache which is
+  sufficiently API compatible with Cache::Cache to allow any Cache::Cache
+  module to be used as a drop-in replacement. On-disk persistent storage of
+  compiled templates is now managed by Template::TT2::Store
+
 * Template::TT2::Exception expects named parameters to the constructor
   rather than the more limited ($type, $info) position args of v2
   Template::Exception.  as_string() is now text(), select_handler() is
@@ -6,20 +14,23 @@
 * parser errors are now reported as parse errors instead of file errors
   with a parse error in the info field.
   
-* No ABSOLUTE option.  Put '/' in your INCLUDE_PATH (or should I do it for 
-  you if ABSOLUTE is set?)
+* ABSOLUTE option is deprecated.  Put '/' in your INCLUDE_PATH instead, 
+  or leave INCLUDE_PATH undefined.  You can still use ABSOLUTE (and 
+  we'll put '/' in your INCLUDE_PATH), but you'll get an annoying 
+  warning.
   
-* No RELATIVE option.  Put '.' in your INCLUDE_PATH (ditto).
+* No RELATIVE option.  Put '.' in your INCLUDE_PATH.  As per ABSOLUTE,
+  you can still use it but you'll get a WARNING.
 
-* No DELIMITER option.  Use a list ref.
+* No more DELIMITER option for specifying multiple INCLUDE_PATH 
+  directories using a delimiter other than ':' .  Use a list ref for
+  multiple INCLUDE_PATH directories.
 
-* No PRE_DEFINE option.  Use VARIABLES.
+* No PRE_DEFINE option any more.  Use VARIABLES.
 
 * Added Template::TT2::Cache.  It uses the same get()/set() API as 
   Cache::Cache so you can use any of the Cache::Cache::* modules as a 
   drop-in replacement for it.
-
-* Added CACHE option
 
 * DEBUG_PROVIDER is now DEBUG_TEMPLATES
 
@@ -30,8 +41,11 @@
 * Changed Math plugin to also define virtual methods.  Also removed 
   Math::TrulyRandom.  I have no idea what it was doing there, but I can't 
   imagine it has any practical value for the average TT user.  
+
+* Moved Template::Plugin::Autoformat into a separate CPAN module.
   
-TODO:
+TODO (mostly things that cropped up that need to be done for TT3):
+
  * remove magical 'import' from Stash, implement in context if necessary
  * change stash getref() to get_ref(), get_later() or something like that
  * add expose_objects option to stash
