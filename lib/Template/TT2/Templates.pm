@@ -234,7 +234,6 @@ sub fetch_ref {
                 uri      => $uri,
                 name     => $alias,
                 text     => $text,
-#                hello    => 'world',
                 loaded   => 0,      # not loaded from a file
                 modified => 0,      # modification time
             });
@@ -320,7 +319,9 @@ sub load {
     
     return {
         uri      => $uri,
-        name     => $file->name,
+        name     => $file->path,
+        file     => $file->name,
+        dir      => $file->directory->name,
         path     => $path,
         text     => $text,
         loaded   => time,
@@ -419,12 +420,17 @@ sub prepare {
     $parsed = $parser->parse($text, $args)
         || return $self->error("Parser returned false value");  # shouldn't happen?
         
+    if (DEBUG) {
+        $self->debug("prepare args: ", $self->dump_data($args));
+        $self->debug("parsed META: ", $self->dump_data($parsed->{ METADATA }));
+    }
+
     # augment metadata with the name and modification time
     $parsed->{ METADATA } = {
-        name     => $args->{ name     },
+        %$args,                             # info gleaned earlier
         modtime  => $args->{ modified },    # old skool
         modified => $args->{ modified },    # new skool
-        %{ $parsed->{ METADATA } },
+        %{ $parsed->{ METADATA } },         # from META tags
     };
 
     # save the parsed data back into the args 

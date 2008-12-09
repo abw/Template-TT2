@@ -78,6 +78,8 @@ sub new {
         } 
         keys %$defblocks
     };
+
+    $class->debug("metadata: ", $class->dump_data($metadata)) if DEBUG;
     
     bless {
         %$metadata,

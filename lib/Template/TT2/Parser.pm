@@ -176,7 +176,8 @@ sub parse {
     my ($self, $text, $info) = @_;
     my ($tokens, $block);
 
-    $info->{ DEBUG } = $self->{ DEBUG_DIRS }
+    # TODO: fix up DEBUG option
+    $info->{ DEBUG } = $self->{ DEBUG_DIRS } || 0
         unless defined $info->{ DEBUG };
 
 #    print "info: { ", join(', ', map { "$_ => $info->{ $_ }" } keys %$info), " }\n";
