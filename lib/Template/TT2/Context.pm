@@ -442,7 +442,7 @@ sub plugin {
     foreach my $provider (@{ $self->{ LOAD_PLUGINS } }) {
         $self->debug("Asking plugin provider for $name\n") if DEBUG;
         return $plugin
-            if $plugin = $provider->plugin($name, $self, $args ? @$args : ());
+            if defined ($plugin = $provider->plugin($name, $self, $args ? @$args : ()));
     }
     
     $self->throw( plugin => "$name: plugin not found" );

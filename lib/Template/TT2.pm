@@ -136,6 +136,13 @@ sub destroy {
     return ();
 }
 
+# ttree wants this
+
+sub module_version {
+    return $VERSION;
+}
+ 
+    
 sub DESTROY {
     shift->destroy;
 }
