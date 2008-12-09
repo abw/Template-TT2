@@ -19,7 +19,8 @@ use warnings;
 use lib '/home/abw/projects/badger/lib';
 use lib qw( t/lib ./lib ../lib ../../lib );
 use Template::TT2::Test
-    debug => "Template::TT2::Plugin::Procedural Template::TT2::Plugins",
+    debug => "Template::TT2::Plugin::Procedural Template::TT2::Plugins
+              Template::TT2::Parser",
     tests => 9,
     args  => \@ARGV;
 
@@ -42,7 +43,6 @@ __DATA__
 This is procfoofoo
 This is procfoobar
 This is procfoobar, 10, 20
-
 
 -- test ProcFoo alias --
 -- only I_HAZ_TTP --

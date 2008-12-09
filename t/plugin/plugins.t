@@ -17,11 +17,11 @@ use strict;
 use warnings;
 #use lib '/home/abw/projects/badger/lib';
 use lib qw( t/lib ./lib ../lib ../../lib );
-use Template::TT2::Plugins;
 use Template::TT2::Test
-    tests => 7,
-    debug => 'Template::TT2::Plugins Badger::Factory', # Badger::Factory::Class',
+    tests => 28,
+    debug => 'Template::TT2::Plugins Badger::Factory #Badger::Factory::Class',
     args  => \@ARGV;
+use Template::TT2::Plugins;
 
 use Badger::Filesystem '$Bin Dir';
 use Template::TT2::Plugins;
@@ -116,6 +116,44 @@ __END__
 61, 71, 79
 
 
+#-----------------------------------------------------------------------
+# test dotted plugins
+#-----------------------------------------------------------------------
+
+-- test dotted Bish.Bosh --
+-- use my_plugin_base --
+[% USE bb=Bish.Bosh 42;
+   bb.output
+%]
+-- expect --
+This is the Bish.Bosh plugin, value is 42
+
+
+-- test dotted bish.bosh --
+-- use my_plugin_base --
+[% USE bb=bish.bosh 69;
+   bb.output
+%]
+-- expect --
+This is the Bish.Bosh plugin, value is 69
+
+-- test colon Bish::Bosh --
+-- use my_plugin_base --
+[% USE bb=Bish::Bosh 10;
+   bb.output
+%]
+-- expect --
+This is the Bish.Bosh plugin, value is 10
+
+-- test colon bish::bosh --
+-- use my_plugin_base --
+[% USE bb=bish::bosh 11;
+   bb.output
+%]
+-- expect --
+This is the Bish.Bosh plugin, value is 11
+
+
 
 #-----------------------------------------------------------------------
 # test that plugins can be disabled
@@ -192,6 +230,7 @@ This is the Bar plugin, value is 16
 -- expect --
 This is the Foo plugin, value is 32
 
+
 -- test custom cgi plugin --
 [% USE wiz = cgi(64) -%]
 [% wiz.output %]
@@ -199,25 +238,37 @@ This is the Foo plugin, value is 32
 This is the Bar plugin, value is 64
 
 
+
 #------------------------------------------------------------------------
 # LOAD_PERL
 #------------------------------------------------------------------------
 
--- test --
+-- test LOAD_PERL --
 -- use load_perl --
-[% USE baz = MyPlugs.Baz(128) -%]
-[% baz.output %]
+[% USE npm = NonPlugin.Module(3) -%]
+[% npm.output %]
 -- expect --
-This is the Baz module, value is 128
+This is the NonPlugin::Module module, value is 3
 
--- test --
-[% USE boz = MyPlugs.Baz(256) -%]
+-- test LOAD_PERL again --
+[% USE npm = NonPlugin.Module(5) -%]
+[% npm.output %]
+-- expect --
+This is the NonPlugin::Module module, value is 5
+
+-- test LOAD_PERL again with lower case --
+[% USE npm = nonPlugin.module(5) -%]
+[% npm.output %]
+-- expect --
+This is the NonPlugin::Module module, value is 5
+
+-- test LOAD_PERL with another module --
+[% USE boz = MyPlugs.Baz(7) -%]
 [% boz.output %]
 -- expect --
-This is the Baz module, value is 256
+This is the Baz module, value is 7
 
 
--- stop --
 #------------------------------------------------------------------------
 # Test case insensitivity of plugin names.  We first look for the plugin 
 # using the name specified in its original case. From v2.15 we also look 
@@ -225,17 +276,17 @@ This is the Baz module, value is 256
 # specified.
 #------------------------------------------------------------------------
 
--- test --
+-- test url plugin --
 [% USE mycgi = url('/cgi-bin/bar.pl', debug=1); %][% mycgi %]
 -- expect --
 /cgi-bin/bar.pl?debug=1
 
--- test --
+-- test URL plugin case insensitive --
 [% USE mycgi = URL('/cgi-bin/bar.pl', debug=1); %][% mycgi %]
 -- expect --
 /cgi-bin/bar.pl?debug=1
 
--- test --
+-- test UrL plugin case insensitive --
 [% USE mycgi = UrL('/cgi-bin/bar.pl', debug=1); %][% mycgi %]
 -- expect --
 /cgi-bin/bar.pl?debug=1
@@ -244,15 +295,16 @@ This is the Baz module, value is 256
 
 
 #------------------------------------------------------------------------
-# ADD_DEFAULT_PLUGIN_BASE = 0.
-# Template::Plugins::URL no longer works since Template::Plugins is not
-# added to the default plugin base. Same with others. However, url will
-# work since it is specified as a plugin in
-# Template::Plugins::STD_PLUGINS.
+# Old TT2 ADD_DEFAULT_PLUGIN_BASE = 0 option is now deprecated in 
+# favour of clearing the default $Template::TT2::PLUGIN_PATH
+#
+# Template::TT2::Plugin::URL no longer works since Template::TT2::Plugins 
+# is not added to the default plugin base. Same with others. However, url 
+# will work since it is specified as a plugin in $T::TT2::Plugins::PLUGINS.
 #------------------------------------------------------------------------
 
 # should find Foo as we've specified 'MyPlugs' in the PLUGIN_BASE
--- test --
+-- test no default plugins - Foo --
 -- use only_my_plugins --
 [% USE Foo(20) -%]
 [% Foo.output %]
@@ -260,7 +312,7 @@ This is the Baz module, value is 256
 This is the Foo plugin, value is 20
 
 
--- test --
+-- test no default plugins - date not available --
 -- use only_my_plugins --
 [% TRY -%]
 [% USE Date() -%]
@@ -270,7 +322,8 @@ ERROR: [% error.info %]
 -- expect --
 ERROR: Date: plugin not found
 
--- test --
+
+-- test no default plugins - url is available --
 [% USE mycgi = url('/cgi-bin/bar.pl', debug=1); %][% mycgi %]
 -- expect --
 /cgi-bin/bar.pl?debug=1
