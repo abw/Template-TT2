@@ -24,48 +24,9 @@ use Template::TT2::Test
     debug => 'Template::TT2::View Template::TT2::Plugin::View',
     args  => \@ARGV;
 
-#-----------------------------------------------------------------------
-# define a couple of classes for testing
-#-----------------------------------------------------------------------
-
-package Foo;
-
-sub new {
-    my $class = shift;
-    bless { @_ }, $class;
-}
-
-sub present {
-    my $self = shift;
-    return '{ ' . join(', ', map { "$_ => $self->{ $_ }" } 
-		       sort keys %$self) . ' }';
-}
-
-sub reverse {
-    my $self = shift;
-    return '{ ' . join(', ', map { "$_ => $self->{ $_ }" } 
-		       reverse sort keys %$self) . ' }';
-}
-
-
-package Blessed::List;
-
-sub as_list {
-    my $self = shift;
-    return @$self;
-}
-
-
 #------------------------------------------------------------------------
 # check we can create a view via the context view() method
 #------------------------------------------------------------------------
-
-package main;
-
-my $vars = {
-    foo => Foo->new( pi => 3.14, e => 2.718 ),
-    blessed_list => bless([ "Hello", "World" ], 'Blessed::List'),
-};
 
 my $template = ENGINE->new();
 my $context  = $template->context();
