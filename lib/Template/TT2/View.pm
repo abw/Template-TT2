@@ -249,8 +249,8 @@ sub template {
         }
     }
     elsif ($error) {
-        $self->debug("no 'notfound'\n") if DEBUG;
-        return $self->error($error);
+        $self->debug("no 'notfound' template, throwing error\n") if DEBUG;
+        return $self->throw( view => $error );
     }
     return $template;
 }
@@ -431,7 +431,7 @@ Template::TT2::View - customised view of a template processing context
 
 =head1 DESCRIPTION
 
-This is an experimental module.  It is provided for backward compatability
+This is an experimental module.  It is provided for backward compatibility
 with TT2, but will be removed, replaced or refactored for TT3.
 
 A view is an object that is typically used to present data structures.  For
@@ -442,6 +442,10 @@ elements via the C<my_xml/wibble> template).
 The view can be configured to automatically add a prefix (e.g. C<my_xml/>)
 or suffix to the generated template name.  It also allows you to define
 custom mappings between data types and template names.
+
+A more detailed discussion of views can be found in L<Template::Manual::Views>.
+See also the L<View plugin|Template::TT2::Plugin::View> which is the safest
+(most future-compatible) way of creating and using views.
 
 =head1 METHODS
 
