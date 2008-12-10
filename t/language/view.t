@@ -24,6 +24,17 @@ use Template::TT2::Test
     debug => 'Template::TT2::View Template::TT2::Plugin::View',
     args  => \@ARGV;
 
+
+package Blessed::List;
+
+sub as_list {
+    my $self = shift;
+    return @$self;
+}
+
+package main;
+
+
 #------------------------------------------------------------------------
 # check we can create a view via the context view() method
 #------------------------------------------------------------------------
@@ -41,6 +52,11 @@ is( $view->prefix(), 'my', 'got view prefix' );
 #-----------------------------------------------------------------------
 # run tests in DATA section
 #-----------------------------------------------------------------------
+
+my $vars = {
+#    foo => Foo->new( pi => 3.14, e => 2.718 ),
+    blessed_list => bless([ "Hello", "World" ], 'Blessed::List'),
+};
 
 test_expect( vars => $vars );
 

@@ -19,7 +19,7 @@ use lib qw( ./lib ../lib ../../lib ../../blib/arch );
 use Template::TT2::Test
     debug => 'Template::TT2::Plugin::Directory 
               Template::TT2::Plugin::File',
-    tests => 15,
+    tests => 14,
     args  => \@ARGV;
 
 use Badger::Filesystem '$Bin Dir';
@@ -259,13 +259,6 @@ udata1
 - udata2
 
 
--- test TODO: get VIEW working --
-TODO: get VIEW working
--- expect --
-This test will fail
-
--- stop --
-
 -- test --
 [% VIEW filelist -%]
 
@@ -283,20 +276,16 @@ d [% item.name %] => [% item.path %]
 [% filelist.print(dir) %]
 -- expect --
 -- process --
-d dir => [% dir %]
-    f file1 => [% dir %]/file1
-    f file2 => [% dir %]/file2
+d data => [% dir %]
     d images => [% dir %]/images
         f tt2_powered_grey.png => [% dir %]/images/tt2_powered_grey.png
         f tt2_powered_orange.png => [% dir %]/images/tt2_powered_orange.png
-    d sub_one => [% dir %]/sub_one
-        f bar => [% dir %]/sub_one/bar
-        f foo => [% dir %]/sub_one/foo
-    d sub_two => [% dir %]/sub_two
-        f waz.html => [% dir %]/sub_two/waz.html
-        f wiz.html => [% dir %]/sub_two/wiz.html
-    f xyzfile => [% dir %]/xyzfile
-
-
+    d subdir1 => [% dir %]/subdir1
+        f bar => [% dir %]/subdir1/bar
+        f foo => [% dir %]/subdir1/foo
+    d subdir2 => [% dir %]/subdir2
+        f baz => [% dir %]/subdir2/baz
+    f udata1 => [% dir %]/udata1
+    f udata2 => [% dir %]/udata2
 
 
