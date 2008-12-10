@@ -640,7 +640,7 @@ template.
 A reference to the view object is first added to the C<$vars> hash reference
 as the C<view> item.  
 
-=head template($name)
+=head2 template($name)
 
 Returns a compiled template for the specified template name.
 
