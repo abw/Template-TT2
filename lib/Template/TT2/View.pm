@@ -23,10 +23,12 @@ sub new {
     my $context = shift;
     my $config  = params(@_);
     my $self    = bless {
+        # TODO: weaken?
         _CONTEXT => $context,
     }, $class;
     $self->init($config);
 }
+
 
 sub init {
     my ($self, $config) = @_;
@@ -87,35 +89,17 @@ sub init {
 }
 
 
-#------------------------------------------------------------------------
-# seal()
-# unseal()
-#
-# Seal or unseal the view to allow/prevent new datat items from being
-# automatically created by the AUTOLOAD method.
-#------------------------------------------------------------------------
-
 sub seal {
     my $self = shift;
     $self->{ SEALED } = $self->{ sealed };
 }
+
 
 sub unseal {
     my $self = shift;
     $self->{ SEALED } = 0;
 }
 
-
-#------------------------------------------------------------------------
-# clone(\%config)
-#
-# Cloning method which takes a copy of $self and then applies to it any 
-# modifications specified in the $config hash passed as an argument.
-# Configuration items may also be specified as a list of "name => $value"
-# arguments.  Returns a reference to the cloned Template::View object.
-#
-# NOTE: may need to copy BLOCKS???
-#------------------------------------------------------------------------
 
 sub clone {
     my $self   = shift;
@@ -148,22 +132,6 @@ sub clone {
     return $clone;
 }
 
-
-#------------------------------------------------------------------------
-# print(@items, ..., \%config)
-#
-# Prints @items in turn by mapping each to an approriate template using 
-# the internal 'map' hash.  If an entry isn't found and the item is an 
-# object that implements the method named in the internal 'method' item,
-# (default: 'present'), then the method will be called passing a reference
-# to $self, against which the presenter method may make callbacks (e.g. 
-# to view_item()).  If the presenter method isn't implemented, then the 
-# 'default' map entry is consulted and used if defined.  The final argument 
-# may be a reference to a hash array providing local overrides to the internal
-# defaults for various items (prefix, suffix, etc).  In the presence
-# of this parameter, a clone of the current object is first made, applying
-# any configuration updates, and control is then delegated to it.
-#------------------------------------------------------------------------
 
 sub print {
     my $self = shift;
@@ -215,9 +183,6 @@ sub print {
                 ($template = $type) =~ s/\W+/_/g;
             }
         }
-#       else {
-#           $self->DEBUG("defined map type for $type: $template\n");
-#       }
         $self->debug("printing view '", $template || '', "', $item\n") if DEBUG;
         $output .= $self->view($template, $item)
             if $template;
@@ -226,20 +191,6 @@ sub print {
 }
 
 
-#------------------------------------------------------------------------
-# view($template, $item, \%vars)
-#
-# Wrapper around include() which expects a template name, $template,
-# followed by a data item, $item, and optionally, a further hash array
-# of template variables.  The $item is added as an entry to the $vars
-# hash (which is created empty if not passed as an argument) under the
-# name specified by the internal 'item' member, which is appropriately
-# 'item' by default.  Thus an external object present() method can
-# callback against this object method, simply passing a data item to
-# be displayed.  The external object doesn't have to know what the
-# view expects the item to be called in the $vars hash.
-#------------------------------------------------------------------------
-
 sub view {
     my ($self, $template, $item) = splice(@_, 0, 3);
     my $vars = ref $_[0] eq HASH ? shift : { @_ };
@@ -247,16 +198,6 @@ sub view {
     $self->include($template, $vars);
 }
 
-
-#------------------------------------------------------------------------
-# include($template, \%vars)
-#
-# INCLUDE a template, $template, mapped according to the current prefix,
-# suffix, default, etc., where $vars is an optional hash reference 
-# containing template variable definitions.  If the template isn't found
-# then the method will default to any 'notfound' template, if defined 
-# as an internal item.
-#------------------------------------------------------------------------
 
 sub include {
     my ($self, $template, $vars) = @_;
@@ -270,13 +211,6 @@ sub include {
     $context->include( $template, $vars );
 }
 
-
-#------------------------------------------------------------------------
-# template($template)
-#
-# Returns a compiled template for the specified template name, according
-# to the current configuration parameters.
-#------------------------------------------------------------------------
 
 sub template {
     my ($self, $name) = @_;
@@ -322,13 +256,6 @@ sub template {
 }
 
     
-#------------------------------------------------------------------------
-# template_name($template)
-#
-# Returns the name of the specified template with any appropriate prefix
-# and/or suffix added.
-#------------------------------------------------------------------------
-
 sub template_name {
     my ($self, $template) = @_;
     $template = $self->{ prefix } . $template . $self->{ suffix }
@@ -339,35 +266,12 @@ sub template_name {
 }
 
 
-#------------------------------------------------------------------------
-# default($val)
-#
-# Special case accessor to retrieve/update 'default' as an alias for 
-# '$map->{ default }'.
-#------------------------------------------------------------------------
-
 sub default {
     my $self = shift;
     return @_ ? ($self->{ map }->{ default } = shift) 
               :  $self->{ map }->{ default };
 }
 
-
-#------------------------------------------------------------------------
-# AUTOLOAD
-#
-
-# Returns/updates public internal data items (i.e. not prefixed '_' or
-# '.') or presents a view if the method matches the view_prefix item,
-# e.g. view_foo(...) => view('foo', ...).  Similarly, the
-# include_prefix is used, if defined, to map include_foo(...) to
-# include('foo', ...).  If that fails then the entire method name will
-# be used as the name of a template to include iff the include_named
-# parameter is set (default: 1).  Last attempt is to match the entire
-# method name to a view() call, iff view_naked is set.  Otherwise, a
-# 'view' exception is raised reporting the error "no such view member:
-# $method".
-#------------------------------------------------------------------------
 
 sub AUTOLOAD {
     my $self = shift;
@@ -530,6 +434,15 @@ Template::TT2::View - customised view of a template processing context
 This is an experimental module.  It is provided for backward compatability
 with TT2, but will be removed, replaced or refactored for TT3.
 
+A view is an object that is typically used to present data structures.  For
+example, a view can be used to present an XML DOM, by presenting each 
+element using an appropriately named template (e.g. rendering C<wibble>
+elements via the C<my_xml/wibble> template).
+
+The view can be configured to automatically add a prefix (e.g. C<my_xml/>)
+or suffix to the generated template name.  It also allows you to define
+custom mappings between data types and template names.
+
 =head1 METHODS
 
 =head2 new($context, \%config)
@@ -677,13 +590,73 @@ template names where they don't match the view_prefix.  Defaults to 0.
 
 =back
 
-=head2 print( $obj1, $obj2, ... \%config)
+=head2 clone(\%params)
 
-TODO
+Creates a copy of the view, updated with any additional configuration
+parameters passed as arguments.
 
-=head2 view( $template, \%vars, \%config );
+=head2 seal()
 
-TODO
+Seals the view preventing it from any further changes.
+
+=head2 unseal()
+
+Unseals the view, allowing further changes.
+
+=head2 print(@items,\%config)
+
+Prints each of C<@items> in turn by mapping each to an appropriate template
+using the internal C<map> hash. If an entry isn't found and the item is an
+object that implements a C<present()> method (or whatever method is named in 
+the internal C<method> item, then the method will be called.  A reference to 
+the view is passed as the first argument which the method may used to make 
+callbacks to the view.
+
+If the C<present()> method isn't implemented, then the C<default> map entry is
+used if defined. The final argument may be a reference to a hash array
+providing local overrides to the internal defaults for various items
+(C<prefix>, C<suffix>, etc).
+
+=head2 view($template,$item,\%vars)
+
+Wrapper around L<include()> which expects a template name, C<$template>,
+followed by a data item, C<$item>, and optionally, a reference to a hash array
+of template variables C<$vars>.
+
+The C<$item> is added to the C<$vars> hash (which is created if necessary)
+as the C<item> key (or whatever key is defined by the L<item> configuration
+option).  The template is then processed via L<include()>.
+
+=head2 include($template, \%vars)
+
+This is a wrapper around the L<Template::TT2::Context>
+L<include()|Template::TT2::Context/include()> method for processing a view
+template.
+
+A reference to the view object is first added to the C<$vars> hash reference
+as the C<view> item.  
+
+=head template($name)
+
+Returns a compiled template for the specified template name.
+
+=head2 template_name($name)
+
+Returns the name of the specified template with any appropriate prefix
+and/or suffix added.
+
+=head2 default($val)
+
+Returns the name of the default template, if defined.
+
+=head2 AUTOLOAD
+
+The C<AUTOLOAD> method provides access to all the configuration items and 
+data values stored in the view.
+
+It also delegates any methods of the form C<view_xxx(...)> and 
+C<include_yyy(...)> to calls to C<view( xxx =E<gt> ... )> and 
+C<include( yyy =E<gt> ... )> respectively.
 
 =head1 AUTHOR
 
@@ -701,8 +674,3 @@ modify it under the same terms as Perl itself.
 L<Template::TT2::Plugin::View>
 
 =cut
-
-
-
-
-
