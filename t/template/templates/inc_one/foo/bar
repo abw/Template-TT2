@@ -1,0 +1,1 @@
+This is [% template.name %], file is [% template.file %] in [% template.dir -%]

@@ -1,0 +1,2 @@
+[% META author = 'abw' -%]
+This is [% template.name %], author is [% template.author -%]
