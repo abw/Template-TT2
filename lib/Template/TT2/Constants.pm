@@ -25,8 +25,8 @@ use Badger::Class
     exports  => {
         tags => {
             modules => 'TT2_HUB TT2_MODULES TT2_CONTEXT TT2_DOCUMENT 
-                        TT2_EXCEPTION TT2_ITERATOR TT2_PARSER TT2_CACHE 
-                        TT2_STORE TT2_FILTER TT2_PLUGIN TT2_VIEW
+                        TT2_EXCEPTION TT2_ITERATOR TT2_PARSER TT2_DIRECTIVE
+                        TT2_CACHE TT2_STORE TT2_FILTER TT2_PLUGIN TT2_VIEW
                         TT_DOCUMENT TT_EXCEPTION TT_ITERATOR',
             status  => 'STATUS_OK STATUS_RETURN STATUS_STOP STATUS_DONE
                         STATUS_DECLINED STATUS_ERROR',
@@ -55,6 +55,7 @@ use Badger::Class
         TT2_EXCEPTION   => 'Template::TT2::Exception',
         TT2_ITERATOR    => 'Template::TT2::Iterator',
         TT2_PARSER      => 'Template::TT2::Parser',
+        TT2_DIRECTIVE   => 'Template::TT2::Directive',
         TT2_CACHE       => 'Template::TT2::Cache',
         TT2_STORE       => 'Template::TT2::Store',
         TT2_FILTER      => 'Template::TT2::Filter',

@@ -15,12 +15,13 @@
 
 package Template::TT2::Parser;
 
+use Template::TT2::Hub;
 use Template::TT2::Class
     version   => 0.01,
     debug     => 0,
     base      => 'Template::TT2::Base',
     import    => 'class',
-    constants => ':status :chomp :parse',
+    constants => ':status :chomp :parse TT2_HUB',
     throws    => 'parse',
     config    => [
         'FACTORY|class:FACTORY=Template::TT2::Directive',
@@ -86,6 +87,14 @@ sub init {
     use Data::Dumper;
 #    $self->debug( Dumper($self));
 #    $self->debug("setup {", join(",\n", map { "$_ => $self->{ $_ }" } keys %$self), "}\n");
+
+    if (my $constants = $config->{ CONSTANTS }) {
+        my $hub = $config->{ hub } || TT2_HUB;
+        my $ns  = $config->{ NAMESPACE } ||= { };
+        my $cns = $config->{ CONSTANTS_NAMESPACE } || 'constants';
+        $self->debug("Asking hub to create constants: $hub") if DEBUG;
+        $ns->{ $cns } = $hub->module( constants => $constants );
+    }
 
     # build a FACTORY object to include any NAMESPACE definitions,
     # but only if FACTORY isn't already an object
