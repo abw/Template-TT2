@@ -22,6 +22,9 @@ use Template::TT2::Class
         URI_ROOT      => '/',
         IS_ABS_URI    => qr[^/],
     },
+    vars        => {
+        MAX_DIRS      => 32,
+    },
     config      => [
         'DOCUMENT|class:DOCUMENT|method:TT2_DOCUMENT',
 #        'PARSER|class:PARSER|method:TT2_PARSER',
@@ -29,7 +32,7 @@ use Template::TT2::Class
         'STORE|class:STORE|method:TT2_STORE',
         'INCLUDE_PATH|class:INCLUDE_PATH|method:Cwd',
         'DYNAMIC_PATH|class:DYNAMIC_PATH=0',
-        'MAX_DIRS|class:MAX_DIRS=32',
+        'MAX_DIRS|class:MAX_DIRS',
         'STAT_TTL|class:STAT_TTL=1',
         'TOLERANT|class:TOLERANT=0',            # NOT USED
         'COMPILE_EXT|class:COMPILE_EXT|method:BLANK',

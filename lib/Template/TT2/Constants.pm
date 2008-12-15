@@ -15,7 +15,7 @@
 #   modify it under the same terms as Perl itself.
 #
 #============================================================================
- 
+
 package Template::TT2::Constants;
 
 use Badger::Class
@@ -127,14 +127,16 @@ use Badger::Class
         # special exceptions types that implement flow control
         FLOW_STOP       => 'stop',      # stop execution, e.g. STOP directive
 
-        # stash defaults
-        STASH_PRIVATE   => qr/^[_.]/,   # private members begin with _ or .
-        STASH_IMPORT    => 'import',    # magical import variable
-
         MSWIN32         => $^O eq 'MSWin32' ? 1 : 0,
         UNICODE         => $] > 5.007       ? 1 : 0,
-    };
 
+        # NOTE: for some unknown reason, I'm getting a segfault when the 
+        # qr// isn't the last item.  This is almost certainly a bug in Perl.
+        
+        # stash defaults
+        STASH_IMPORT    => 'import',    # magical import variable
+        STASH_PRIVATE   => qr/^[_.]/,   # private members begin with _ or .
+    };
 
 1;
 

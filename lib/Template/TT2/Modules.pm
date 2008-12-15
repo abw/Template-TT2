@@ -7,45 +7,21 @@ use Badger::Factory::Class
     constants => 'HASH',
     modules   => {
         constants => 'Template::TT2::Namespace::Constants',
+    },
+    messages  => {
+        preload => 'Failed to preload %s module (not found)',
     };
 
-use Badger::Debug 'debug_args :dump';
-    
-#our @PRELOAD = ( $CONTEXT, $FILTERS, $ITERATOR, $PARSER,
-#               $PLUGINS, $PROVIDER, $SERVICE, $STASH );
-
-# the following is set at installation time by the Makefile.PL 
-our $INSTDIR  = '';
-
+our @PRELOAD = qw( context templates plugins filters parser iterator service stash );
 
 sub preload {
-    my $class = shift;
-    $class->todo;
-
-#    foreach my $module (@PRELOAD, @_) {
-#        $class->load($module) || return;
-#    };
-    return 1;
+    my $self = shift->prototype;
+    
+    foreach my $module (@PRELOAD, @_) {
+        $self->find($module) 
+            || return $self->error_msg( preload => $module );
+    };
 }
-
-
-#------------------------------------------------------------------------
-# instdir($dir)
-#
-# Returns the root installation directory appended with any local 
-# component directory passed as an argument.
-#------------------------------------------------------------------------
-
-sub instdir {
-    my ($class, $dir) = @_;
-    my $inst = $INSTDIR 
-        || return $class->error("no installation directory");
-    $inst =~ s[/$][]g;
-    $inst .= "/$dir" if $dir;
-    return $inst;
-}
-
-
 
 1;
 
