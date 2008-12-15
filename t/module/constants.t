@@ -16,12 +16,12 @@
 use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
+use Template::TT2::Constants ':status CHOMP_COLLAPSE';
 use Template::TT2::Test
     tests => 2,
     debug => 'Template::TT2::Constants',
     args  => \@ARGV;
     
-use Template::TT2::Constants ':status CHOMP_COLLAPSE';
 
 ok( STATUS_DONE, 'imported STATUS_DONE' );
 ok( CHOMP_COLLAPSE, 'imported CHOMP_COLLAPSE' );

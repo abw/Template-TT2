@@ -2,7 +2,7 @@
 #
 # t/module/service.t
 #
-# Test the Template::Service module.
+# Test the Template::TT2::Service module.
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
