@@ -17,7 +17,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 10,
+    tests => 20,
     debug => 'Template::TT2',
     args  => \@ARGV;
 
@@ -68,6 +68,23 @@ $tt->process('hello', { name => 'Badger' }, \$out)
 
 is( $out, 'Hello Badger', 'Hello Badger' );
 $out = '';
+
+ok( ! $tt->process('non_existant_file'), 'did not process non-existant file' );
+my $error = $tt->error;
+is( $error->type, 'file', 'got file error' );
+is( $@->info, 'non_existant_file: not found', 'got info' );
+
+
+$tt = Template::TT2->new(
+    INCLUDE_PATH => $dir->dir('templates'),
+    THROW        => 1,
+);
+
+eval { $tt->process('non_existant_file') };
+ok( $@, 'threw error for non-existant file' );
+is( $@->type, 'file', 'caught file error' );
+is( $@->info, 'non_existant_file: not found', 'caught file info' );
+
 
 
 #-----------------------------------------------------------------------
