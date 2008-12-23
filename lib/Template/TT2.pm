@@ -39,6 +39,7 @@ use Template::TT2::Class
         'OUTPUT|output|class:OUTPUT',
         'OUTPUT_PATH|output_path|class:OUTPUT_PATH',
         'QUIET|quiet=0',
+        'THROW|throw=0',
         'modules|MODULES|class:MODULES',
     ],
     messages    => {
@@ -50,6 +51,7 @@ use Template::TT2::Class
 
 our $VERSION = 0.01;            # for ExtUtils::MakeMaker - not DRY, yuk
 our $OUTPUT  = \*STDOUT unless defined $OUTPUT;
+our $ERROR;
 
 # preload all modules if we're running under mod_perl
 TT2_MODULES->preload if $ENV{ MOD_PERL };
@@ -89,6 +91,9 @@ sub init {
 
     $self->debug("connected to hub: $self->{ hub }") if DEBUG;
 
+    $self->{ throw  } = $config->{ THROW };
+    $self->{ config } = $config;
+
     # TODO: debug flags
     # convert textual DEBUG flags to number
 #    $config->{ DEBUG } = debug_flags($self, $debug)
@@ -118,7 +123,19 @@ sub init {
 sub process {
     my ($self, $input, $vars, @output) = @_;
     $vars ||= { };
-    $self->output( $self->service->process($input, $vars), @output );
+    eval {
+        $self->output( $self->service->process($input, $vars), @output );
+    };
+    if ($@) {
+        if ($self->{ throw }) {
+            $self->throw($@);
+        }
+        else {
+            $self->{ ERROR } = $ERROR = $@;
+            return undef;
+        }
+    }
+    return 1;
 }
 
 
@@ -366,6 +383,22 @@ be used to specify the directory for output files.
     # write file to '/tmp/welcome.html'
     $tt->process($infile, $vars, 'welcome.html')
         || die $tt->error;
+
+The default behaviour for the C<process()> method is to return a true value
+(C<1>) on success or a false value (C<undef>) on failure.  You can use the 
+C<THROW> option to have it throw an exception on error instead.  This avoids
+the need to check the return value from the C<process()> method.
+
+    my $tt = Template::TT2->new( THROW => 1 );
+    $tt->process($infile, $vars, 'welcome.html');
+
+You can use an C<eval{ ... }> block to capture any errors thrown, or use
+the L<try()|Badger::Base/try()> method inherited from L<Badger::Base> to 
+do it for you.
+
+    # with THROW => 1
+    $tt->try( process => $infile, $vars, $output )
+        || warn "process() failed: ", $tt->error;
 
 =head2 error()
 
