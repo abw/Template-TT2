@@ -1,55 +1,227 @@
-* All methods now throw exceptions on error.  
+NAME
+    Template::TT2::Changes - what's different about Template::TT2
 
-* Template::Provider has been renamed Template::TT2::Templates. In-memory
-  caching functionality has been moved into Template::TT2::Cache which is
-  sufficiently API compatible with Cache::Cache to allow any Cache::Cache
-  module to be used as a drop-in replacement. On-disk persistent storage of
-  compiled templates is now managed by Template::TT2::Store
+QUICK OVERVIEW
+    TT3 will change everything. When it is finally released your TT2 code
+    will stop working. You will want to throw rocks at my head and beat me
+    soundly with a stout piece of wood.
 
-* Template::TT2::Exception expects named parameters to the constructor
-  rather than the more limited ($type, $info) position args of v2
-  Template::Exception.  as_string() is now text(), select_handler() is
-  now match_type()
+    Fear not! Template::TT2 is a drop-in replacement for TT2 that's *not*
+    going to change significantly, ever. Maintenance releases
+    notwithstanding.
 
-* parser errors are now reported as parse errors instead of file errors
-  with a parse error in the info field.
-  
-* ABSOLUTE option is deprecated.  Put '/' in your INCLUDE_PATH instead, 
-  or leave INCLUDE_PATH undefined.  You can still use ABSOLUTE (and 
-  we'll put '/' in your INCLUDE_PATH), but you'll get an annoying 
-  warning.
-  
-* No RELATIVE option.  Put '.' in your INCLUDE_PATH.  As per ABSOLUTE,
-  you can still use it but you'll get a WARNING.
+    TT2 has effectively been split into 2 parts. The Badger modules are all
+    the generic bits. Template::TT2 are the template-specific bits for TT2
+    built on top.
 
-* No more DELIMITER option for specifying multiple INCLUDE_PATH 
-  directories using a delimiter other than ':' .  Use a list ref for
-  multiple INCLUDE_PATH directories.
+DESCRIPTION
+    The "Template::TT2" distribution is a new implementation of version 2 of
+    the Template Toolkit (specifically, v2.21). It is a drop-in replacement
+    for the "old" "Template" module and implements a 100% faithful version
+    of the TT2 template language, warts and all.
 
-* No PRE_DEFINE option any more.  Use VARIABLES.
+    The main reason for this new implementation is to provide a legacy
+    version of TT2 which will continue to "Just Work" after TT3 is released.
+    TT3 will break backwards compatibility with TT2 in both the template
+    language and the Perl API, although there will be also be an easy
+    upgrade path or paths for both aspects.
 
-* Added Template::TT2::Cache.  It uses the same get()/set() API as 
-  Cache::Cache so you can use any of the Cache::Cache::* modules as a 
-  drop-in replacement for it.
+    The Template::TT2 modules are provided for people who are relying on the
+    "old" behaviour of TT2 when the new TT3 Template module comes along and
+    breaks everything. Although TT3 isn't due out for a while (expected on
+    Tuesday some time shortly after lunch), this pre-release of
+    Template::TT2 gives us plenty of time to iron out any bugs and give
+    everyone plenty of opportunity to test and/or upgrade their existing
+    systems to use Template::TT2.
 
-* DEBUG_PROVIDER is now DEBUG_TEMPLATES
+    From the outside, Template::TT2 works in exactly the same way as
+    Template v2.21 with the exception of a few configuration options which
+    have been deprecated. These are described below in the "CONFIGURATION
+    OPTIONS" section.
 
-* In some places, DEBUG_XXXX options don't work.  Need to set DEBUG instead.
+    On the inside, Template::TT2 is implemented using the same basic
+    architecture as Template v2.21. In most cases, the modules have simply
+    been moved into a new namespace (i.e. Template is now Template::TT2,
+    Template::Context is now Template::TT2::Context, and so on). There are a
+    few exceptions to this, described below in MODULES.
 
-* V1DOLLAR is no more
+    The most pervasive (but mostly invisible) change is a complete overhaul
+    of the code base. TT has effectively been split into 2 parts. The Badger
+    modules are all the generic bits that aren't specifically related to
+    template processing, leaving "Template::TT2" to implement the
+    TT2-specific bits.
 
-* Changed Math plugin to also define virtual methods.  Also removed 
-  Math::TrulyRandom.  I have no idea what it was doing there, but I can't 
-  imagine it has any practical value for the average TT user.  
+    There's no immediate rush or obligation to "upgrade" from Template to
+    Template::TT2, although it certainly wouldn't hurt to do so. If you've
+    got existing systems using TT then it's probably a good idea to check
+    that Template::TT2 works as a drop-in replacement for Template, even if
+    you don't make the switch just yet. If you're about to build a new
+    system using TT then you might want to start out using Template::TT2. It
+    does everything the same, but unlike the Template module which will
+    change when TT3 is release, the Template::TT2 modules are not going
+    anywhere, ever.
 
-* Moved Template::Plugin::Autoformat into a separate CPAN module.
-  
-TODO (mostly things that cropped up that need to be done for TT3):
+    Maintenance of TT2 will effectively cease in the Template module(s) and
+    will continue under Template::TT2.
 
- * remove magical 'import' from Stash, implement in context if necessary
- * change stash getref() to get_ref(), get_later() or something like that
- * add expose_objects option to stash
- * fix DEBUG options
- * stop aliasing error to 'e'
- * stop dumping compiled templates in '/' !!!
- * updated t/language/tied.t for XS stash
+    The next milestone in the TT masterplan will be the "Template::TT3"
+    modules. This will be an implementation of the TT3 template language
+    using the same (or similar) Badger-based architecture as for
+    Template::TT2. Some time after that, the core Template modules will be
+    overhauled to patch them into TT3. At that point your existing TT2 code
+    using the Template module will break and you will need to switch to
+    "Template::TT2" (or use one of the backwards compatibility switches that
+    we'll be providing).
+
+    The earliest this will be happening is in the spring of 2009. Consider
+    this fair warning.
+
+MODULES
+    Most of the "Template" modules have been moved (or rather, copied) into
+    the "Template::TT2" namespace. So instead of using the Template module,
+    you can use Template::TT2. Behind the scenes, Template::Context becomes
+    Template::TT2::Context, Template::Service becomes Template::TT2::Service
+    and so on.
+
+    One notable exception is the Template::Provider module which has been
+    replaced by Template::TT2::Templates. The in-memory caching and on-disk
+    storage of compiled templates that the Template::Provider module
+    performs has been separated out into the Template::TT2::Cache and
+    Template::TT2::Store modules respectively. However, the existing
+    Template::Provider module and any subclasses of it should continue to
+    work as replacements for Template::TT2::Templates as the external API is
+    backwardly compatible. Furthermore, the new Template::TT2::Cache module
+    is API-compatible with Cache::Cache, allowing you to drop-in any
+    "Cache::Cache::*" module as a replacement for that functionality.
+
+    Another exception is the Template::Config module which has no direct
+    counterpart in Template::TT2. Instead the Template::TT2::Modules module
+    acts as a base class factory for loading and instantiating other
+    "Template::TT2::*" modules (or custom modules of your choice). The
+    Template::TT2::Hub module is a subclass of Template::TT2::Modules,
+    layering some additional functionality over the top.
+
+    The Template::TT2::Stash module is used in place of the Template::Stash
+    module. It now acts as a thin front-end to either
+    Template::TT2::Stash::XS or Template::TT2::Stash::Perl. If you have the
+    XS version of the stash installed then you'll get it automatically
+    unless you specifically request the Perl version.
+
+PLUGINS
+    The Template::Plugins and Template::Plugin modules have their new
+    counterparts in Template::TT2::Plugins and Template::TT2::Plugin.
+    However, the Template::Plugin interface remains the same and
+    Template::TT2 should continue to work with all existing *non-intrusive*
+    plugins (i.e. those that add extra functionality but don't go poking
+    around in the guts of TT). Any *intrusive* plugins that rely on
+    particular internal features of TT may need to be updated. Although much
+    of the internal API for TT remains unchanged, there are no guarantees of
+    that.
+
+    The Template::TT2::Templates module looks first for a plugin under the
+    Template::TT2::Plugin namespace, followed by Template::Plugin. Thus, it
+    is possible to implement a new "Template::TT2::Plugin:XXX" module which
+    works with Template::TT2, leaving the existing "Template::Plugin::XXX"
+    module unchanged for users of the Template module.
+
+    The same rules will apply for TT3. Most "Template::Plugin::*" modules
+    should continue to work unmodified for both TT2 and TT3. Those that are
+    specific to a particular version will need to have a corresponding
+    "Template::TT2::Plugin::XXX" or "Template::TT3::Plugin::XXX"
+    implementation.
+
+CONFIGURATION OPTIONS
+    The "THROW" option can be used to have the Template Toolkit throw all
+    errors as exceptions instead of having the process() method return a
+    false value. The default value is 0 which makes it behave like the
+    Template module (returns true/false). Set it to a true value to throw
+    errors.
+
+    The "ABSOLUTE" and "RELATIVE" options are officially deprecated,
+    although they still work. If you want to access templates relative
+    anywhere in your file system then add your root directory to the
+    "INCLUDE_PATH". To emulate the behaviour of the "RELATIVE" option,
+    simply add the current working directory to the "INCLUDE_PATH".
+
+    The various "DEBUG" options aren't implemented yet. However, you can
+    enable debugging in various modules using the Badger::Debug module. Do
+    this before you load the Template::TT2 or other relevant modules:
+
+        # example to enable debugging in 2 different modules
+        use Badger::Debug modules => 'Template::TT2 Template::TT2::Templates';
+
+    The "DELIMITER" option is no longer supported. Specify multiple items in
+    an "INCLUDE_PATH" using an array reference instead.
+
+    The "PRE_DEFINE" option is now deprecated in favour of the more widely
+    used (and sensibly named) "VARIABLES" alias.
+
+    The "V1DOLLAR" option is not longer supported.
+
+ERROR HANDLING
+    Error handling is now more robust. All errors are reported internally by
+    throwing exceptions. However, the Template::TT2 module wraps the
+    internal code up in an "eval { }" and continues to work as per Template.
+
+    You can use the "THROW" option to have the process() method throw errors
+    instead.
+
+    Note that this will change in TT3 to throw errors by default.
+
+    Parser errors are now reported using an error type of "parse" instead of
+    "file".
+
+PLUGINS
+    The Math plugin now defines a number of virtual methods for mathematical
+    functionality. The functionality provided by Math::TrulyRandom has been
+    removed. I have no idea what it was doing there, but I can't imagine it
+    has any practical value for the average TT user.
+
+    The Autoformat plugin has been moved into a separate
+    <cpan:Template::Plugin::Autoformat> distribution, available from CPAN.
+
+TOOLS
+    The "ttree" and "tpage" tools are not distributed with Template::TT2. If
+    you want to use them then you'll need to install the current version of
+    the Template Toolkit (assuming you don't already have it installed).
+
+    Both tools accept the "--template_module" argument which you can use to
+    engage the Template::TT2 module instead of Template.
+
+        $ tpage --template_module=Template::TT2 input.tt2
+        $ ttree --template_module=Template::TT2
+
+    If you're using a configuration file with "ttree" then you can add the
+    following line to the file:
+
+        template_module = Template::TT2
+
+DOCUMENTATION
+    The documentation for the Template::TT2 modules is incomplete. In most
+    cases you can refer to the corresponding Template documentation and
+    mentally substitute "Template" with "Template::TT2" in all the module
+    names you see.
+
+BUGS AND INCOMPATIBILITIES
+    If you encounter any bugs in Template::TT2 or undocumented
+    incompatibilities with the Template modules then please report them via
+    <http://rt.cpan.org>.
+
+    If you have any other problems or issues using Template::TT2, or if you
+    are the author of a module which extends or interacts with TT and need
+    advice, guidance or assistance in porting your module to work with
+    Template::TT2 then please drop by the TT mailing list and we'll do our
+    best to help you:
+    <http://mail.template-toolkit.org/mailman/listinfo/templates>
+
+    If you prefer then you can email the author direct at abw@cpan.org
+
+AUTHOR
+    Andy Wardley <http://wardley.org/>
+
+COPYRIGHT
+    Copyright (C) 1996-2008 Andy Wardley. All Rights Reserved.
+
+    This module is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
