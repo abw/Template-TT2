@@ -21,13 +21,14 @@ use Template::TT2::Class
         bad_output => 'Invalid output specified: %s',
     };
 
-our $DEBUG_BINMODE  = 0 unless defined $DEBUG_BINMODE;      # for testing
 our @MODULE_ALIASES = qw( SERVICE CONTEXT PARSER );
+our $DEBUG_BINMODE  = 0 unless defined $DEBUG_BINMODE;      # for testing
 
 sub install_binmode_debugger {
     my $self = shift;
     $DEBUG_BINMODE = shift;
 }
+
 
 #-----------------------------------------------------------------------
 # factory methods
@@ -37,16 +38,11 @@ sub type_args {
     my $self = shift;
     my $type = shift;
 
-    # Hmmm... this isn't quite right.  It works fine for creating
-    # sub-systems that need to share the master config, but it fails
-    # if we want to create, say, an iterator, providing our own data
-    #    $self->warn("Ignoring additional arguments to create $type") if @_;
-    #    return ($type, $self->{ config });
-
-    # OK, let's try this:
+    # if we get any arguments passed then we forward them to the object
+    # constructor method, otherwise we use the shared master config
     return ($type, @_ ? @_ : $self->{ config });
-
 }
+
 
 sub found_object {
 #   my ($self, $name, $item, @args) = @_;
@@ -55,9 +51,8 @@ sub found_object {
 
 
 #-----------------------------------------------------------------------
-# constructor method
+# object methods
 #-----------------------------------------------------------------------
-
 
 sub init {
     my ($self, $config) = @_;
@@ -87,17 +82,20 @@ sub init {
     return $self;
 }
 
+
 sub service {
     my $self = shift->prototype;
     return $self->{ service }
        ||= $self->module('service');
 }
 
+
 sub context {
     my $self = shift->prototype;
     return $self->{ context }
        ||= $self->module('context');
 }
+
 
 sub output {
     my $self = shift->prototype;
@@ -225,6 +223,7 @@ sub destroy {
     # we may have established with other items that point back to us
     %$self = ();
 }
+
 
 sub DESTROY {
     my $self = shift;

@@ -51,3 +51,57 @@ sub AUTOLOAD {
 1;
 
 __END__
+
+=head1 NAME
+
+Template::TT2::Stash::XS - XS implementation of Template::TT2::Stash
+
+=head1 SYNOPSIS
+
+See L<Template::TT2::Stash>.
+
+=head1 DESCRIPTION
+
+This module is an XS implementation of L<Template::TT2::Stash>, written in
+C for maximum speed.
+
+=head1 METHODS
+
+The following methods are implemented in addition to those inherited
+from L<Template::TT2::Stash>.
+
+=head2 get($var)
+
+Method to get a variable value.
+
+=head2 set($var,$value,$default)
+
+Method to set a variable value.
+
+=head2 dot($root,$item,$args,$lvalue)
+
+Method to evaluate a dot operator.
+
+=head1 AUTHOR
+
+Andy Wardley L<http://wardley.org/>
+
+=head1 COPYRIGHT
+
+Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+
+This module is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<Template::TT2>, L<Template::TT2::Stash>
+
+=cut
+
+# Local Variables:
+# mode: perl
+# perl-indent-level: 4
+# indent-tabs-mode: nil
+# End:
+#
