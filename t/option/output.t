@@ -131,7 +131,7 @@ my $tt4 = ENGINE->new({
     OUTPUT_PATH  => 0,
 });
 
-ok( ! $tt4->try( process => 'foo', &callsign, $name2 ), 'process failed with OUTPUT_PATH disabled' );
+ok( ! $tt4->process('foo', &callsign, $name2 ), 'process failed with OUTPUT_PATH disabled' );
 is( $tt4->reason->info, 'Cannot create filesystem output - OUTPUT_PATH is disabled', 'got filesystem error' );
 
 

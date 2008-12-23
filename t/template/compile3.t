@@ -32,7 +32,10 @@ my $config = {
     POST_CHOMP   => 1,
     INCLUDE_PATH => $tdir,
     COMPILE_EXT  => '.ttc',
+    THROW        => 1,
 };
+
+my $COUNT = 1;
 
 # test process fails when EVAL_PERL not set
 my $tt = ENGINE->new($config);
@@ -104,9 +107,9 @@ copy("$file.org", $file) || die "failed to copy $file.org to $file\n";
 #------------------------------------------------------------------------
 
 sub append_file {
-    pass('Drifting off to snuggle-bunny land...');
+    pass('Drifting off to snuggle-bunny land... #' . $COUNT);
     sleep(2);     # ensure file time stamps are different
-    pass('Awoke with a start');
+    pass('Awoke with a start! #' . $COUNT++);
     $file->append(@_);
 }
 
