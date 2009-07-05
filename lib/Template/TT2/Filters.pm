@@ -24,6 +24,7 @@ use Badger::Factory::Class
         html_break      => \&html_para_break,
         html_para_break => \&html_para_break,
         html_line_break => \&html_line_break,
+        xml             => \&xml,
         uri             => \&encode_uri,
         url             => \&encode_url,
         stderr          => \&stderr,
@@ -165,6 +166,13 @@ sub html {
     return $text;
 }
 
+sub xml {
+    my $text = html(@_);
+    for ($text) {
+        s/'/&apos;/g;
+    }
+    return $text;
+}
 
 sub html_para  {
     my $text = shift;
@@ -172,7 +180,6 @@ sub html_para  {
          .  join("\n</p>\n\n<p>\n", split(/(?:\r?\n){2,}/, $text))
          . "</p>\n";
 }
-
 
 sub html_para_break  {
     my $text = shift;
@@ -186,6 +193,7 @@ sub html_line_break  {
     $text =~ s|(\r?\n)|<br />$1|g;
     return $text;
 }
+
 
 
 

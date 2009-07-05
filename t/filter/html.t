@@ -17,7 +17,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 8,
+    tests => 9,
     debug => 'Template::TT2::Filters',
     args  => \@ARGV;
 
@@ -112,3 +112,11 @@ The dog sat on the log<br />
 <br />
 The fish lay on the dish<br />
 and wiggled<br />
+
+-- test xml filter --
+[% FILTER xml %]
+"It isn't what I expected", he replied.
+[% END %]
+-- expect --
+&quot;It isn&apos;t what I expected&quot;, he replied.
+
