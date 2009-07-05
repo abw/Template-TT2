@@ -1,12 +1,13 @@
 package Template::TT2::Templates;
 
+use Badger::Timestamp 'TIMESTAMP';      # file modification times
 use Template::TT2::Document;
 use Template::TT2::Class
     version     => 0.01,
     debug       => 0,
     base        => 'Template::TT2::Base',
     import      => 'class',
-    utils       => 'blessed md5_hex textlike',
+    utils       => 'blessed md5_hex textlike is_object',
     codec       => 'unicode',
     accessors   => 'hub',
     filesystem  => 'FS VFS Cwd Dir File',
@@ -351,7 +352,7 @@ sub text_id {
 sub cache_fetch {
     my ($self, $id, $modified) = @_;
     my $data;
-    
+
     # see if the named template is in the cache
     if ($self->{ CACHE } && ($data = $self->{ CACHE }->get($id))) {
         $self->debug("$id found in the cache\n") if DEBUG;
@@ -457,20 +458,29 @@ sub prepare {
 
 sub add_lookup_path {
     my ($self, $args) = @_;
+    my $modtime;
 
     return 
         if   $self->{ DYNAMIC_PATH }
         or ! $args->{ uri      }        # must have unique id
         or ! $args->{ path     }        # must have path it came from
         or ! $args->{ modified };       # must have modification time
+
+    # TT loads templates as Badger::Filesystem::File objects which return
+    # a Badger::Timestamp object for the file modification time.  If we've
+    # got a timestamp then we extract the epoch time and use that.  Otherwise
+    # we assume the modification time is already seconds since the epoch
+    $modtime = $args->{ modified };
+    $modtime = $modtime->epoch_time 
+        if is_object(TIMESTAMP, $modtime);
     
     $self->{ LOOKUP }->{ $args->{ path } } = [
-        $args->{ uri      }, 
-        $args->{ modified } + $self->{ STAT_TTL }
+        $args->{ uri }, 
+        $modtime + $self->{ STAT_TTL }
     ];       
     $self->debug(
         "added LOOKUP entry for $args->{ path } => [$args->{ uri }, ",
-        $args->{ modified } + $self->{ STAT_TTL },
+        $modtime + $self->{ STAT_TTL },
         "]\n"
     ) if DEBUG;
 }
