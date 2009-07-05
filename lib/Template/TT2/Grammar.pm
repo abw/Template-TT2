@@ -24,7 +24,6 @@ use Template::TT2::Class
     version => 0.01,
     debug   => 0,
     base    => 'Template::TT2::Base',
-    import  => 'class',
     exports => {
         any => '@TABLE_NAMES',
     },
@@ -89,7 +88,6 @@ our $LEXTABLE = {
 our @TABLE_NAMES = qw( LEXTABLE STATES RULES );
 our ($STATES, $RULES);      # defined below with generated states/rules
 our ($factory, $rawstart);  # internal state vars used by parser rules
-
 
 sub init {
     my ($self, $config) = @_;

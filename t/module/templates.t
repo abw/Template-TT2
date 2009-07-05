@@ -72,68 +72,72 @@ update_file('This is the old content');
 #------------------------------------------------------------------------
 
 my $parser = $factory->parser(POST_CHOMP => 1);
-ok( $parser );
+ok( $parser, 'created parser' );
 
 my $provinc = $factory->templates(
     INCLUDE_PATH => $src, 
     PARSER       => $parser,
     TOLERANT     => 1
 );
-ok( $provinc );
+ok( $provinc, 'created provider with INCLUDE_PATH' );
 
 my $provabs = $factory->templates({ 
     ABSOLUTE => 1, 
     PARSER   => $parser, 
 });
-ok( $provabs );
+ok( $provabs, 'created provider with ABSOLUTE option' );
 
 my $provrel = $factory->templates(
     RELATIVE => 1, 
     PARSER   => $parser, 
 );
-ok( $provrel );
+ok( $provrel, 'created provider with RELATIVE option' );
 
-ok( $provinc->parser == $provabs->parser );
-ok( $provabs->parser == $provrel->parser );
+ok( $provinc->parser == $provabs->parser, 'first and second providers share a parser' );
+ok( $provabs->parser == $provrel->parser, 'second and third providers share a parser' );
 
-ok( delivered( $provinc, $file    ) );
-ok(  declined( $provinc, $absfile ) );
-ok(  declined( $provinc, $relfile ) );
+ok( delivered( $provinc, $file    ), 'provider 1 delivered $file' );
+ok(  declined( $provinc, $absfile ), 'provider 1 declined $absfile' );
+ok(  declined( $provinc, $relfile ), 'provider 1 declined $relfile' );
 
-ok(  declined( $provabs, $file    ) );
-ok( delivered( $provabs, $absfile ) );
-ok(    denied( $provabs, $relfile ) );
+ok(  declined( $provabs, $file    ), 'provider 2 declined $file' );
+ok( delivered( $provabs, $absfile ), 'provider 2 delivered $absfile' );
+ok(    denied( $provabs, $relfile ), 'provider 2 denied $relfile' );
 
-ok(  declined( $provrel, $file    ) );
-ok(    denied( $provrel, $absfile ) );
-ok( delivered( $provrel, $relfile ) );
+ok(  declined( $provrel, $file    ), 'provider 3 declined $file' );
+ok(    denied( $provrel, $absfile ), 'provider 3 denied $absfile' );
+ok( delivered( $provrel, $relfile ), 'provider 3 delivered $relfile' );
 
 
 sub delivered {
     my ($provider, $file) = @_;
+    return $provider->fetch($file);
+    
     my ($result, $error) = $provider->fetch($file);
     my $nice_result = defined $result ? $result : '<undef>';
     my $nice_error  = defined $error  ? $error : '<undef>';
-#    print STDERR "$provider->fetch($file) -> [$nice_result] [$nice_error]\n"
-#	if $DEBUG;
+    print STDERR "$provider->fetch($file) -> [$nice_result] [$nice_error]\n"
+	    if $DEBUG;
     return ! $error;
 }
 
 sub declined {
     my ($provider, $file) = @_;
+    return ! $provider->fetch($file);
+
     my ($result, $error) = $provider->fetch($file);
     my $nice_result = defined $result ? $result : '<undef>';
     my $nice_error  = defined $error  ? $error : '<undef>';
-#    print STDERR "$provider->fetch($file) -> [$nice_result] [$nice_error]\n"
-#	if $DEBUG;
+    print STDERR "$provider->fetch($file) -> [$nice_result] [$nice_error]\n"
+	    if $DEBUG;
     return ($error == STATUS_DECLINED);
 }
 
 sub denied {
     my ($provider, $file) = @_;
     my ($result, $error) = $provider->fetch($file);
-#    print STDERR "$provider->fetch($file) -> [$result] [$error]\n"
-#	if $DEBUG;
+    print STDERR "$provider->fetch($file) -> [$result] [$error]\n"
+	    if $DEBUG;
     return ($error == STATUS_ERROR);
 }
 
