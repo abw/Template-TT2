@@ -74,7 +74,7 @@ sub get_first {
 sub get_next {
     my $self = shift;
     my $data = $self->{ data } 
-            || return $self->get_first;
+        || return $self->get_first;
 
     my ($max, $index) = @$self{ @MAX_INDEX };
 
@@ -94,16 +94,22 @@ sub get_next {
 
 sub get_all {
     my $self = shift;
-    my $data = $self->{ data } 
+    my $inc  = $self->{ data } ? 1 : 0;     # inc index if get_first has been called()
+    my $data = $self->{ data }
             || $self->prepare
-            || return [ ];
+            || return (undef, STATUS_DONE);
 
     my ($max, $index) = @$self{ @MAX_INDEX };
     my @rest;
 
+    $self->debug("index: $index  (+ inc: $inc)  max: $max") if DEBUG;
+
     # if there's still some data to go...
-    if ($index < $max) {
-        $index++;
+    if ($index + $inc <= $max) {
+        # If get_first() has previously been called (i.e. $self->{ data }
+        # is set) then $inc will contain 1 to indicate that we must increment
+        # the index counter to step over the item already returned.
+        $index += $inc;
         @rest = @$data[$index..$max];
         
         # update counters and flags

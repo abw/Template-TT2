@@ -17,7 +17,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 18,
+    tests => 29,
     debug => 'Template::TT2::Iterator',
     args  => \@ARGV;
     
@@ -53,6 +53,33 @@ is( $i1->get_first(), 'foo', 'got first after reset' );
 is( $i1->get_next(), 'bar', 'got next after reset' );
 $rest = $i1->get_all();
 ok( scalar @$rest == 5, 'got 5 more after reset' );
+
+
+# get_all with a few values in the iterator
+my $i2 = ITERATOR->new($data);
+($rest, $err) = $i2->get_all();
+is( scalar @$rest, 7, 'got seven items' );
+ok( ! $err, 'i2 no error');
+($val, $err) = $i2->get_all();
+ok( ! $val, 'i2 no value');
+is( $err, STATUS_DONE, 'i2 all done' );
+
+# get_all with a single value.
+my $i3 = ITERATOR->new(['foo']);
+($rest, $err) = $i3->get_all();
+is( scalar @$rest, 1, 'got one item' );
+is( pop @$rest, 'foo', 'got foo' );
+ok( ! $err, 'i3 no error');
+($val, $err) = $i3->get_all();
+ok( ! $val, 'i3 no value' );
+is( $err, STATUS_DONE, 'i3 all done' );
+
+# get_all with an empty array
+my $i4 = ITERATOR->new([]);
+($val, $err) = $i4->get_all();
+ok( ! $val, 'i4 no value' );
+is( $err, STATUS_DONE, 'i4 all done' );
+
 
 
 test_expect(
