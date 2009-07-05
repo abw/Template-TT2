@@ -31,6 +31,8 @@ extern "C" {
 #endif
 
 #define PERL_NO_GET_CONTEXT
+#define NEED_sv_2pv_flags
+#define NEED_newRV_noinc
 #include "EXTERN.h"
 #include "perl.h"
 #include "ppport.h"
@@ -46,7 +48,8 @@ extern "C" {
 #ifdef WIN32
 #define debug(format)
 #else
-#define debug(format, ...)
+#define debug(...)
+/* #define debug(...) fprintf(stderr, __VA_ARGS__) */
 #endif
 #endif
 
@@ -70,6 +73,7 @@ static TT_RET   hash_op(pTHX_ SV*, char*, AV*, SV**, int);
 static TT_RET   list_op(pTHX_ SV*, char*, AV*, SV**);
 static TT_RET   scalar_op(pTHX_ SV*, char*, AV*, SV**, int);
 static TT_RET   tt_fetch_item(pTHX_ SV*, SV*, AV*, SV**);
+static TT_RET   autobox_list_op(pTHX_ SV*, char*, AV*, SV**, int);
 static SV*      dotop(pTHX_ SV*, SV*, AV*, int);
 static SV*      call_coderef(pTHX_ SV*, AV*);
 static SV*      fold_results(pTHX_ I32);
@@ -267,7 +271,8 @@ static SV *dotop(pTHX_ SV *root, SV *key_sv, AV *args, int flags) {
                 for (i = 0; i <= n; i++)
                     if ((svp = av_fetch(args, i, 0))) XPUSHs(*svp);
                 PUTBACK;
-                n = perl_call_method(item, G_ARRAY | G_EVAL);
+                n = call_method(item, G_ARRAY | G_EVAL);
+
                 SPAGAIN;
                 
                 if (SvTRUE(ERRSV)) {
@@ -419,6 +424,10 @@ static SV *assign(pTHX_ SV *root, SV *key_sv, AV *args, SV *value, int flags) {
     debug("assign(%s)\n", key2);
 #endif
 
+    /* negative key_len is used to indicate UTF8 string */
+    if (SvUTF8(key_sv))
+        key_len = -key_len;
+
     if (!root || !SvOK(key_sv) || key_sv == &PL_sv_undef || looks_private(aTHX_ key)) {
         /* ignore _private or .private members */
         return &PL_sv_undef;
@@ -444,7 +453,7 @@ static SV *assign(pTHX_ SV *root, SV *key_sv, AV *args, SV *value, int flags) {
                 XPUSHs(value);
                 PUTBACK;
                 debug(" - calling object method\n");
-                count = perl_call_method(key, G_ARRAY);
+                count = call_method(key, G_ARRAY);
                 SPAGAIN;
                 return fold_results(aTHX_ count);               
             }
@@ -551,6 +560,14 @@ static TT_RET tt_fetch_item(pTHX_ SV *root, SV *key_sv, AV *args, SV **result) {
     char *key = SvPV(key_sv, key_len);
     SV **value = NULL;
 
+#ifndef WIN32
+    debug("fetch item: %s\n", key);
+#endif
+
+    /* negative key_len is used to indicate UTF8 string */
+    if (SvUTF8(key_sv))
+        key_len = -key_len;
+
     if (!SvROK(root)) 
         return TT_RET_UNDEF;
     
@@ -598,7 +615,7 @@ static void die_object (pTHX_ SV *err) {
 
     if (sv_isobject(err) || SvROK(err)) {
         /* throw object via ERRSV ($@) */
-        SV *errsv = perl_get_sv("@", TRUE);
+        SV *errsv = get_sv("@", TRUE);
         sv_setsv(errsv, err);
         (void) die(Nullch);
     }
@@ -622,7 +639,7 @@ static SV *call_coderef(pTHX_ SV *code, AV *args) {
         if ((svp = av_fetch(args, i, FALSE))) 
             XPUSHs(*svp);
     PUTBACK;
-    count = perl_call_sv(code, G_ARRAY);
+    count = call_sv(code, G_ARRAY);
     SPAGAIN;
     
     return fold_results(aTHX_ count);
@@ -802,16 +819,8 @@ static TT_RET hash_op(pTHX_ SV *root, char *key, AV *args, SV **result, int flag
     
     /* try upgrading item to a list and look for a list op */
     if (!(flags & TT_LVALUE_FLAG)) {
-        AV *newlist;
-        SV *listref;
-        newlist = newAV();
-        av_push(newlist, root);
-        SvREFCNT_inc(root);
-        listref = (SV *) newRV_noinc((SV *) newlist);
-        if ((retval = list_op(aTHX_ listref, key, args, result)) == TT_RET_UNDEF) {
-            av_undef(newlist);
-        }
-        return retval;
+        /* hash.method  ==>  [hash].method */
+        return autobox_list_op(aTHX_ root, key, args, result, flags);
     }
     
     /* not found */
@@ -869,23 +878,25 @@ static TT_RET scalar_op(pTHX_ SV *sv, char *key, AV *args, SV **result, int flag
 
     /* try upgrading item to a list and look for a list op */
     if (!(flags & TT_LVALUE_FLAG)) {
-        AV *newlist;
-        SV *listref;
-        newlist = newAV();
-        av_push(newlist, sv);
-        SvREFCNT_inc(sv);
-        listref = (SV *) newRV_noinc((SV *) newlist);
-        if ((retval = list_op(aTHX_ listref, key, args, result)) == TT_RET_UNDEF) {
-            av_undef(newlist);
-        }
-        return retval;
+        /* scalar.method  ==>  [scalar].method */
+        return autobox_list_op(aTHX_ sv, key, args, result, flags);
     }
-    
+
     /* not found */
     *result = &PL_sv_undef;
     return TT_RET_UNDEF;
 }
 
+static TT_RET autobox_list_op(pTHX_ SV *sv, char *key, AV *args, SV **result, int flags) {
+    AV *av    = newAV();
+    SV *avref = (SV *) newRV_inc((SV *) av);
+    TT_RET retval;
+    av_push(av, SvREFCNT_inc(sv)); 
+    retval = list_op(aTHX_ avref, key, args, result);
+    SvREFCNT_dec(av);
+    SvREFCNT_dec(avref);
+    return retval;
+}
 
 /* xs_arg comparison function */
 static int cmp_arg(const void *a, const void *b) {
@@ -918,7 +929,7 @@ static SV *find_perl_op(pTHX_ char *key, char *perl_var) {
     SV *tt_ops;
     SV **svp;
 
-    if ((tt_ops = perl_get_sv(perl_var, FALSE)) 
+    if ((tt_ops = get_sv(perl_var, FALSE)) 
         && SvROK(tt_ops) 
         && (svp = hv_fetch((HV *) SvRV(tt_ops), key, strlen(key), FALSE)) 
         && SvROK(*svp) 
@@ -984,7 +995,7 @@ static int looks_private(pTHX_ const char *name) {
      * regex from XS.  The Perl internals docs really suck in places.
      */
     
-    if (SvTRUE(perl_get_sv(TT_PRIVATE, FALSE))) {
+    if (SvTRUE(get_sv(TT_PRIVATE, FALSE))) {
         return (*name == '_' || *name == '.');
     }  
     return 0;
@@ -1136,10 +1147,7 @@ static SV *scalar_dot_defined(pTHX_ SV *sv, AV *args) {
 
 /* scalar.length */
 static SV *scalar_dot_length(pTHX_ SV *sv, AV *args) {
-    STRLEN length;
-    SvPV(sv, length);
-
-    return sv_2mortal(newSViv((IV) length));
+    return sv_2mortal(newSViv((IV) SvUTF8(sv) ? sv_len_utf8(sv): sv_len(sv)));
 }
 
 
@@ -1162,6 +1170,7 @@ get(root, ident, ...)
     CODE:
     AV *args;
     int flags = get_debug_flag(aTHX_ root);
+    int n;
     STRLEN len;
     char *str;
 
@@ -1188,8 +1197,23 @@ get(root, ident, ...)
         RETVAL = dotop(aTHX_ root, ident, args, flags);
     }
 
-    if (!SvOK(RETVAL))
-        RETVAL = newSVpvn("", 0);       /* new empty string */
+    if (!SvOK(RETVAL)) {
+        dSP;
+        ENTER;
+        SAVETMPS;
+        PUSHMARK(SP);
+        XPUSHs(root);
+        XPUSHs(ident);
+        PUTBACK;
+        n = call_method("undefined", G_SCALAR);
+        SPAGAIN;
+        if (n != 1)
+            croak("undefined() did not return a single value\n");
+        RETVAL = SvREFCNT_inc(POPs);
+        PUTBACK;
+        FREETMPS;
+        LEAVE;
+    }
     else
         RETVAL = SvREFCNT_inc(RETVAL);
 
