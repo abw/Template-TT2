@@ -39,7 +39,15 @@ sub init {
 sub factory {
     my $self = shift;
     my $this = $self;
-    weaken($this);
+    
+    # This causes problems: https://rt.cpan.org/Ticket/Display.html?id=46691
+    # If the plugin is loaded twice in different templates (one INCLUDEd into
+    # another) then the filter gets garbage collected when the inner template 
+    # ends (at least, I think that's what's happening).  So I'm going to take
+    # the "suck it and see" approach, comment it out, and wait for someone to
+    # complain that this module is leaking memory.  
+
+    # weaken($this);
 
     if ($self->{ _DYNAMIC }) {
         return $self->{ _DYNAMIC_FILTER } ||= [ 
