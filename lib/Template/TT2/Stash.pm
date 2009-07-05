@@ -7,14 +7,15 @@ use Template::TT2::Class
     utils     => 'blessed reftype looks_like_number',
     throws    => 'undef',           # default exception type
     import    => 'class',
-    constants => ':types :stash',
+    constants => ':types :stash ERROR_UNDEF',
     constant  => {
         DOT   => 'dot',
     },
     messages  => {
         bad_dot    => 'Invalid dot operation: %s.%s',
         bad_assign => 'Invalid assignment to %s.%s',
-        undefined  => '<2> is undefined for <1>',
+        dot_undef  => '<2> is undefined for <1>',
+        undefined  => 'Undefined variable: <1>',
     };
 
 use Template::TT2::VMethods;
@@ -189,8 +190,35 @@ sub update {
 
 
 sub undefined {
-    my ($self, $ident, $args);
-    return '';
+    my ($self, $ident, $args) = @_;
+
+    if ($self->{ _STRICT }) {
+        # Sorry, but we can't provide a sensible source file and line without
+        # re-designing the whole architecure of TT (see TT3)
+        $self->throw_msg( 
+            ERROR_UNDEF, undefined => $self->_reconstruct_ident($ident)
+        );
+    }
+    else {
+        # There was a time when I thought this was a good idea. But it's not.
+        return '';
+    }
+}
+ 
+sub _reconstruct_ident {
+    my ($self, $ident) = @_;
+    my ($name, $args, @output);
+    my @input = ref $ident eq 'ARRAY' ? @$ident : ($ident);
+ 
+    while (@input) {
+        $name = shift @input;
+        $args = shift @input || 0;
+        $name .= '(' . join(', ', map { /^\d+$/ ? $_ : "'$_'" } @$args) . ')'
+            if $args && ref $args eq 'ARRAY';
+        push(@output, $name);
+    }
+    
+    return join('.', @output);
 }
 
 

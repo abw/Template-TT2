@@ -66,9 +66,11 @@ sub init {
     $self->{ STASH } = $config->{ STASH } || do {
         my $predefs  = $config->{ VARIABLES } || { };
 
-        # hack to get stash to know about debug mode
+        # hack to get stash to know about debug/strict modes
         $predefs->{ _DEBUG } = ($debug & DEBUG_UNDEF) ? 1 : 0
              unless defined $predefs->{ _DEBUG };
+        $predefs->{ _STRICT } = $config->{ STRICT }
+             unless defined $predefs->{ _STRICT };
         
         TT2_MODULES->module( stash => $predefs );
     };

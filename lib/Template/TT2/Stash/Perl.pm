@@ -238,7 +238,7 @@ sub dot {
         return $self->error($result[1]);
     }
     elsif ($self->{ _DEBUG }) {
-        return $self->error( undefined => $root, $item );
+        return $self->error( dot_undef => $root, $item );
     }
 
     return undef;

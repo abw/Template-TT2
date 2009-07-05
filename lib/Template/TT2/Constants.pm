@@ -42,7 +42,7 @@ use Badger::Class
                         DEBUG_SERVICE DEBUG_ALL DEBUG_CALLER DEBUG_FLAGS',
             cache   => 'CACHE_UNLIMITED',
             flow    => 'FLOW_STOP',
-            stash   => 'STASH_PRIVATE STASH_IMPORT',
+            stash   => 'STASH_PRIVATE STASH_IMPORT STASH_UNDEF',
         },
         any => 'MSWIN32 UNICODE',
     },
