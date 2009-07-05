@@ -149,7 +149,8 @@ sub test_handler {
     my $in  = $test->{ input };
     my $out = '';
     
-    $engine->process(\$in, $config->{ vars }, \$out);
+    $engine->process(\$in, $config->{ vars }, \$out)
+        || die $engine->error;
 
     if ($test->{ exflag }->{ process }) {
         my ($expin, $expout);
