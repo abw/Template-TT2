@@ -43,10 +43,11 @@ BEGIN {
 
 sub new {
     my ($class, $doc) = @_;
-    my ($block, $defblocks, $metadata) = @$doc{ 
-        qw( BLOCK DEFBLOCKS METADATA ) 
+    my ($block, $defblocks, $variables, $metadata) = @$doc{ 
+        qw( BLOCK DEFBLOCKS VARIABLES METADATA ) 
     };
     $defblocks ||= { };
+    $variables ||= { };
     $metadata  ||= { };
 
     # evaluate Perl code in $block to create sub-routine reference if necessary
@@ -85,6 +86,7 @@ sub new {
         %$metadata,
         _BLOCK     => $block,
         _DEFBLOCKS => $defblocks,
+        _VARIABLES => $variables,
         _HOT       => 0,
     }, $class;
 }
@@ -95,6 +97,10 @@ sub block {
 
 sub blocks {
     return $_[0]->{ _DEFBLOCKS };
+}
+
+sub variables {
+    return $_[0]->{ _VARIABLES };
 }
 
 sub process {

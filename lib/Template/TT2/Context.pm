@@ -11,13 +11,18 @@ use Template::TT2::Class
     words     => 'LOAD_',
     utils     => 'blessed is_object',
     accessors => 'hub',
-    constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS 
+    constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS HASH
                   ARRAY SCALAR DELIMITER MSWIN32 :modules :status :error',
     constant  => {
         EXCEPTION => 'Badger::Exception',
+    },
+    messages  => {
+        view_base_undef   => "View base is not defined: %s",
+        view_base_invalid => "View base is not a %s object: %s => %s"
     };
 
-our @LOADERS = qw( templates plugins filters );
+
+our @LOADERS    = qw( templates plugins filters );
 
 # generate lower_case accessor method to access UPPER_CASE items
 # (a good reason why TT3 will be switching to lower case config options)
@@ -86,6 +91,10 @@ sub init {
         } 
         keys %$blocks
     };
+
+    # define any VIEWS
+    $self->define_views( $config->{ VIEWS } )
+        if $config->{ VIEWS };
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # RECURSION - flag indicating if recursion into templates is supported
@@ -452,6 +461,56 @@ sub plugin {
 
 
 #-----------------------------------------------------------------------
+# view methods
+#-----------------------------------------------------------------------
+
+sub view {
+    class(TT2_VIEW)->load->instance(@_);
+}
+
+sub define_view {
+    my ($self, $name, $params) = @_;
+    my $base;
+ 
+    if (defined $params->{ base }) {
+        my $base = $self->{ STASH }->get( $params->{ base } );
+
+        return $self->throw_msg( 
+            ERROR_VIEW, view_base_undef => $params->{ base }
+        ) unless $base;
+
+        return $self->throw_msg(
+            ERROR_VIEW, view_base_invalid => TT2_VIEW, $params->{ base }, $base
+        ) unless is_object(TT2_VIEW, $base);
+        
+        $params->{ base } = $base;
+    }
+    my $view = $self->view($params);
+    $view->seal();
+    $self->{ STASH }->set($name, $view);
+}
+
+sub define_views {
+    my ($self, $views) = @_;
+    
+    # a list reference is better because the order is deterministic (and so
+    # allows an earlier VIEW to be the base for a later VIEW), but we'll 
+    # accept a hash reference and assume that the user knows the order of
+    # processing is undefined
+    $views = [ %$views ] 
+        if ref $views eq HASH;
+    
+    # make of copy so we don't destroy the original list reference
+    my @items = @$views;
+    my ($name, $view);
+    
+    while (@items) {
+        $self->define_view(splice(@items, 0, 2));
+    }
+}
+
+
+#-----------------------------------------------------------------------
 # Flow control and exception handling methods.
 #
 # Using exceptions for flow control is usually something to be avoided.  
@@ -593,10 +652,6 @@ sub iterator {
         : TT2_ITERATOR->new($data);
 }
 
-
-sub view {
-    class(TT2_VIEW)->load->instance(@_);
-}
 
 
 

@@ -29,6 +29,7 @@ use Template::TT2::Class
         'TAG_STYLE|class:TAG_STYLE=default',
         'FILE_INFO=1',
         'EVAL_PERL=0',
+        'TRACE_VARS=0',
     ];
 
 use Template::TT2::Grammar 
@@ -74,8 +75,6 @@ sub init {
     $self->configure($config);
     $self->{ info } = [ ];
 
-#    my ($tagstyle, $debug, $start, $end, $defaults, $grammar, $hash, $key, $udef);
-
     # load and instantiate grammar if not already an object then ask it
     # for lextable, states and rules
     $grammar = $self->{ GRAMMAR };
@@ -83,10 +82,6 @@ sub init {
         unless ref $grammar;
     # load grammar rules, states and lex table
     @$self{ @TABLE_NAMES } = $grammar->tables;
-
-    use Data::Dumper;
-#    $self->debug( Dumper($self));
-#    $self->debug("setup {", join(",\n", map { "$_ => $self->{ $_ }" } keys %$self), "}\n");
 
     if (my $constants = $config->{ CONSTANTS }) {
         my $hub = $config->{ hub } || TT2_HUB;
@@ -192,8 +187,9 @@ sub parse {
 #    print "info: { ", join(', ', map { "$_ => $info->{ $_ }" } keys %$info), " }\n";
 
     # store for blocks defined in the template (see define_block())
-    my $defblock = local $self->{ DEFBLOCK } = { };
-    my $metadata = local $self->{ METADATA } = [ ];
+    my $defblock  = local $self->{ DEFBLOCK  } = { };
+    my $metadata  = local $self->{ METADATA  } = [ ];
+    my $variables = local $self->{ VARIABLES } = $self->{ TRACE_VARS } ? { } : undef;
     local $self->{ DEFBLOCKS } = [ ];
 #   local $self->{ TEMPLATE_NAME } = 
 
@@ -218,6 +214,7 @@ sub parse {
     return {
         BLOCK     => $block,
         DEFBLOCKS => $defblock,
+        VARIABLES => $variables,
         METADATA  => { @$metadata },
     };
 }
@@ -662,6 +659,12 @@ sub _parse {
 
     # retrieve internal rule and state tables
     my ($states, $rules) = @$self{ qw( STATES RULES ) };
+
+    # If we're tracing variable usage then we need to give the factory a 
+    # reference to our $self->{ VARIABLES } for it to fill in.  This is a
+    # bit of a hack to back-patch this functionality into TT2.
+    $self->{ FACTORY }->trace_vars($self->{ VARIABLES })
+        if $self->{ TRACE_VARS };
 
     # call the grammar set_factory method to install emitter factory
     $self->{ GRAMMAR }->install_factory($self->{ FACTORY });

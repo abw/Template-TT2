@@ -1,0 +1,61 @@
+This is an alpha version of Template::TT2.  This will become the 
+replacement for the v2 Template Toolkit modules for the purpose 
+of backwards compatibility when TT3 is released.
+
+If you currently have code using TT2 like this:
+
+    use Template;
+
+    my $tt2 = Template->new(
+        INCLUDE_PATH => '/path/to/templates',
+    );
+
+Then, when TT3 is released, you will need to install Template::TT2 and 
+change it to:
+
+    use Template::TT2;
+
+    my $tt2 = Template::TT2->new(
+        INCLUDE_PATH => '/path/to/templates',
+    );
+
+Everything that is currently in the v2 Template::* namespace has been
+moved "down" a level into the Template::TT2::* namespace.  All of the code
+has been cleaned up and refactored to use the Badger toolkit.  This 
+implements all the generic functionality (i.e. not directly related to 
+template processing) that is shared between TT2, TT3, and any other 
+modules or applications that might use it.
+
+There are a few architectural changes that may affect any code that pokes
+deep into the internals of TT2.  Most notable is the Template::Provider 
+module that has been split into 3 new modules: Template::TT2::Templates, 
+Template::TT2::Cache and Template::TT2::Store.  Any code that is relying
+on the Old World Order in that regard will, I'm afraid, have to be 
+re-written or modified to accomodate these changes.  
+
+However, the vast majority of code that relies only on TT2's external 
+features should require no more than a change in the module name. 
+Although the code has been cleaned up as best as possible, it is at
+heart the same old code that provides a faithful implementation of
+TT2, warts and all.  
+
+Template::TT2 was forked from the main Template repository in October 2008 
+and completed (to the point of implementing all of TT2's features) by the 
+beginning of December 2008.  Since then it has fallen a little being the 
+current state of the repository.  There are perhaps a few dozen small 
+patches that need to be back-ported onto Template::TT2 to bring it up to 
+date.  There are also a handful of tests that are failing.  This could be 
+due to some of the recent changes in Badger.  I think they're mostly
+trivial things, but I haven't had a chance to look through them yet.
+
+If anyone would like to help bring Template::TT2 up to date and get it
+ready for release then please get in touch.  TT3 can't be released until 
+Template::TT2 is also ready for action so it's a vitally important job,
+even if it's not the most glamorous or funnest one.
+
+Otherwise you'll have to wait for me to do it, and you never know how long 
+that might take...
+
+
+-- Andy Wardley, December 2009.
+

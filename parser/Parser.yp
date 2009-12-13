@@ -131,10 +131,10 @@ atomdir:    GET expr                { $factory->get($_[2])                }
                                            : 'next;')                     }
         |   DEBUG nameargs          { if ($_[2]->[0]->[0] =~ /^'(on|off)'$/) {
                                           $_[0]->{ DEBUG_DIRS } = ($1 eq 'on');
-                                          $factory->debug($_[2]);
+                                          $factory->debug_dir($_[2]);
                                       }
                                       else {
-                                          $_[0]->{ DEBUG_DIRS } ? $factory->debug($_[2]) : '';
+                                          $_[0]->{ DEBUG_DIRS } ? $factory->debug_dir($_[2]) : '';
                                       }
                                     }
         |   wrapper

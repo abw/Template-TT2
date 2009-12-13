@@ -150,6 +150,9 @@ sub context {
        ||= $_[0]->service->context;
 }
 
+sub template {
+    shift->context->template(@_);
+}
 
 sub output {
     shift->hub->output(@_);

@@ -22,7 +22,7 @@ use Template::TT2::Test
     args  => \@ARGV;
 
 eval "use Text::Wrap";
-skip_all('Text::Wrap not installed') if @_;
+skip_all('Text::Wrap not installed') if $@;
 
 test_expect;
  

@@ -20,7 +20,7 @@ use lib qw( ./lib ../lib ../../lib );
 use constant 
     ENGINE => 'Template::TT2';
 use Template::TT2::Test
-    tests => 24,
+    tests => 26,
     debug => 'Template::TT2::View Template::TT2::Plugin::View',
     args  => \@ARGV;
 
@@ -58,9 +58,36 @@ my $vars = {
     blessed_list => bless([ "Hello", "World" ], 'Blessed::List'),
 };
 
-test_expect( vars => $vars );
+my $config = {
+    VIEWS => [
+        bottom => { prefix => 'bottom/' },
+        middle => { prefix => 'middle/', base => 'bottom' },
+    ],
+};
+
+test_expect( vars => $vars, config => $config );
 
 __DATA__
+-- test pre-defined bottom view --
+[% BLOCK bottom/list; "BOTTOM LIST: "; item.join(', '); END;
+   list = [10, 20 30];
+   bottom.print(list)
+%]
+-- expect --
+BOTTOM LIST: 10, 20, 30
+
+-- test pre-defined middle view --
+[% BLOCK bottom/list; "BOTTOM LIST: "; item.join(', '); END;
+   BLOCK middle/hash; "MIDDLE HASH: "; item.values.nsort.join(', '); END;
+   list = [10, 20 30];
+   hash = { pi => 3.142, e => 2.718 };
+   middle.print(list); "\n";
+   middle.print(hash); "\n";
+%]
+-- expect --
+BOTTOM LIST: 10, 20, 30
+MIDDLE HASH: 2.718, 3.142
+
 
 -- test VIEW prefix argument --
 [% VIEW fred prefix='blat_' %]
@@ -453,3 +480,7 @@ c: 10
 d: 10
 e: 10
 
+-- test bad base --
+[% VIEW wiz base=no_such_base_at_all; END;-%]
+-- expect --
+bad view error
