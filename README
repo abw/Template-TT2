@@ -41,7 +41,7 @@ TT2, warts and all.
 
 Template::TT2 was forked from the main Template repository in October 2008 
 and completed (to the point of implementing all of TT2's features) by the 
-beginning of December 2008.  Since then it has fallen a little being the 
+end of December 2008.  Since then it has fallen a little being the 
 current state of the repository.  There are perhaps a few dozen small 
 patches that need to be back-ported onto Template::TT2 to bring it up to 
 date.  There are also a handful of tests that are failing.  This could be 
