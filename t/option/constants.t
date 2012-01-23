@@ -6,24 +6,24 @@
 #
 # Written by Andy Wardley <abw@andywardley.com>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib     => '../../lib';
+
 use Template::TT2::Test
-    tests => 28,
-    debug => 'Template::TT2::Namespace::Constants',
-    args  => \@ARGV;
+    tests   => 28,
+    debug   => 'Template::TT2::Namespace::Constants',
+    args    => \@ARGV;
 
 use constant ENGINE => 'Template::TT2';
 
-use Template::Stash;
+use Template::TT2::Stash;
 use Template::TT2::Directive;
 use Template::TT2::Parser;
 use Template::TT2::Namespace::Constants;
@@ -35,8 +35,8 @@ my $constants = {
     double => "foo'bar",
     joint  => ', ',
     col => {
-	    back => '#ffffff',
-	    text => '#000000',
+        back => '#ffffff',
+        text => '#000000',
     },
     counter => sub { $n++ },
 };
@@ -57,7 +57,7 @@ is( $namespace->ident([ 'constants', 0, "'col'", 0, "'text'", 0 ]), "'#000000'",
 
 my $factory = Template::TT2::Directive->new({
     NAMESPACE => {
-	    const => $namespace,
+        const => $namespace,
     }
 });
 ok( $factory, 'created Template::TT2::Directive factory' );
@@ -83,7 +83,7 @@ ok( scalar $text =~ /stash->get\(\['col', 0, 'user', 0\]\)/, 'col.user unfolded'
 
 $parser = Template::TT2::Parser->new({
     NAMESPACE => {
-	    const => $namespace,
+        const => $namespace,
     }
 });
 
@@ -108,7 +108,7 @@ ok( scalar $text =~ /stash->get\(\['col', 0, 'user', 0\]\)/, 'col.user unfolded'
 
 my $tt1 = Template::TT2->new({
     NAMESPACE => {
-	    const => $namespace,
+        const => $namespace,
     },
 });
 ok( $tt1, 'created tt1' );
@@ -117,8 +117,8 @@ my $const2 = {
     author => 'abw',
     joint  => ' is the new ',
     col => {
-	    back => 'orange',
-	    text => 'black',
+        back => 'orange',
+        text => 'black',
     },
     fave => 'back',
 };
@@ -142,8 +142,8 @@ my $engines = {
 
 my $vars = {
     col => {
-	    user => 'red',
-	    luza => 'blue',
+        user => 'red',
+        luza => 'blue',
     },
     constants => $constants,
 };

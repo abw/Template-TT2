@@ -27,9 +27,9 @@ use Template::TT2::Constants ':status';
 # sample data
 my ($a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, 
     $n, $o, $p, $q, $r, $s, $t, $u, $v, $w, $x, $y, $z) = 
-	qw( alpha bravo charlie delta echo foxtrot golf hotel india 
-	    juliet kilo lima mike november oscar papa quebec romeo 
-	    sierra tango umbrella victor whisky x-ray yankee zulu );
+    qw( alpha bravo charlie delta echo foxtrot golf hotel india 
+        juliet kilo lima mike november oscar papa quebec romeo 
+        sierra tango umbrella victor whisky x-ray yankee zulu );
 
 my $data = [ $r, $j, $s, $t, $y, $e, $f, $z ];
 my $vars = { 
@@ -40,13 +40,17 @@ my $vars = {
     'e'  => $e,
     data => $data,
     days => [ qw( Mon Tue Wed Thu Fri Sat Sun ) ],
-    wxyz => [ { id => $z, name => 'Zebedee', rank => 'aa' },
-	      { id => $y, name => 'Yinyang', rank => 'ba' },
-	      { id => $x, name => 'Xeexeez', rank => 'ab' },
-	      { id => $w, name => 'Warlock', rank => 'bb' }, ],
-    inst => [ { name => 'piano', url => '/roses.html'  },
-	      { name => 'flute', url => '/blow.html'   },
-	      { name => 'organ', url => '/tulips.html' }, ],
+    wxyz => [ 
+        { id => $z, name => 'Zebedee', rank => 'aa' },
+        { id => $y, name => 'Yinyang', rank => 'ba' },
+        { id => $x, name => 'Xeexeez', rank => 'ab' },
+        { id => $w, name => 'Warlock', rank => 'bb' }, 
+    ],
+    inst => [
+        { name => 'piano', url => '/roses.html'  },
+        { name => 'flute', url => '/blow.html'   },
+        { name => 'organ', url => '/tulips.html' }, 
+    ],
     nest => [ [ 3, 1, 4 ], [ 2, [ 7, 1, 8 ] ] ],
 };
 
