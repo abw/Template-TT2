@@ -1,12 +1,16 @@
 package Template::TT2::Iterator;
 
 use Template::TT2::Class
-    version   => 0.01,
-    debug     => 0,
-    base      => 'Template::TT2::Base',
-    constants => 'HASH ARRAY STATUS_DONE',
-    utils     => 'blessed',
-    accessors => 'size max index count first last';
+    version     => 0.01,
+    debug       => 0,
+    base        => 'Template::TT2::Base',
+    utils       => 'blessed',
+    accessors   => 'size max index count first last',
+    constants   => 'HASH ARRAY STATUS_DONE',
+    constant    => {
+        ODD     => 'odd',
+        EVEN    => 'even',
+    };
 
 *number = \&count;
 
@@ -15,6 +19,7 @@ our @ICFL      = qw( index count first last );
 our @SMICFL    = qw( size max index count first last );
 our @PREV_NEXT = qw( prev next ); 
 our @MAX_INDEX = qw( max index );
+
 
 sub new {
     my $class  = shift;
@@ -42,6 +47,7 @@ sub new {
     }, $class;
 }
 
+
 sub prepare {
     my $self  = shift;
     my $data  = $self->{ data } = $self->{ init };
@@ -63,6 +69,7 @@ sub prepare {
     return $data
 }
 
+
 sub get_first {
     my $self = shift;
     my $data = $self->prepare
@@ -70,6 +77,7 @@ sub get_first {
 
     return $data->[0];
 }
+
 
 sub get_next {
     my $self = shift;
@@ -91,6 +99,7 @@ sub get_next {
 
     return $data->[$index];
 }
+
 
 sub get_all {
     my $self = shift;
@@ -122,7 +131,21 @@ sub get_all {
         return (undef, STATUS_DONE);
     }
 }
-    
+
+
+sub odd {
+    shift->{ count } % 2 ? 1 : 0
+}
+
+
+sub even {
+    shift->{ count } % 2 ? 0 : 1
+}
+
+
+sub parity {
+    shift->{ count } % 2 ? ODD : EVEN;
+}
 
 #========================================================================
 #                   -----  PRIVATE DEBUG METHODS -----

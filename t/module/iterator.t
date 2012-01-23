@@ -17,7 +17,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 29,
+    tests => 30,
     debug => 'Template::TT2::Iterator',
     args  => \@ARGV;
     
@@ -143,3 +143,19 @@ foo<-[bar]->baz
 bar<-[baz]->qux
 baz<-[qux]
 
+
+-- test even/odd/parity --
+[% FOREACH item IN [1..10] -%]
+* [% loop.count %] [% loop.odd %] [% loop.even %] [% loop.parity +%]
+[% END -%]
+-- expect --
+* 1 1 0 odd
+* 2 0 1 even
+* 3 1 0 odd
+* 4 0 1 even
+* 5 1 0 odd
+* 6 0 1 even
+* 7 1 0 odd
+* 8 0 1 even
+* 9 1 0 odd
+* 10 0 1 even
