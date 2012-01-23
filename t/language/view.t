@@ -6,24 +6,21 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2000,2008 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2000,2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib '/home/abw/projects/badger/lib';
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib     => '../../lib';
 use constant 
-    ENGINE => 'Template::TT2';
+    ENGINE  => 'Template::TT2';
 use Template::TT2::Test
-    tests => 26,
-    debug => 'Template::TT2::View Template::TT2::Plugin::View',
-    args  => \@ARGV;
-
+    tests   => 27,
+    debug   => 'Template::TT2::View Template::TT2::Plugin::View',
+    args    => \@ARGV;
 
 package Blessed::List;
 
@@ -54,7 +51,7 @@ is( $view->prefix(), 'my', 'got view prefix' );
 #-----------------------------------------------------------------------
 
 my $vars = {
-#    foo => Foo->new( pi => 3.14, e => 2.718 ),
+#   foo => Foo->new( pi => 3.14, e => 2.718 ),
     blessed_list => bless([ "Hello", "World" ], 'Blessed::List'),
 };
 
@@ -65,7 +62,10 @@ my $config = {
     ],
 };
 
-test_expect( vars => $vars, config => $config );
+test_expect( 
+    config  => $config,
+    vars    => $vars, 
+);
 
 __DATA__
 -- test pre-defined bottom view --
@@ -481,6 +481,12 @@ d: 10
 e: 10
 
 -- test bad base --
-[% VIEW wiz base=no_such_base_at_all; END;-%]
+[%  TRY; 
+        VIEW wiz base=no_such_base_at_all; 
+        END;
+    CATCH;
+        error;
+    END
+-%]
 -- expect --
-bad view error
+view error - Invalid base specified for view

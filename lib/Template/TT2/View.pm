@@ -6,7 +6,10 @@ use Template::TT2::Class
     base        => 'Template::TT2::Base',
     constants   => 'HASH',
     throws      => 'view',
-    utils       => 'params';
+    utils       => 'params',
+    messages    => {
+        no_base => 'Invalid base specified for view',
+    };
 
 our @BASEARGS = qw( context );
 our $AUTOLOAD;
@@ -59,6 +62,10 @@ sub init {
     foreach my $arg (qw( base prefix suffix notfound silent )) {
         $self->{ $arg } = $config->{ $arg } || '';
     }
+
+    # check that any base specified is defined
+    return $self->error_msg('no_base')
+        if exists $config->{ base } && ! $self->{ base };
 
     # name of data item used by view()
     $self->{ item } = $config->{ item } || 'item';
