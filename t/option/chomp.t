@@ -18,7 +18,7 @@ use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Badger::Filesystem '$Bin Dir';
 use Template::TT2::Test
-    tests => 55,
+    tests => 59,
     debug => 'Template::TT2::Parser',
     args  => \@ARGV;
 
@@ -41,6 +41,8 @@ my $blocks = {
     dang    => "Hello[%# blah blah blah -%]\n!",
     winsux1 => "[% ding -%]\015\012[% dong %]",
     winsux2 => "[% ding -%]\015\012\015\012[% dong %]",
+    winsux3 => "[% ding +%]\015\012[%- dong %]",
+    winsux4 => "[% ding +%]\015\012\015\012[%- dong %]",
 };
 
 
@@ -155,27 +157,36 @@ is( $out, "Hello!", 'post hello again' );
 
 $out = '';
 ok( $tt2->process('winsux1', $vars, \$out), 'winsux1' );
-is( $out, "HelloWorld", 'winsux1 out' );
+is( od($out), "HelloWorld", 'winsux1 out' );
 
 $out = '';
 ok( $tt2->process('winsux2', $vars, \$out), 'winsux2' );
-#match( $out, "Hello\nWorld", 'winsux2 out' );
-$out = join(
-    '', 
-    map {
-        my $ord = ord($_);
-        ($ord > 127 || $ord < 32 )
-            ? sprintf '\0%lo', $ord
-            : $_
-    } 
-    split //, $out
-);
-is( $out, 'Hello\015\012World', 'winsux2 out' );
+is( od($out), 'Hello\015\012World', 'winsux2 out' );
+
+$out = '';
+ok( $tt2->process('winsux3', $vars, \$out), 'winsux3' );
+is( od($out), "HelloWorld", 'winsux3 out' );
+
+$out = '';
+ok( $tt2->process('winsux4', $vars, \$out), 'winsux4' );
+is( od($out), 'Hello\015\012World', 'winsux4 out' );
 
 $out = '';
 ok( $tt2->process('dos_newlines', $vars, \$out), 'dos_newlines' );
-is( $out, "HelloWorld", 'dos_newlines out' );
+is( od($out), "HelloWorld", 'dos_newlines out' );
 
+sub od{
+    join(
+        '', 
+        map {
+            my $ord = ord($_);
+            ($ord > 127 || $ord < 32 )
+                ? sprintf '\0%lo', $ord
+                : $_
+        } 
+        split //, shift()
+    );
+}
 
 my $engines = {
     tt_pre_none  => ENGINE->new(PRE_CHOMP  => CHOMP_NONE),
