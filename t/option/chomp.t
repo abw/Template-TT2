@@ -17,7 +17,7 @@ use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
-    tests => 49,
+    tests => 53,
     debug => 'Template::TT2::Parser',
     args  => \@ARGV;
 
@@ -31,12 +31,14 @@ is( CHOMP_COLLAPSE, 2, 'CHOMP_COLLAPSE' );
 is( CHOMP_GREEDY, 3, 'CHOMP_GREEDY' );
 
 my $blocks = {
-    foo  => "\n[% foo %]\n",
-    bar  => "\n[%- bar -%]\n",
-    baz  => "\n[%+ baz +%]\n",
-    ding => "!\n\n[%~ ding ~%]\n\n!",
-    dong => "!\n\n[%= dong =%]\n\n!",
-    dang => "Hello[%# blah blah blah -%]\n!",
+    foo     => "\n[% foo %]\n",
+    bar     => "\n[%- bar -%]\n",
+    baz     => "\n[%+ baz +%]\n",
+    ding    => "!\n\n[%~ ding ~%]\n\n!",
+    dong    => "!\n\n[%= dong =%]\n\n!",
+    dang    => "Hello[%# blah blah blah -%]\n!",
+    winsux1 => "[% ding -%]\015\012[% dong %]",
+    winsux2 => "[% ding -%]\015\012\015\012[% dong %]",
 };
 
 
@@ -146,6 +148,25 @@ is( $out, "! World !", 'post world' );
 $out = '';
 ok( $tt2->process('dang', $vars, \$out), 'process dang post chomp');
 is( $out, "Hello!", 'post hello again' );
+
+$out = '';
+ok( $tt2->process('winsux1', $vars, \$out), 'winsux1' );
+is( $out, "HelloWorld", 'winsux1 out' );
+
+$out = '';
+ok( $tt2->process('winsux2', $vars, \$out), 'winsux2' );
+#match( $out, "Hello\nWorld", 'winsux2 out' );
+$out = join(
+    '', 
+    map {
+        my $ord = ord($_);
+        ($ord > 127 || $ord < 32 )
+            ? sprintf '\0%lo', $ord
+            : $_
+    } 
+    split //, $out
+);
+is( $out, 'Hello\015\012World', 'winsux2 out' );
 
 
 my $engines = {
