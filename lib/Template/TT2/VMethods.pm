@@ -2,7 +2,8 @@ package Template::TT2::VMethods;
 
 use Template::TT2::Class
     version   => 0.01,
-    constants => ':stash',
+    constants => ':stash HASH',
+    utils     => 'blessed looks_like_number',
     exports   => {
         any   => '$ROOT_VMETHODS $TEXT_VMETHODS $HASH_VMETHODS $LIST_VMETHODS',
     };
@@ -442,7 +443,9 @@ sub list_defined {
     # return the item requested, or 1 if no argument to 
     # indicate that the hash itself is defined
     my $list = shift;
-    return @_ ? defined $list->[$_[0]] : 1;
+    return 1 unless @_;                     # list.defined is always true
+    return unless looks_like_number $_[0];  # list.defined('bah') is always false
+    return defined $list->[$_[0]];          # list.defined(n)
 }
 
 sub list_first {
@@ -474,44 +477,60 @@ sub list_join {
          map { defined $_ ? $_ : '' } @$list);
 }
 
+
+sub _list_sort_make_key {
+   my ($item, $fields) = @_;
+   my @keys;
+
+   if (ref($item) eq HASH) {
+       @keys = map { $item->{ $_ } } @$fields;
+   }
+   elsif (blessed $item) {
+       @keys = map { $item->can($_) ? $item->$_() : $item } @$fields;
+   }
+   else {
+       @keys = $item;
+   }
+   
+   # ugly hack to generate a single string using a delimiter that is
+   # unlikely (but not impossible) to be found in the wild.
+   return lc join('/*^UNLIKELY^*/', map { defined $_ ? $_ : '' } @keys);
+}
+
+
 sub list_sort {
-    no warnings;
-    my ($list, $field) = @_;
+    my ($list, @fields) = @_;
+    return $list unless @$list > 1;         # no need to sort 1 item lists
+    return [ 
+        @fields                             # Schwartzian Transform 
+        ?   map  { $_->[0] }                # for case insensitivity
+            sort { $a->[1] cmp $b->[1] }
+            map  { [ $_, _list_sort_make_key($_, \@fields) ] }
+            @$list
+        :   map  { $_->[0] }
+            sort { $a->[1] cmp $b->[1] }
+            map  { [ $_, lc $_ ] } 
+            @$list,
+    ];
+}
+
+
+sub list_nsort {
+    my ($list, @fields) = @_;
     return $list unless @$list > 1;     # no need to sort 1 item lists
-    return [
-        $field                          # Schwartzian Transform 
+    return [ 
+        @fields                         # Schwartzian Transform 
         ?  map  { $_->[0] }             # for case insensitivity
-           sort { $a->[1] cmp $b->[1] }
-           map  { [ $_, lc(ref($_) eq 'HASH' 
-                           ? $_->{ $field } : 
-                           UNIVERSAL::can($_, $field)
-                           ? $_->$field() : $_) ] } 
+           sort { $a->[1] <=> $b->[1] }
+           map  { [ $_, _list_sort_make_key($_, \@fields) ] }
            @$list 
         :  map  { $_->[0] }
-           sort { $a->[1] cmp $b->[1] }
+           sort { $a->[1] <=> $b->[1] }
            map  { [ $_, lc $_ ] } 
            @$list,
     ];
 }
 
-sub list_nsort {
-    my ($list, $field) = @_;
-    return $list unless @$list > 1;     # no need to sort 1 item lists
-    return [ 
-        $field                          # Schwartzian Transform 
-        ?  map  { $_->[0] }             # for case insensitivity
-           sort { $a->[1] <=> $b->[1] }
-           map  { [ $_, lc(ref($_) eq 'HASH' 
-                           ? $_->{ $field } : 
-                           UNIVERSAL::can($_, $field)
-                           ? $_->$field() : $_) ] } 
-               @$list 
-            :  map  { $_->[0] }
-               sort { $a->[1] <=> $b->[1] }
-               map  { [ $_, lc $_ ] } 
-               @$list,
-    ];
-}
 
 sub list_unique {
     my %u; 
