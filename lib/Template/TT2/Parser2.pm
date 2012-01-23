@@ -11,8 +11,6 @@ use Template::TT2::Class
 
 our $GRAMMAR = 'Template::TT2::Grammar2';
 
-#print STDERR "*** Using Template::TT2::Parser2 ***\n";
-
 
 sub _parse {
     my ($self, $tokens, $info) = @_;

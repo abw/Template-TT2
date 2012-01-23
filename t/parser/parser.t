@@ -18,7 +18,7 @@ use warnings;
 use lib qw( ./lib ../lib ../../lib );
 
 use Template::TT2::Test
-    tests  => 24,
+    tests  => 25,
     debug  => 'Template::TT2::Base Template::TT2::Parser',
     args   => \@ARGV,
     import => 'callsign :default';
@@ -81,7 +81,7 @@ my $tt = {
 my $replace = &callsign;
 $replace->{ alist  } = [ 'foo', 0, 'bar', 0 ];
 $replace->{ wintxt } = "foo\r\n\r\nbar\r\n\r\nbaz";
-$replace->{ data   } = { first => 11, last => 42 };
+$replace->{ data   } = { first => 11, last => 42, include => 'hello world' };
 
 test_expect({
     engines => $tt,
@@ -96,22 +96,23 @@ __DATA__
 #------------------------------------------------------------------------
 -- test ANYCASE option --
 start $a
-[% BLOCK a %]
+[% BLOCK a -%]
 this is a
-[% END %]
+[%- END %]
 =[% INCLUDE a %]=
 =[% include a %]=
 end
 -- expect --
 start $a
 
-=
-this is a
-=
-=
-this is a
-=
+=this is a=
+=this is a=
 end
+
+-- test ANYCASE with lower case keywords --
+[% data.include; ' '; data.first; ' to '; data.last %]
+-- expect --
+hello world 11 to 42
 
 
 #------------------------------------------------------------------------
