@@ -66,23 +66,3 @@ if (a &lt; b &amp;&amp; c &gt; d) ...
 -- expect --
 border="1" cellpadding="2"
 
--- stop --
-# These are tests for the now defunct 'entity' option.
-# At some point this functionality should return elsewhere
-# so we'll keep the tests lying around in case we need them
-# again later.
-
--- test --
-[% FILTER html(entity = 1) -%]
-< &amp; >
-[%- END %]
--- expect --
-&lt; &amp; &gt;
-
--- test --
-[% FILTER html(entity = 1) -%]
-<foo> &lt;bar> <baz&gt; &lt;boz&gt;
-[%- END %]
--- expect --
-&lt;foo&gt; &lt;bar&gt; &lt;baz&gt; &lt;boz&gt;
-
