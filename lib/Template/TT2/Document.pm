@@ -46,6 +46,7 @@ sub new {
     my ($block, $defblocks, $variables, $metadata) = @$doc{ 
         qw( BLOCK DEFBLOCKS VARIABLES METADATA ) 
     };
+
     $defblocks ||= { };
     $variables ||= { };
     $metadata  ||= { };

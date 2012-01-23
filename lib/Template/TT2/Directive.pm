@@ -171,25 +171,39 @@ sub ident {
     return "''" unless @$ident;
     my $ns;
 
-    if ($self->{ TRACE_VARS }) {
-        my $root = $self->{ TRACE_VARS };
-        my $n    = 0;
-        while ($n < @$ident) {
-            $root = $root->{ $ident->[$n] } ||= { };
-            $n += 2;
-        }
-    }
+    # Careful!  Template::Parser always creates a Template::Directive object
+    # (as of v2.22_1) so $self is usually an object.  However, we used to 
+    # allow Template::Directive methods to be called as class methods and 
+    # Template::Namespace::Constants module takes advantage of this fact
+    # by calling Template::Directive->ident() when it needs to generate an
+    # identifier.  This hack guards against Mr Fuckup from coming to town
+    # when that happens.
     
-    # does the first element of the identifier have a NAMESPACE
-    # handler defined?
-    if (@$ident > 2 && ($ns = $self->{ NAMESPACE })) {
-        my $key = $ident->[0];
-        $key =~ s/^'(.+)'$/$1/s;
-        if ($ns = $ns->{ $key }) {
-            return $ns->ident($ident);
+    if (ref $self) {
+        # trace variable usage
+        if ($self->{ TRACE_VARS }) {
+            my $root = $self->{ TRACE_VARS };
+            my $n    = 0;
+            my $v;
+            while ($n < @$ident) {
+                $v = $ident->[$n];
+                for ($v) { s/^'//; s/'$// };
+                $root = $root->{ $v } ||= { };
+                $n += 2;
+            }
+        }
+
+        # does the first element of the identifier have a NAMESPACE
+        # handler defined?
+        if (@$ident > 2 && ($ns = $self->{ NAMESPACE })) {
+            my $key = $ident->[0];
+            $key =~ s/^'(.+)'$/$1/s;
+            if ($ns = $ns->{ $key }) {
+                return $ns->ident($ident);
+            }
         }
     }
-        
+
     if (scalar @$ident <= 2 && ! $ident->[1]) {
         $ident = $ident->[0];
     }
