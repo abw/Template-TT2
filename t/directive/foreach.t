@@ -598,7 +598,7 @@ last outer
             k = 1;
             SWITCH j;
             CASE 2;
-                LAST FOREACH k = [ 1 .. 2 ];
+                FOREACH k IN [ 1 .. 2 ]; LAST; END;
             CASE 3;
                 NEXT IF j == 3;
             END;

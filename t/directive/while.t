@@ -179,7 +179,7 @@ Reset list
             k = 1;
             SWITCH j;
             CASE 2;
-                LAST WHILE k == 1;
+                WHILE k == 1; LAST; END;
             CASE 3;
                 IF j == 3; j = j + 1; NEXT; END;
             END;
