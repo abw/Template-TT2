@@ -16,13 +16,15 @@
 use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
+use Badger::Filesystem '$Bin Dir';
 use Template::TT2::Test
-    tests => 53,
+    tests => 55,
     debug => 'Template::TT2::Parser',
     args  => \@ARGV;
 
 use Template::TT2::Constants ':chomp';
 use constant ENGINE => 'Template::TT2';
+my  $tdir = Dir($Bin, 'templates');
 
 is( CHOMP_NONE, 0, 'CHOMP_NONE' );
 is( CHOMP_ONE, 1, 'CHOMP_ONE' );
@@ -49,6 +51,7 @@ my $blocks = {
 my $tt2 = ENGINE->new({
     BLOCKS => $blocks,
 });
+
 my $vars = {
     foo  => 3.14,
     bar  => 2.718,
@@ -121,8 +124,9 @@ is( $out, "Hello!", 'pre hello again' );
 #------------------------------------------------------------------------
 
 $tt2 = ENGINE->new({
-    POST_CHOMP => 1,
-    BLOCKS => $blocks,
+    POST_CHOMP   => 1,
+    INCLUDE_PATH => [$tdir],
+    BLOCKS       => $blocks,
 });
 
 $out = '';
@@ -167,6 +171,10 @@ $out = join(
     split //, $out
 );
 is( $out, 'Hello\015\012World', 'winsux2 out' );
+
+$out = '';
+ok( $tt2->process('dos_newlines', $vars, \$out), 'dos_newlines' );
+is( $out, "HelloWorld", 'dos_newlines out' );
 
 
 my $engines = {
