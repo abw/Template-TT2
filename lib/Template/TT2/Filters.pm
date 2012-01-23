@@ -59,6 +59,9 @@ our @PLUGIN_FILTERS = qw(
     Template::TT2::Plugin::Filter
 );
 
+our $TRUNCATE_LENGTH = 32;
+our $TRUNCATE_ADDON  = '...';
+
 # For some filters (like html_entity), we can select one or other delegate
 # module depending on what's available and/or what the user requests. 
 our $DELEGATE = { };
@@ -267,13 +270,20 @@ sub replace_filter_factory {
 
 sub truncate_filter_factory {
     my ($context, $len, $char) = @_;
-    $len = 32 unless defined $len;
-    $char = "..." unless defined $char;
+    $len  = $TRUNCATE_LENGTH unless defined $len;
+    $char = $TRUNCATE_ADDON  unless defined $char;
+
+    # Length of char is the minimum length
+    my $lchar = length $char;
+    if ($len < $lchar) {
+        $char  = substr($char, 0, $len);
+        $lchar = $len;
+    }
 
     return sub {
         my $text = shift;
         return $text if length $text <= $len;
-        return substr($text, 0, $len - length($char)) . $char;
+        return substr($text, 0, $len - $lchar) . $char;
     }
 }
 
