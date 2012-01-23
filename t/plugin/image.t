@@ -6,23 +6,23 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2002,2008 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2002,2008,2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
-use Template::TT2::Test
-    tests => 7,
-    debug => 'Template::TT2::Plugin::Image',
-    args  => \@ARGV;
+use Badger
+    lib         => '../../lib',
+    Filesystem  => 'Bin Dir';
 
-use Badger::Filesystem '$Bin Dir';
-my $dir = Dir($Bin, 'data', 'images')->must_exist;
+use Template::TT2::Test
+    tests       => 7,
+    debug       => 'Template::TT2::Plugin::Image',
+    args        => \@ARGV;
+
+my $dir = Bin->dir('data', 'images')->must_exist;
 
 eval "use Image::Info";
 if ($@) {
