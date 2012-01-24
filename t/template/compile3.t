@@ -7,27 +7,28 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib',
+    Filesystem  => 'Bin Dir';
+
 use Template::TT2::Test
     tests => 14,
     debug => 'Template::TT2::Templates',
     args  => \@ARGV;
 
-use File::Copy;
-use Template::TT2;
-use constant ENGINE => 'Template::TT2';
+use constant 
+    ENGINE => 'Template::TT2';
 
-use Badger::Filesystem '$Bin Dir';
-my $tdir   = Dir($Bin, 'templates', 'compile');
+#use File::Copy;
+
+my $tdir   = Bin->dir('templates', 'compile');
 my $config = {
     POST_CHOMP   => 1,
     INCLUDE_PATH => $tdir,
@@ -37,6 +38,7 @@ my $config = {
 
 my $COUNT = 1;
 
+
 # test process fails when EVAL_PERL not set
 my $tt = ENGINE->new($config);
 my $out;
@@ -44,21 +46,22 @@ ok( ! $tt->try( process => "evalperl", { }, \$out ), 'evalperl failed' );
 is( $tt->error->type, 'perl', 'got perl error' );
 is( $tt->error->info, 'EVAL_PERL not set', 'EVAL_PERL not not' );
 
-# ensure we can run compiled templates without loading parser
-# (fix for "Can't locate object method "TIEHANDLE" via package 
-# Template::String..." bug)
+# test it works when EVAL_PERL is set
 $config->{ EVAL_PERL } = 1;
 $tt = ENGINE->new($config);
 ok( $tt->process("evalperl", { }, \$out), 'processed with EVAL_PERL' );
 
-my $file = $tdir->file('complex');
+
+my $file    = $tdir->file('complex');
+my $backup  = $tdir->file('complex.org');
 
 # check compiled template file exists and grab modification time
 ok( $file->exists, "$file exists" );
 my $mod = $file->modified;
 
 # save copy of the source file because we're going to try to break it
-copy($file, "$file.org") || die "failed to copy $file to $file.org\n";
+#copy($file, "$file.org") || die "failed to copy $file to $file.org\n";
+$file->copy_to($backup) || die "failed to copy $file to $backup\n";
 
 # sleep for a couple of seconds to ensure clock has ticked
 pass('Taking a nap...');
@@ -66,21 +69,22 @@ sleep(2);
 pass('Woken up');
 
 # append a harmless newline to the end of the source file to change
-# its modification time
+# its modification time - this should force it to be reloaded
 append_file("\n");
 
-# define 'bust_it' to append a lone "[% TRY %]" onto the end of the 
-# source file to cause re-compilation to fail
 my $replace = {
-    bust_it   => sub { append_file('[% TRY %]') },
+    # define 'bust_it' to append a lone "[% TRY %]" onto the end of the 
+    # source file to cause re-compilation to fail
+    bust_it   => sub { 
+        append_file('[% TRY %]') 
+    },
+    # The error line number reported varies from one version of Perl to 
+    # another.  This function checks it's close enough (+/- 4);
     near_line => sub {
         my ($warning, $n) = @_;
         if ($warning =~ s/line (\d+)/line ${n}ish/) {
             my $diff = abs($1 - $n);
             if ($diff < 4) {
-                # That's close enough for rock'n'roll.  The line
-                # number reported appears to vary from one version of
-                # Perl to another
                 return $warning;
             }
             else {
@@ -98,11 +102,11 @@ test_expect(
     config => $config,
 );
 
-$file->stat;
-ok( $file->modified > $mod, 'file has been modified' );
+$file->restat;
+ok( $file->modified->after($mod), 'file has been modified' );
 
 # restore original source file
-copy("$file.org", $file) || die "failed to copy $file.org to $file\n";
+$backup->copy_to($file) || die "failed to copy $backup to $file\n";
 
 #------------------------------------------------------------------------
 

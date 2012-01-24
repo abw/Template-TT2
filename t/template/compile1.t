@@ -14,16 +14,16 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib',
+    Filesystem  => 'Bin Dir';
+
 use Template::TT2::Test
-    tests => 7,
+    tests => 9,
     debug => 'Template::TT2::Templates',
     args  => \@ARGV;
 
-use Badger::Filesystem '$Bin Dir';
-my $tdir   = Dir($Bin, 'templates', 'compile');
+my $tdir   = Bin->dir('templates', 'compile')->must_exist;
 my $config = {
     POST_CHOMP   => 1,
     INCLUDE_PATH => $tdir,
@@ -31,15 +31,18 @@ my $config = {
     EVAL_PERL    => 1,
 };
 
-my @files = ('foo.ttc', 'complex.ttc');
-
+my @files = ('foo.ttc', 'complex.ttc', 'divisionbyzero.ttc' );
+    
 # delete any existing files
 foreach my $f (@files) {
     my $file = $tdir->file($f);
     $file->delete if $file->exists;
 }
 
-test_expect( config => $config );
+test_expect( 
+    config  => $config,
+    dir     => $tdir,
+);
 
 # check files exist
 foreach my $f (@files) {
@@ -76,11 +79,17 @@ This is the footer, author: abw, version: 3.14
 -- expect --
 This is the baz file, a: 
 
+-- test --
+[%- # first pass, writes the compiled code to cache -%]
+[% INCLUDE divisionbyzero %]
+XXX
+-- expect --
+-- process --
+undef error - Illegal division by zero at divisionbyzero line 1.
+XXX                                       
+
 -- test broken template --
 [% TRY; PROCESS broken; CATCH; error; END %]
 -- expect --
 parse error - broken line 2: unexpected end of input
-
-
-
 

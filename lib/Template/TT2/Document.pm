@@ -196,7 +196,6 @@ sub as_perl {
     my ($block, $defblocks, $metadata) = @$content{ qw( BLOCK DEFBLOCKS METADATA ) };
     my $utf8 = '';
 
-    $block =~ s/\n/\n    /g;
     $block =~ s/\n(?!#line)/\n    /g;
     $block =~ s/\s+$//;
 
@@ -207,7 +206,6 @@ sub as_perl {
 
     $defblocks = join('', map {
         my $code = $defblocks->{ $_ };
-        $code =~ s/\n/\n        /g;
         $code =~ s/\n(?!#line)/\n        /g;
         $code =~ s/\s*$//;
         sprintf("        '%s' => %s,\n", $_, $code);

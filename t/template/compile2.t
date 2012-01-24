@@ -7,33 +7,37 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib',
+    Filesystem  => 'Bin Dir';
+
 use Template::TT2::Test
-    tests => 6,
-    debug => 'Template::TT2::Templates',
-    args  => \@ARGV;
+    tests   => 8,
+    debug   => 'Template::TT2::Templates Template::TT2::Store',
+    args    => \@ARGV;
 
-use Template::TT2;
-use constant ENGINE => 'Template::TT2';
+use constant 
+    ENGINE  => 'Template::TT2';
 
-use Badger::Filesystem '$Bin Dir';
-my $tdir   = Dir($Bin, 'templates', 'compile');
+my $tdir   = Bin->dir('templates', 'compile');
+my $zero   = $tdir->file('divisionbyzero.ttc');
 my $config = {
     POST_CHOMP   => 1,
     INCLUDE_PATH => $tdir,
-    COMPILE_EXT => '.ttc',
+    COMPILE_EXT  => '.ttc',
+    VARIABLES    => {
+        zero     => $zero->definitive,
+    }
 };
 
-my @files = ('foo.ttc', 'complex.ttc');
+my @files = ('foo.ttc', 'complex.ttc', 'divisionbyzero.ttc');
 
 # check compiled template files exist
 foreach my $f (@files) {
@@ -79,3 +83,11 @@ This is a more complex file which includes some BLOCK definitions
 This is the footer, author: billg, version: 6.66
 - 3 - 2 - 1 
 
+-- test divisionbyzero --
+[%- # second pass, reads the compiled code from cache -%]
+[% INCLUDE divisionbyzero -%]
+XX
+-- expect --
+-- process --
+undef error - Illegal division by zero at divisionbyzero line 1.
+XX

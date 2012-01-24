@@ -1,6 +1,6 @@
 package Template::TT2::Templates;
 
-use Badger::Timestamp 'TIMESTAMP';      # file modification times
+use Badger::Timestamp 'TIMESTAMP Timestamp';      # file modification times
 use Template::TT2::Document;
 use Template::TT2::Class
     version     => 0.01,
@@ -19,6 +19,7 @@ use Template::TT2::Class
         INPUT_FH      => 'input file handle',
         LOOKUP_PATH   => 0,     # slots in cached lookup results
         LOOKUP_TIME   => 1,
+        FILE_PREFIX   => 'file:',
         TEXT_PREFIX   => 'md5:',
         URI_ROOT      => '/',
         IS_ABS_URI    => qr[^/],
@@ -299,7 +300,8 @@ sub fetch_name {
     $data = $self->load($path)
         || return $self->missing($path);                    # NOT FOUND
 
-    $uri = $data->{ uri } 
+    $uri  = $data->{ uri  }     # uri is a unique reference for indexing, e.g. file:/foo/bar
+        ||= $data->{ path }     # path is the lookup path for reloading, e.g. /foo/bar
         ||= $path;
         
     $self->debug("$path found at $uri\n") if DEBUG;
@@ -315,6 +317,7 @@ sub load {
     my $file = $self->{ VFS }->file($path);
     return undef
         unless $file->exists;
+#   my $uri  = $self->FILE_PREFIX . $file->definitive;      # nice idea, but doesn't work
     my $uri  = $file->definitive;
     my $text = $file->text;
 
@@ -357,7 +360,8 @@ sub cache_fetch {
     if ($self->{ CACHE } && ($data = $self->{ CACHE }->get($id))) {
         $self->debug("$id found in the cache\n") if DEBUG;
         
-        if (! $modified || $modified == $data->{ modified }) {
+        if (! $modified || ($modified eq $data->{ modified })) {
+            $self->debug("stored modification time ", $data->{modified}, " matches $modified") if DEBUG;
             # return cached document object unequivically if there's no
             # $modified argument for us to compare against or if it 
             # matches that of the template source it was created from
@@ -376,7 +380,8 @@ sub cache_fetch {
         
         # as above with the only difference being that $data returned from
         # the store is already a Template::TT2::Document object.
-        if (! $modified || $modified == $data->modified) {      # TODO: ->modified($modified)
+        if (! $modified || ($modified eq $data->modified)) {      # TODO: ->modified($modified)
+            $self->debug("stored modification time ", $data->modified, " matches $modified") if DEBUG;
             $self->debug("returning $data\n") if DEBUG;
             $self->add_lookup_path($data);
             return $data;
@@ -467,12 +472,12 @@ sub add_lookup_path {
         or ! $args->{ modified };       # must have modification time
 
     # TT loads templates as Badger::Filesystem::File objects which return
-    # a Badger::Timestamp object for the file modification time.  If we've
-    # got a timestamp then we extract the epoch time and use that.  Otherwise
-    # we assume the modification time is already seconds since the epoch
-    $modtime = $args->{ modified };
-    $modtime = $modtime->epoch_time 
-        if is_object(TIMESTAMP, $modtime);
+    # a Badger::Timestamp object for the file modification time.  Other
+    # providers might return epoch times or textual timestamp, such as those
+    # stored in a database.  Round-tripping via the Timestamp() function 
+    # takes care of all that for us.
+    # TODO: store the timestamp and do $timestamp->after
+    $modtime = Timestamp($args->{ modified })->epoch_time;
     
     $self->{ LOOKUP }->{ $args->{ path } } = [
         $args->{ uri }, 
@@ -487,7 +492,7 @@ sub add_lookup_path {
 
 
 sub parser {
-    return $_[0]->{ parser } 
+    return $_[0]->{ PARSER }
        ||= $_[0]->hub->module('parser');
 }
 

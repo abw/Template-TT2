@@ -7,23 +7,23 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib',
+    Filesystem  => 'Bin Dir';
+
 use Template::TT2::Test
-    tests => 5,
+    tests => 6,
     debug => 'Template::TT2::Templates',
     args  => \@ARGV;
 
-use Badger::Filesystem '$Bin Dir';
-my $tdir   = Dir($Bin, 'templates')->must_exist;
+my $tdir   = Bin->dir('templates')->must_exist;
 my $incdir = $tdir->dir('compile')->must_exist(1);
 my $cache  = $tdir->dir('cache');
 my $config = {
@@ -40,6 +40,7 @@ $cache->create;
 test_expect(
     config => $config,
     vars   =>  {
+        dir  => $incdir,
         blam => $incdir->file('blam'),
     },
 );
@@ -83,3 +84,12 @@ file error - /no/where/no_such_file: not found
 [% INCLUDE $blam %]
 -- expect --
 This is the blam file
+
+-- test division by zero --
+[%- # first pass, writes the compiled code to cache -%]
+[% INCLUDE divisionbyzero -%]
+xx
+-- expect --
+-- process --
+undef error - Illegal division by zero at divisionbyzero line 1.
+xx

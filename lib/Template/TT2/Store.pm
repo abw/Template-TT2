@@ -1,5 +1,6 @@
 package Template::TT2::Store;
 
+use Template::TT2::Document;
 use Template::TT2::Class
     version    => 0.01,
     debug      => 0,
@@ -7,16 +8,13 @@ use Template::TT2::Class
     filesystem => 'FS VFS Dir',
     utils      => 'tempfile',
     throws     => 'store',
-    constants  => 'UNICODE TT2_DOCUMENT',
-    constant   => {
-        DOT    => '.',
-    },
+    constants  => 'UNICODE TT2_DOCUMENT DOT',
     messages   => {
         rename => 'Failed to rename temporary file %s to %s: %s',
     };
 
-use Template::TT2::Document;        # find somewhere for this to go
     
+
 sub init {
     my ($self, $config) = @_;
     $self->{ extension  } = $config->{ extension } || $config->{ ext };
@@ -32,9 +30,10 @@ sub init {
     return $self;
 }
 
+
 sub get {
     my ($self, $id) = @_;
-    my $file = $self->file($id);
+    my $file = $self->file($id) || return;
     my $path = $file->definitive;
     my $object;
 
@@ -54,20 +53,22 @@ sub get {
         : $object;
 }
 
+
 sub set {
     my ($self, $id, $data) = @_;
-    my $file = $self->file($id);
+    my $file = $self->file($id) || return;
     my $path = $file->definitive;
     my $dir  = $file->parent;
 
     $self->debug("storing $id in file $path\n") if $DEBUG;
-    
+
     # make sure parent directory exists or create it
     $dir->must_exist(1);
 
     my ($fh, $tmpfile) = tempfile( DIR => $dir->definitive, UNLINK => 1 );
     $self->debug("writing to temporary file: $tmpfile\n") if DEBUG;
 
+    # Oooh, that's just nasty (to be spoken in Cleveland's voice)
     my $code = TT2_DOCUMENT->as_perl($data);
 
     # hack: Template::TT2::Document sets utf8 flag in $data if it detected
@@ -89,14 +90,19 @@ sub set {
     return 1;
 }
 
+
 sub file {
     my ($self, $uri) = @_;
     my $ext  = $self->{ extension };
     my $path = $uri;
 
+    # temporary hack to reject any text-based templates that have a generated
+    # URI based on an MD5 hash, $uri has format 'md5:<hash>'
+    return if $uri =~ /^md5:/;
+
     # remove any colon from $uri, e.g. file:foo ==> file/foo or on
-    # Win32, C:\Example ==> C\Example
-    $path =~ s[:][]g;
+    # Win32, C:\Example ==> C/Example
+    $path =~ s{:[/\\]*}{/}g;
 
     if (defined ($ext = $self->{ extension })) {
         # extension starting with word character (e.g. 'ttc') is 
@@ -106,6 +112,8 @@ sub file {
             ? DOT.$ext
             :     $ext;
     }
+
+    $self->debug("path: $uri => $path") if DEBUG;
 
     return $self->{ filesystem }->file($path);
 }
