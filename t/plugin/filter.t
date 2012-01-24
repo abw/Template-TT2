@@ -13,9 +13,10 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( t/lib ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../lib',
+    Filesystem  => 'Bin Dir';
+
 use Template::TT2::Test
     debug => 'Template::TT2::Plugin::Filter Template::TT2::Plugin::Change', 
     tests => 7,
@@ -106,3 +107,4 @@ test 2: [% 'badger' | simple2 -%]
 test 1: ++hello++
 test 2: ++badger++
 test 3: ++world++
+

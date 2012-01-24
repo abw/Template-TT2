@@ -13,7 +13,6 @@
 use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
-use lib '/home/abw/projects/badger/lib';
 use Template::TT2::Test
     tests => 31,
     debug => 'Template::TT2::Parser',

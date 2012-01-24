@@ -17,7 +17,6 @@
 use strict;
 use warnings;
 use lib qw( ./lib ../lib ../../lib );
-use lib '/home/abw/projects/badger/lib';
 use Badger::Filesystem '$Bin Dir VFS';
 use Template::TT2;
 use Template::TT2::Constants 'UNICODE MSWIN32';

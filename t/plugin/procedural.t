@@ -16,7 +16,6 @@
 
 use strict;
 use warnings;
-use lib '/home/abw/projects/badger/lib';
 use lib qw( t/lib ./lib ../lib ../../lib );
 use Template::TT2::Test
     debug => "Template::TT2::Plugin::Procedural Template::TT2::Plugins

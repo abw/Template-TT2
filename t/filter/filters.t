@@ -17,7 +17,6 @@
 
 use strict;
 use warnings;
-use lib '/home/abw/projects/badger/lib';
 use lib qw( ./lib ../lib ../../lib );
 use Template::TT2::Test
     tests => 7,

@@ -91,7 +91,10 @@ sub not_found {
     $self->debug("not found: $name") if DEBUG;
     
     if ($self->{ load_perl }) {
-        $self->debug("Attempting to LOAD_PERL for $name\n") if DEBUG;
+        $self->debug(
+            "Attempting to LOAD_PERL for $name via: ",
+            join(', ', $self->module_names($name))
+        ) if DEBUG;
 
         if (my $module = $self->load( $self->module_names($name) )) {
             $self->debug("Loaded $module") if DEBUG;

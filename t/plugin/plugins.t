@@ -13,19 +13,17 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-#use lib '/home/abw/projects/badger/lib';
-use lib qw( t/lib ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../lib',
+    Filesystem  => 'Bin Dir';
+#   Debug       => [modules => 'Badger::Factory'];
+
 use Template::TT2::Test
     tests => 28,
-    debug => 'Template::TT2::Plugins Badger::Factory #Badger::Factory::Class',
+    debug => 'Template::TT2::Plugins Badger::Factory',
     args  => \@ARGV;
-use Template::TT2::Plugins;
 
-use Badger::Filesystem '$Bin Dir';
 use Template::TT2::Plugins;
-use lib Dir($Bin)->parent->dir('lib')->path;
 
 use constant ENGINE => 'Template::TT2';
 pass('loaded plugins');
@@ -69,7 +67,7 @@ my $no_plugins = ENGINE->new;
 
 
 my $tt = {
-    def => $default,
+    def             => $default,
     my_plugin_base  => $my_plugin_base,
     custom_plugins  => $custom_plugins,
     load_perl       => $load_perl,

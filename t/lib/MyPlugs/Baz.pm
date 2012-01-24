@@ -6,7 +6,7 @@ package MyPlugs::Baz;
 sub new {
     my ($class, $value) = @_;
     bless {
-	    VALUE => $value,
+        VALUE => $value,
     }, $class;
 }
 
