@@ -13,9 +13,6 @@ use Template::TT2::Class
     accessors => 'hub',
     constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS HASH
                   ARRAY SCALAR DELIMITER MSWIN32 :modules :status :error',
-    constant  => {
-        EXCEPTION => 'Badger::Exception',
-    },
     messages  => {
         view_base_undef   => "View base is not defined: %s",
         view_base_invalid => "View base is not a %s object: %s => %s"
@@ -396,14 +393,14 @@ sub define_vmethods {
 sub filter {
     my ($self, $name, $args, $alias) = @_;
     my ($provider, $filter, $error);
-    
+
     $self->debug(
         "filter($name, ", 
         $self->dump_data_inline($args),
         defined $alias ? $alias : '<no alias>', 
         ')'
     ) if $DEBUG;
-    
+
     # use any cached version of the filter if no params provided
     return $filter 
         if ! $args && ! ref $name
@@ -413,10 +410,14 @@ sub filter {
     foreach $provider (@{ $self->{ LOAD_FILTERS } }) {
         last if $filter = $provider->filter($name, $self, $args ? @$args : ());
     }
-    
+
     return $self->throw( filter => "$name: filter not found" )
         unless $filter;
-    
+
+    # If the plugin is loaded twice in different templates (one INCLUDEd into
+    # another) then the filter gets garbage collected when the inner template 
+    # ends.  See t/plugin/filter.t
+
     # cache FILTER if alias is valid
     $self->{ FILTER_CACHE }->{ $alias } = $filter
         if $alias;
@@ -572,7 +573,7 @@ sub catch {
 
     $self->debug("catch('$error', '$output')\n") if DEBUG;
     
-    if (blessed $error && $error->isa(TT2_EXCEPTION)) {
+    if (is_object(TT2_EXCEPTION, $error)) {
         $error->body($output) if $output;
         return $error;
     }

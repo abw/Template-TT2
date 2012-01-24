@@ -6,38 +6,40 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
-use Badger::Filesystem '$Bin Dir';
-use Template::TT2;
+use lib '/home/abw/projects/badger/lib';
+use Badger
+    lib         => '../../lib',
+    Filesystem  => 'Bin Dir';
+
+use Template::TT2::Test
+    tests       => 39,
+    debug       => 'Template::TT2::Templates',
+    args        => \@ARGV;
+
 use Template::TT2::Modules;
 use Template::TT2::Templates;
 use Template::TT2::Constants ':status TT2_MODULES';
-use Template::TT2::Test
-    tests => 14,
-    debug => 'Template::TT2::Templates',
-    args  => \@ARGV;
 
 use constant ENGINE => 'Template::TT2';
 
 my $factory = TT2_MODULES;
 
 # script may be being run in distribution root or 't' directory
-my $dir     = Dir($Bin)->dir('templates')->must_exist;
+my $dir     = Bin->dir('templates')->must_exist;
 my $src     = $dir->dir('src')->must_exist;
 my $lib     = $dir->dir('lib')->must_exist;
 my $file    = 'foo';
-my $relfile = "./$dir/$file";
-my $absfile = $dir->file($file)->absolute;
-my $newfile = "$dir/foobar";
+#my $relfile = "./$dir/$file";
+my $relfile = "./t/module/templates/src/$file";
+my $absfile = $src->file($file)->absolute;
+my $newfile = $src->file('foobar');
 my $vars = {
     file    => $file,
     relfile => $relfile,
@@ -54,15 +56,12 @@ my $vars = {
 # include it again to see if the new file contents were loaded.
 #------------------------------------------------------------------------
 
-sub update_file {
-    local *FP;
-    sleep(2);     # ensure file time stamps are different
-    open(FP, ">$newfile") || die "$newfile: $!\n";
-    print(FP @_) || die "failed to write $newfile: $!\n";
-    close(FP);
-}
+$newfile->write('This is the old content');
 
-update_file('This is the old content');
+sub update_file {
+    sleep(2);     # ensure file time stamps are different
+    $newfile->write(@_);
+}
 
 
 #------------------------------------------------------------------------
@@ -71,7 +70,9 @@ update_file('This is the old content');
 # to work fetching some files and check they respond as expected
 #------------------------------------------------------------------------
 
-my $parser = $factory->parser(POST_CHOMP => 1);
+my $parser = $factory->parser(
+    POST_CHOMP => 1
+);
 ok( $parser, 'created parser' );
 
 my $provinc = $factory->templates(
@@ -81,15 +82,15 @@ my $provinc = $factory->templates(
 );
 ok( $provinc, 'created provider with INCLUDE_PATH' );
 
-my $provabs = $factory->templates({ 
-    ABSOLUTE => 1, 
-    PARSER   => $parser, 
+my $provabs = $factory->templates({
+    ABSOLUTE => 1,
+    PARSER   => $parser,
 });
 ok( $provabs, 'created provider with ABSOLUTE option' );
 
 my $provrel = $factory->templates(
-    RELATIVE => 1, 
-    PARSER   => $parser, 
+    RELATIVE => 1,
+    PARSER   => $parser,
 );
 ok( $provrel, 'created provider with RELATIVE option' );
 
@@ -102,60 +103,57 @@ ok(  declined( $provinc, $relfile ), 'provider 1 declined $relfile' );
 
 ok(  declined( $provabs, $file    ), 'provider 2 declined $file' );
 ok( delivered( $provabs, $absfile ), 'provider 2 delivered $absfile' );
-ok(    denied( $provabs, $relfile ), 'provider 2 denied $relfile' );
+
+# We used to treat relative paths, e.g. [% INCLUDE ./foo %] as being relative 
+# to the current working directory (in the Unix shell sense, not the directory
+# of the template making the INCLUDE call), but it was a deeply flawed concept.
+# In TT3 relative paths will be relative to the current template location and
+# it will make much more sense.  As an in-between measure we've effectively 
+# deprecated the RELATIVE option.  We still allow relative paths (e.g. 
+# starting with a '.') to be specified, but they're treated as relative to the
+# INCLUDE_PATH, so they effectively have the same end result as paths using
+# absolute or floating paths, e.g. header == /header == ./header
+
+#ok(    denied( $provabs, $relfile ), 'provider 2 denied $relfile' );
+ok( delivered( $provabs, $relfile ), 'provider 2 denied $relfile' );
 
 ok(  declined( $provrel, $file    ), 'provider 3 declined $file' );
 ok(    denied( $provrel, $absfile ), 'provider 3 denied $absfile' );
 ok( delivered( $provrel, $relfile ), 'provider 3 delivered $relfile' );
 
 
+# This has all been simplified so that the new provider return value is
+# a single template or undef to indicate declined.  Real hard errors are
+# thrown as exceptions.
+
 sub delivered {
     my ($provider, $file) = @_;
     return $provider->fetch($file);
-    
-    my ($result, $error) = $provider->fetch($file);
-    my $nice_result = defined $result ? $result : '<undef>';
-    my $nice_error  = defined $error  ? $error : '<undef>';
-    print STDERR "$provider->fetch($file) -> [$nice_result] [$nice_error]\n"
-	    if $DEBUG;
-    return ! $error;
 }
 
 sub declined {
     my ($provider, $file) = @_;
     return ! $provider->fetch($file);
-
-    my ($result, $error) = $provider->fetch($file);
-    my $nice_result = defined $result ? $result : '<undef>';
-    my $nice_error  = defined $error  ? $error : '<undef>';
-    print STDERR "$provider->fetch($file) -> [$nice_result] [$nice_error]\n"
-	    if $DEBUG;
-    return ($error == STATUS_DECLINED);
 }
 
 sub denied {
     my ($provider, $file) = @_;
-    my ($result, $error) = $provider->fetch($file);
-    print STDERR "$provider->fetch($file) -> [$result] [$error]\n"
-	    if $DEBUG;
-    return ($error == STATUS_ERROR);
+    return ! $provider->fetch($file);
 }
-
-
-exit;
 
 
 #------------------------------------------------------------------------
 # Test if can fetch from a file handle
 #------------------------------------------------------------------------
 
-my $ttglob = Template->new || die "$Template::ERROR\n";
+my $ttglob = ENGINE->new;
 ok( $ttglob, 'Created template for glob test' );
 
 # Make sure we have a multi-line template file so $/ is tested.
-my $glob_file = abs_path($dir) . '/baz';
+my $glob_file = $dir->file('baz')->must_exist;
+my $glob_path = $glob_file->definitive;
 
-open GLOBFILE, $glob_file or die "Failed to open '$absfile': $!";
+open GLOBFILE, $glob_path or die "Failed to open '$glob_path': $!";
 my $outstr = '';
 
 $ttglob->process( \*GLOBFILE, { a => 'globtest' }, \$outstr ) || die $ttglob->error;
@@ -179,15 +177,15 @@ EOF
 # we can pass to text_expect() to do some template driven testing
 #------------------------------------------------------------------------
 
-my $ttinc = Template->new( LOAD_TEMPLATES => [ $provinc ] )
+my $ttinc = ENGINE->new( LOAD_TEMPLATES => [ $provinc ] )
     || die "$Template::ERROR\n";
 ok( $ttinc );
 
-my $ttabs = Template->new( LOAD_TEMPLATES => [ $provabs ] )
+my $ttabs = ENGINE->new( LOAD_TEMPLATES => [ $provabs ] )
     || die "$Template::ERROR\n";
 ok( $ttabs );
 
-my $ttrel = Template->new( LOAD_TEMPLATES => [ $provrel ] )
+my $ttrel = ENGINE->new( LOAD_TEMPLATES => [ $provrel ] )
     || die "$Template::ERROR\n";
 ok( $ttrel );
 
@@ -211,7 +209,7 @@ sub paths {
 package main;
 
 sub dpaths {
-    return [ "$lib/one", "$lib/two" ],
+    return [ $lib->dir('one'), $lib->dir('two') ],
 }
 
 # this one is designed to test the $MAX_DIRS runaway limit
@@ -221,40 +219,48 @@ sub badpaths {
     return [ \&badpaths ],
 }
 
-my $dpaths = My::DPaths->new("$lib/two", "$lib/one");
+my $dpaths = My::DPaths->new(
+    $lib->dir('two'), 
+    $lib->dir('one'),
+);
 
-my $ttd1 = Template->new({
-    INCLUDE_PATH => [ \&dpaths, $dir ],
+my $ttd1 = ENGINE->new({
+    INCLUDE_PATH => [ \&dpaths, $src ],
     PARSER => $parser,
 }) || die "$Template::ERROR\n";
 ok( $ttd1, 'dynamic path (sub) template object created' );
 
-my $ttd2 = Template->new({
+my $ttd2 = ENGINE->new({
     INCLUDE_PATH => [ $dpaths, $dir ],
-    PARSER => $parser,
+    PARSER       => $parser,
 }) || die "$Template::ERROR\n";
 ok( $ttd1, 'dynamic path (obj) template object created' );
 
-my $ttd3 = Template->new({
+my $ttd3 = ENGINE->new({
     INCLUDE_PATH => [ \&badpaths ],
     PARSER => $parser,
 }) || die "$Template::ERROR\n";
 ok( $ttd3, 'dynamic path (bad) template object created' );
 
 
-my $uselist = [ 
+my $engines = {
     ttinc  => $ttinc, 
     ttabs  => $ttabs, 
     ttrel  => $ttrel,
 	ttd1   => $ttd1, 
     ttd2   => $ttd2, 
-    ttdbad => $ttd3 ];
+    ttdbad => $ttd3 
+};
 
-test_expect(\*DATA, $uselist, $vars);
+test_expect(
+    engines => $engines,
+    engine  => $engines->{ ttinc },
+    vars    => $vars,
+);
 
 
 __DATA__
--- test --
+-- test ttinc include relative file --
 -- use ttinc --
 [% TRY %]
 [% INCLUDE foo %]
@@ -266,7 +272,7 @@ Error: [% error.type %] - [% error.info.split(': ').1 %]
 This is the foo file, a is Error: file - not found
 
 
--- test --
+-- test ttinc include absolute file --
 [% TRY %]
 [% INCLUDE foo %]
 [% INCLUDE $absfile %]
@@ -277,7 +283,7 @@ Error: [% error.type %] - [% error.info.split(': ').1 %]
 This is the foo file, a is Error: file - not found
 
 
--- test --
+-- test ttinc insert absolute file --
 [% TRY %]
 [% INSERT foo +%]
 [% INSERT $absfile %]
@@ -292,7 +298,7 @@ Error: file error - [* absfile *]: not found
 
 #------------------------------------------------------------------------
 
--- test --
+-- test ttrel include relative file --
 -- use ttrel --
 [% TRY %]
 [% INCLUDE $relfile %]
@@ -303,7 +309,7 @@ Error: [% error.type %] - [% error.info %]
 -- expect --
 This is the foo file, a is Error: file - foo: not found
 
--- test --
+-- test ttrel include absolute file --
 [% TRY %]
 [% INCLUDE $relfile -%]
 [% INCLUDE $absfile %]
@@ -311,10 +317,10 @@ This is the foo file, a is Error: file - foo: not found
 Error: [% error.type %] - [% error.info.split(': ').1 %]
 [% END %]
 -- expect --
-This is the foo file, a is Error: file - absolute paths are not allowed (set ABSOLUTE option)
+This is the foo file, a is Error: file - not found
 
 
--- test --
+-- test ttrel insert abs/rel --
 foo: [% TRY; INSERT foo;      CATCH; "$error\n"; END %]
 rel: [% TRY; INSERT $relfile; CATCH; "$error\n"; END +%]
 abs: [% TRY; INSERT $absfile; CATCH; "$error\n"; END %]
@@ -323,41 +329,42 @@ abs: [% TRY; INSERT $absfile; CATCH; "$error\n"; END %]
 [% TAGS [* *] %]
 foo: file error - foo: not found
 rel: This is the foo file, a is [% a -%]
-abs: file error - [* absfile *]: absolute paths are not allowed (set ABSOLUTE option)
+abs: file error - [* absfile *]: not found
 
 #------------------------------------------------------------------------
 
--- test --
+-- test ttabs include absolute --
 -- use ttabs --
 [% TRY %]
 [% INCLUDE $absfile %]
 [% INCLUDE foo %]
-[% CATCH file %]
+[% CATCH file +%]
 Error: [% error.type %] - [% error.info %]
 [% END %]
 -- expect --
-This is the foo file, a is Error: file - foo: not found
+This is the foo file, a is 
+Error: file - foo: not found
 
--- test --
+-- test ttabs include both --
 [% TRY %]
-[% INCLUDE $absfile %]
+[% INCLUDE $absfile +%]
 [% INCLUDE $relfile %]
 [% CATCH file %]
 Error: [% error.type %] - [% error.info.split(': ').1 %]
 [% END %]
 -- expect --
-This is the foo file, a is Error: file - relative paths are not allowed (set RELATIVE option)
+This is the foo file, a is 
+This is the foo file, a is 
 
-
--- test --
+-- test ttabs insert abs/rel --
 foo: [% TRY; INSERT foo;      CATCH; "$error\n"; END %]
-rel: [% TRY; INSERT $relfile; CATCH; "$error\n"; END %]
-abs: [% TRY; INSERT $absfile; CATCH; "$error\n"; END %]
+rel: [% TRY; INSERT $relfile; CATCH; "$error\n"; END +%]
+abs: [% TRY; INSERT $absfile; CATCH; "$error\n"; END +%]
 -- expect --
 -- process --
 [% TAGS [* *] %]
 foo: file error - foo: not found
-rel: file error - [* relfile *]: relative paths are not allowed (set RELATIVE option)
+rel: This is the foo file, a is [% a -%]
 abs: This is the foo file, a is [% a -%]
 
 
@@ -366,13 +373,13 @@ abs: This is the foo file, a is [% a -%]
 # test that files updated on disk are automatically reloaded.
 #------------------------------------------------------------------------
 
--- test --
+-- test ttinc fixfile prepare --
 -- use ttinc --
 [% INCLUDE foobar %]
 -- expect --
 This is the old content
 
--- test --
+-- test ttinc fixfile process --
 [% CALL fixfile('This is the new content') %]
 [% INCLUDE foobar %]
 -- expect --
@@ -382,7 +389,7 @@ This is the new content
 # dynamic path tests 
 #------------------------------------------------------------------------
 
--- test --
+-- test ttd1 dynamic path process --
 -- use ttd1 --
 foo: [% PROCESS foo | trim +%]
 bar: [% PROCESS bar | trim +%]
@@ -392,14 +399,14 @@ foo: This is one/foo
 bar: This is two/bar
 baz: This is the baz file, a: alpha
 
--- test --
+-- test ttd1 dynamic path insert --
 foo: [% INSERT foo | trim +%]
 bar: [% INSERT bar | trim +%]
 -- expect --
 foo: This is one/foo
 bar: This is two/bar
 
--- test --
+-- test ttd2 dynamic path process --
 -- use ttd2 --
 foo: [% PROCESS foo | trim +%]
 bar: [% PROCESS bar | trim +%]
@@ -409,15 +416,15 @@ foo: This is two/foo
 bar: This is two/bar
 baz: This is the baz file, a: alpha
 
--- test --
+-- test ttd2 dynamic path insert --
 foo: [% INSERT foo | trim +%]
 bar: [% INSERT bar | trim +%]
 -- expect --
 foo: This is two/foo
 bar: This is two/bar
 
--- test --
+-- test ttdbad --
 -- use ttdbad --
 [% TRY; INCLUDE foo; CATCH; e; END %]
 -- expect --
-file error - INCLUDE_PATH exceeds 42 directories
+undef error - filesystem.virtual error - The number of virtual filesystem roots exceeds the max_roots limit of 42

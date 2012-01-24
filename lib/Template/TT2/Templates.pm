@@ -13,7 +13,7 @@ use Template::TT2::Class
     filesystem  => 'FS VFS Cwd Dir File',
     constants   => 
        'SCALAR ARRAY HASH GLOB BLANK UNICODE DEBUG_TEMPLATES DEBUG_FLAGS 
-        TT2_DOCUMENT TT2_CACHE TT2_STORE MSWIN32',
+        TT2_DOCUMENT TT2_CACHE TT2_STORE TT2_PARSER MSWIN32',
     constant    => {
         INPUT_TEXT    => 'input text',
         INPUT_FH      => 'input file handle',
@@ -29,7 +29,6 @@ use Template::TT2::Class
     },
     config      => [
         'DOCUMENT|class:DOCUMENT|method:TT2_DOCUMENT',
-#        'PARSER|class:PARSER|method:TT2_PARSER',
         'CACHE|class:CACHE|method:TT2_CACHE',
         'STORE|class:STORE|method:TT2_STORE',
         'INCLUDE_PATH|class:INCLUDE_PATH|method:Cwd',
@@ -40,6 +39,7 @@ use Template::TT2::Class
         'COMPILE_EXT|class:COMPILE_EXT|method:BLANK',
         'DEFAULT|class:DEFAULT',
         'UNICODE|method:UNICODE',
+        'PARSER|class:PARSER',
     ],
     messages => {
         deprecated    => "The %s option is deprecated.  The '%s' directory has been added to your INCLUDE_PATH instead.",
