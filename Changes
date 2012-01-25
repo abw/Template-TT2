@@ -35,7 +35,7 @@ DESCRIPTION
     systems to use Template::TT2.
 
     From the outside, Template::TT2 works in exactly the same way as
-    Template v2.21 with the exception of a few configuration options which
+    Template v2.23 with the exception of a few configuration options which
     have been deprecated. These are described below in the "CONFIGURATION
     OPTIONS" section.
 

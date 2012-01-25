@@ -36,7 +36,7 @@ plenty of time to iron out any bugs and give everyone plenty of opportunity to
 test and/or upgrade their existing systems to use L<Template::TT2>.  
 
 From the outside, L<Template::TT2> works in exactly the same way as
-L<Template> v2.21 with the exception of a few configuration options which have
+L<Template> v2.23 with the exception of a few configuration options which have
 been deprecated. These are described below in the L<CONFIGURATION OPTIONS>
 section.
 
