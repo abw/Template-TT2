@@ -61,7 +61,7 @@ sub format {
     my $gmt    = @_ ? shift : ($params->{ gmt    } || $self->{ gmt    });
     my (@date, $datestr);
 
-    if ($time =~ /^\d+$/) {
+    if ($time =~ /^-?\d+$/) {
         # $time is now in seconds since epoch
         if ($gmt) {
             @date = ( gmtime($time) )[0..6];
