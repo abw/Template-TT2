@@ -23,7 +23,7 @@ use Badger
 
 use utf8;
 use Template::TT2::Test
-    tests => 4,
+    #tests => 4,
     debug => 'Template::TT2::Stash',
     args  => \@ARGV;
 
@@ -31,15 +31,16 @@ BEGIN {
     unless ($] > 5.007) {
         skip_all("perl < 5.8 can't do unicode well enough\n");
     }
+    eval {
+        require Template::TT2::Stash::XS;
+    };
+    if ($@) {
+    #    warn $@;
+        skip_all('cannot load Template::TT2::Stash::XS');
+    }
 }
 
-eval {
-    require Template::TT2::Stash::XS;
-};
-if ($@) {
-    warn $@;
-    skip_all('cannot load Template::TT2::Stash::XS');
-}
+plan(4);
 
 binmode STDOUT, ':utf8';
 

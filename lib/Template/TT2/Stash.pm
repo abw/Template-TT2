@@ -66,14 +66,14 @@ INIT: {
     # $BACKEND might be pre-defined by end user in which case, leave it alone
     unless (defined $BACKEND) {
         # otherwise look for XS goodness or fall back on pure Perl
-        eval "use Template::TT2::Stash::XS";
+        my $result = eval "use Template::TT2::Stash::XS";
 
-        if ($@) {
-            require Template::TT2::Stash::Perl;
-            $BACKEND = 'Template::TT2::Stash::Perl';
+        if ($result) {
+            $BACKEND = 'Template::TT2::Stash::XS';
         }
         else {
-            $BACKEND = 'Template::TT2::Stash::XS';
+            require Template::TT2::Stash::Perl;
+            $BACKEND = 'Template::TT2::Stash::Perl';
         }
     }
 }
