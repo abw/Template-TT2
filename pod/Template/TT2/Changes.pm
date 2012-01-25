@@ -71,7 +71,7 @@ into TT3.  At that point your existing TT2 code using the L<Template> module
 will break and you will need to switch to C<Template::TT2> (or use one of 
 the backwards compatibility switches that we'll be providing).
 
-The earliest this will be happening is in the spring of 2009.  Consider
+The earliest this will be happening is in the summer of 2012.  Consider
 this fair warning.  
 
 =head2 MODULES
