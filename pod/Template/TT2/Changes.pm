@@ -18,7 +18,7 @@ built on top.
 =head1 DESCRIPTION
 
 The C<Template::TT2> distribution is a new implementation of version 2 of the
-Template Toolkit (specifically, v2.22). It is a drop-in replacement for the
+Template Toolkit (specifically, v2.23). It is a drop-in replacement for the
 "old" C<Template> module and implements a 100% faithful version of the TT2
 template language, warts and all. 
 
@@ -41,7 +41,7 @@ been deprecated. These are described below in the L<CONFIGURATION OPTIONS>
 section.
 
 On the inside, L<Template::TT2> is implemented using the same basic
-architecture as L<Template> v2.21. In most cases, the modules have simply been
+architecture as L<Template> v2.23. In most cases, the modules have simply been
 moved into a new namespace (i.e. L<Template> is now L<Template::TT2>,
 L<Template::Context> is now L<Template::TT2::Context>, and so on).  There
 are a few exceptions to this, described below in L<MODULES>.
@@ -185,10 +185,10 @@ from CPAN.
 
 =head1 TOOLS
 
-The C<ttree> and C<tpage> tools are not distributed with L<Template::TT2>.
-If you want to use them then you'll need to install the current version
-of the L<Template Toolkit|Template> (assuming you don't already have it
-installed).
+The C<ttree> and C<tpage> tools are not distributed with L<Template::TT2>
+(yet).  If you want to use them then you'll need to install the current 
+version of the L<Template Toolkit|Template> (assuming you don't already have 
+it installed).
 
 Both tools accept the C<--template_module> argument which you can use to 
 engage the L<Template::TT2> module instead of L<Template>.
@@ -228,7 +228,7 @@ Andy Wardley L<http://wardley.org/>
 
 =head1 COPYRIGHT
 
-Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

@@ -1,8 +1,8 @@
-This is an alpha version of Template::TT2.  This will become the 
-replacement for the v2 Template Toolkit modules for the purpose 
-of backwards compatibility when TT3 is released.
+This is an alpha version of Template::TT2, a drop-in replacement for the 
+current v2 Template Toolkit modules.  Almost everything works exactly the
+same as before - the only important thing that has changed is the name.  
 
-If you currently have code using TT2 like this:
+So if you currently have code using TT2 like this:
 
     use Template;
 
@@ -10,8 +10,7 @@ If you currently have code using TT2 like this:
         INCLUDE_PATH => '/path/to/templates',
     );
 
-Then, when TT3 is released, you will need to install Template::TT2 and 
-change it to:
+Then you should be able to do this instead.
 
     use Template::TT2;
 
@@ -19,12 +18,26 @@ change it to:
         INCLUDE_PATH => '/path/to/templates',
     );
 
+When TT3 is released (on Tuesday, some time shortly after lunch) a number
+of major changes to both the template language and the template framework
+will break backwards compatibility with TT2 in all sorts of non-trivial ways.
+The Template::TT2 module set is therefore a "backup" of the old TT2 
+implementation for the sake of posterity.  It will continue to work as
+it currently does, regardless of any future changes in TT3, TT4 or beyond.
+
 Everything that is currently in the v2 Template::* namespace has been
 moved "down" a level into the Template::TT2::* namespace.  All of the code
 has been cleaned up and refactored to use the Badger toolkit.  This 
 implements all the generic functionality (i.e. not directly related to 
 template processing) that is shared between TT2, TT3, and any other 
 modules or applications that might use it.
+
+The only significant change to the way Template::TT2 works is that the 
+ABSOLUTE and RELATIVE options are now officially deprecated (although they 
+do still work).  If you specify the ABSOLUTE option, Template::TT2 will 
+instead add the root directory to your INCLUDE_PATH (which effectively does 
+the same thing).  If you specify the RELATIVE option, it will add the current
+working directory to your INCLUDE_PATH.  In both cases you'll get a warning.
 
 There are a few architectural changes that may affect any code that pokes
 deep into the internals of TT2.  Most notable is the Template::Provider 
@@ -39,23 +52,24 @@ Although the code has been cleaned up as best as possible, it is at
 heart the same old code that provides a faithful implementation of
 TT2, warts and all.  
 
-Template::TT2 was forked from the main Template repository in October 2008 
-and completed (to the point of implementing all of TT2's features) by the 
-end of December 2008.  Since then it has fallen a little being the 
-current state of the repository.  There are perhaps a few dozen small 
-patches that need to be back-ported onto Template::TT2 to bring it up to 
-date.  There are also a handful of tests that are failing.  This could be 
-due to some of the recent changes in Badger.  I think they're mostly
-trivial things, but I haven't had a chance to look through them yet.
+Please find time to test any existing code you have that uses the Template
+modules with the new Template::TT2 implementation.  If it doesn't work as 
+expected then we'd like to know about it sooner rather than later. 
 
-If anyone would like to help bring Template::TT2 up to date and get it
-ready for release then please get in touch.  TT3 can't be released until 
-Template::TT2 is also ready for action so it's a vitally important job,
-even if it's not the most glamorous or funnest one.
+The source code is at github:
 
-Otherwise you'll have to wait for me to do it, and you never know how long 
-that might take...
+  https://github.com/abw/Template-TT2
 
+Please report any issues via RT:
 
--- Andy Wardley, December 2009.
+  http://rt.cpan.org/
+
+At some point in the near future I'll stop supporting the current 
+Template::* implementation and encourage everyone to switch to 
+Template::TT2.  Then the Template::* modules will be completely 
+refactored to usher in TT3.
+
+See the Changes file for more detailed information about what has changed.
+
+-- Andy Wardley, January 2012.
 

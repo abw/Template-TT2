@@ -16,7 +16,7 @@ QUICK OVERVIEW
 
 DESCRIPTION
     The "Template::TT2" distribution is a new implementation of version 2 of
-    the Template Toolkit (specifically, v2.21). It is a drop-in replacement
+    the Template Toolkit (specifically, v2.23). It is a drop-in replacement
     for the "old" "Template" module and implements a 100% faithful version
     of the TT2 template language, warts and all.
 
@@ -40,7 +40,7 @@ DESCRIPTION
     OPTIONS" section.
 
     On the inside, Template::TT2 is implemented using the same basic
-    architecture as Template v2.21. In most cases, the modules have simply
+    architecture as Template v2.23. In most cases, the modules have simply
     been moved into a new namespace (i.e. Template is now Template::TT2,
     Template::Context is now Template::TT2::Context, and so on). There are a
     few exceptions to this, described below in MODULES.
@@ -76,7 +76,7 @@ DESCRIPTION
     The earliest this will be happening is in the spring of 2009. Consider
     this fair warning.
 
-MODULES
+  MODULES
     Most of the "Template" modules have been moved (or rather, copied) into
     the "Template::TT2" namespace. So instead of using the Template module,
     you can use Template::TT2. Behind the scenes, Template::Context becomes
@@ -107,7 +107,7 @@ MODULES
     XS version of the stash installed then you'll get it automatically
     unless you specifically request the Perl version.
 
-PLUGINS
+  PLUGINS
     The Template::Plugins and Template::Plugin modules have their new
     counterparts in Template::TT2::Plugins and Template::TT2::Plugin.
     However, the Template::Plugin interface remains the same and
@@ -130,7 +130,7 @@ PLUGINS
     "Template::TT2::Plugin::XXX" or "Template::TT3::Plugin::XXX"
     implementation.
 
-CONFIGURATION OPTIONS
+  CONFIGURATION OPTIONS
     The "THROW" option can be used to have the Template Toolkit throw all
     errors as exceptions instead of having the process() method return a
     false value. The default value is 0 which makes it behave like the
@@ -158,7 +158,7 @@ CONFIGURATION OPTIONS
 
     The "V1DOLLAR" option is not longer supported.
 
-ERROR HANDLING
+  ERROR HANDLING
     Error handling is now more robust. All errors are reported internally by
     throwing exceptions. However, the Template::TT2 module wraps the
     internal code up in an "eval { }" and continues to work as per Template.
@@ -181,9 +181,10 @@ PLUGINS
     <cpan:Template::Plugin::Autoformat> distribution, available from CPAN.
 
 TOOLS
-    The "ttree" and "tpage" tools are not distributed with Template::TT2. If
-    you want to use them then you'll need to install the current version of
-    the Template Toolkit (assuming you don't already have it installed).
+    The "ttree" and "tpage" tools are not distributed with Template::TT2
+    (yet). If you want to use them then you'll need to install the current
+    version of the Template Toolkit (assuming you don't already have it
+    installed).
 
     Both tools accept the "--template_module" argument which you can use to
     engage the Template::TT2 module instead of Template.
@@ -220,7 +221,7 @@ AUTHOR
     Andy Wardley <http://wardley.org/>
 
 COPYRIGHT
-    Copyright (C) 1996-2008 Andy Wardley. All Rights Reserved.
+    Copyright (C) 1996-2012 Andy Wardley. All Rights Reserved.
 
     This module is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
