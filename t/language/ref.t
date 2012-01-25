@@ -13,16 +13,21 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib 
-            blib/lib blib/arch ../../blib/lib ../../blib/arch );
+use Badger
+    lib => [
+        '../lib',
+        '../../lib',
+        '../../blib',
+        '../../blib/arch',
+    ];
+
 use Template::TT2::Test
     tests => 6,
     debug => 'Template::TT2::Stash',
     args  => \@ARGV;
 
 local $" = ', ';
+
 my $vars = { 
     a => sub { return "a sub [@_]" },
     j => { k => 3, l => 5, m => { n => sub { "nsub [@_]" } } },

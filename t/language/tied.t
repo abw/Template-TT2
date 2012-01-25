@@ -13,26 +13,27 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib 
-            blib/lib blib/arch ../../blib/lib ../../blib/arch );
+use Badger
+    lib => [
+        '../lib',
+        '../../lib',
+        '../../blib',
+        '../../blib/arch',
+    ];
 
 use Template::TT2::Test
     debug => 'Template::TT2::Parser',
     args  => \@ARGV;
 
+use Template::TT2::Stash;
 use Template::TT2::Stash::Perl;
 use Badger::Filesystem '$Bin Dir';
 use constant ENGINE => 'Template::TT2';
 my $dir = Dir($Bin, 'templates')->must_exist;
-
-my $HAS_XS;
-eval { require Template::Stash::XS };
-$HAS_XS = $@ ? 0 : 1;
+my $xs  = Template::TT2::Stash->xs_backend;
 
 # 2 runs if we don't have XS stash, 3 if we do
-plan( 9 * ($HAS_XS ? 3 : 2) );
+plan( 10 * ($xs ? 3 : 2) );
 
 our $STORE_PREFIX = '';
 our $FETCH_PREFIX = '';
@@ -77,13 +78,15 @@ sub STORE {
 #------------------------------------------------------------------------
 package main;
 
-run_tests('Template::TT2::Stash');
 run_tests('Template::TT2::Stash::Perl');
+run_tests('Template::TT2::Stash');
 run_tests('Template::TT2::Stash::XS')
-    if $HAS_XS;
+    if $xs;
 
 sub run_tests {
     my ($stash_type) = @_;
+
+    ok(1, "Running tests with $stash_type" );
 
     # setup a tied hash and a tied list
     my @list;

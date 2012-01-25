@@ -6,10 +6,12 @@ use Template::TT2::Class
     base      => 'Template::TT2::Base',
     utils     => 'blessed reftype looks_like_number',
     throws    => 'undef',           # default exception type
-    import    => 'class',
+    import    => 'class CLASS',
     constants => ':types :stash ERROR_UNDEF',
     constant  => {
-        DOT   => 'dot',
+        DOT_METHOD   => 'dot',
+        XS_BACKEND   => 'Template::TT2::Stash::XS',
+        PERL_BACKEND => 'Template::TT2::Stash::Perl',
     },
     messages  => {
         bad_dot    => 'Invalid dot operation: %s.%s',
@@ -60,29 +62,33 @@ our $BACKEND;
 
 INIT: {
     # pre-set $DEBUG flags in backend stashes
-    $Template::TT2::Stash::XS::DEBUG   = DEBUG;
-    $Template::TT2::Stash::Perl::DEBUG = DEBUG;
+#    $Template::TT2::Stash::XS::DEBUG   = DEBUG;
+#    $Template::TT2::Stash::Perl::DEBUG = DEBUG;
 
     # $BACKEND might be pre-defined by end user in which case, leave it alone
     unless (defined $BACKEND) {
-        # otherwise look for XS goodness or fall back on pure Perl
-        my $result = eval "use Template::TT2::Stash::XS";
+        # otherwise we attempt to load the XS backend first, falling back 
+        # onto the Perl backend if that fails.
+        foreach my $backend (XS_BACKEND, PERL_BACKEND) {
+            my $class = class($backend);
 
-        if ($result) {
-            $BACKEND = 'Template::TT2::Stash::XS';
-        }
-        else {
-            require Template::TT2::Stash::Perl;
-            $BACKEND = 'Template::TT2::Stash::Perl';
+            if (eval { $class->load }) {
+                # copy the debug flag down into the backend
+                $class->var( DEBUG => DEBUG );
+                $BACKEND = $backend;
+                last;
+            }
         }
     }
+    die "No stash backend defined"
+        unless $BACKEND;
 }
 
 
 sub new {
     my $class   = shift;
     my $params  = ref $_[0] eq HASH ? shift : { @_ };
-    my $backend = ($class eq __PACKAGE__)
+    my $backend = ($class eq CLASS)
         ? $BACKEND
         : $class;
     $class->debug("creating $backend stash") if DEBUG;
@@ -142,7 +148,7 @@ sub set {
 
 sub getref {
     my ($self, $ident, $args) = @_;
-    my $dot = $self->can(DOT)
+    my $dot = $self->can(DOT_METHOD)
         || $self->error("Cannot locate dot() method for $self");  # lookup method once and call direct
     my ($root, $item, $result);
     $root = $self;
@@ -253,6 +259,20 @@ sub define_vmethods {
     }
 }
 
+
+sub backend {
+    return $BACKEND;
+}
+
+
+sub xs_backend {
+    return $BACKEND eq XS_BACKEND;
+}
+
+
+sub perl_backend {
+    return $BACKEND eq PERL_BACKEND;
+}
 
 1;
 

@@ -1267,7 +1267,6 @@ set(root, ident, value, ...)
     OUTPUT:
         RETVAL
 
-        
 
 #-----------------------------------------------------------------------
 # dot(SV *self, SV *root, SV *item, AV *args, SV* flags)
