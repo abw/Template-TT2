@@ -14,7 +14,7 @@
 *   Doug Steinwand <dsteinwand@citysearch.com>
 *
 * COPYRIGHT
-*   Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+*   Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 *
 *   This module is free software; you can redistribute it and/or
 *   modify it under the same terms as Perl itself.
@@ -545,7 +545,6 @@ static SV *assign(pTHX_ SV *root, SV *key_sv, AV *args, SV *value, int flags) {
 
 
 
-
 /*------------------------------------------------------------------------
  * tt_fetch_item(pTHX_ SV *root, SV *key_sv, AV *args, SV **result)
  *
@@ -607,7 +606,6 @@ static TT_RET tt_fetch_item(pTHX_ SV *root, SV *key_sv, AV *args, SV **result) {
 
 
 
-
 /* dies and passes back a blessed object,  
  * or just a string if it's not blessed 
  */
@@ -639,8 +637,12 @@ static SV *call_coderef(pTHX_ SV *code, AV *args) {
         if ((svp = av_fetch(args, i, FALSE))) 
             XPUSHs(*svp);
     PUTBACK;
-    count = call_sv(code, G_ARRAY);
+    count = call_sv(code, G_ARRAY|G_EVAL);
     SPAGAIN;
+
+    if (SvTRUE(ERRSV)) {
+        die_object(aTHX_ ERRSV);
+    }
     
     return fold_results(aTHX_ count);
 }
@@ -700,47 +702,49 @@ static SV* do_getset(pTHX_ SV *root, AV *ident_av, SV *value, int flags) {
     SV *key;
     SV **svp;
     I32 end_loop, i, size = av_len(ident_av);
+    I32 extra = 0;
 
     if (value) {
         /* make some adjustments for assign mode */
         end_loop = size - 1;
         flags |= TT_LVALUE_FLAG;
-    } else {
-        end_loop = size ? size : size + 1;              /* CHECK THIS */
-        end_loop = size + 1;              /* CHECK THIS */
+    } 
+    else {
+        end_loop = size;
+        /* to accommodate get(['foo']) as shorthand for get(['foo', 0]) */
+        if (end_loop % 2 == 0) {
+            extra = 1;
+        }
     }
 
-    debug("do_getset from 0 to < %i  size is %i\n", end_loop, size);
-
-    for(i = 0; i < end_loop; i += 2) {
+    for(i = 0; i < end_loop + extra; i += 2) {
         if (!(svp = av_fetch(ident_av, i, FALSE)))
             croak(TT_STASH_PKG " %cet: bad element %d", value ? 's' : 'g', i);
 
         key = *svp;
 
-        if ((svp = av_fetch(ident_av, i + 1, FALSE))
-          && SvROK(*svp) 
-          && SvTYPE(SvRV(*svp)) == SVt_PVAV) {
-            key_args = (AV *) SvRV(*svp);
-        }
-        else {
+        if (i >= end_loop) {
+            /* ['foo'] shorthand for ['foo', 0] */
             key_args = Nullav;
         }
+        else {
+            /* fetch the (i+1)th item in the list and see if it's a list ref */
+            if (!(svp = av_fetch(ident_av, i + 1, FALSE)))
+                croak(TT_STASH_PKG " %cet: bad arg. %i", value ? 's' : 'g', i + 1);
 
-        debug("j %d\n", i);
-
+            if (SvROK(*svp) && SvTYPE(SvRV(*svp)) == SVt_PVAV)
+                key_args = (AV *) SvRV(*svp);
+            else
+                key_args = Nullav;
+        }
                 
         root = dotop(aTHX_ root, key, key_args, flags);
-    
+
         if (!root || !SvOK(root))
             return root;
     }
 
-    debug("do_middle\n");
-
     if (value && SvROK(root)) {
-        debug("do assign\n");
-
         /* call assign() to resolve the last item */
         if (!(svp = av_fetch(ident_av, size - 1, FALSE)))
             croak(TT_STASH_PKG ": set bad ident element at %d", i);
@@ -757,8 +761,6 @@ static SV* do_getset(pTHX_ SV *root, AV *ident_av, SV *value, int flags) {
 
         return assign(aTHX_ root, key, key_args, value, flags);
     }
-
-    debug("done\n");
 
     return root;
 }
