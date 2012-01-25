@@ -49,7 +49,7 @@ extern "C" {
 #define debug(format)
 #else
 #define debug(...)
-/* #define debug(...) fprintf(stderr, __VA_ARGS__) */
+/* #define debug2(...) fprintf(stderr, __VA_ARGS__) */
 #endif
 #endif
 
@@ -175,15 +175,10 @@ static SV *dotop(pTHX_ SV *root, SV *key_sv, AV *args, int flags) {
                     HV *roothv = (HV *) SvRV(root);
                     newhash = SvREFCNT_inc((SV *) newRV_noinc((SV *) newHV()));
 
-                    debug("- auto-vivifying intermediate hash\n");
+                    /* store new hash and invoke any tied magic */
+                    hv_store(roothv, item, item_len, newhash, 0);
+                    SvSETMAGIC(newhash);
 
-                    if (hv_store(roothv, item, item_len, newhash, 0)) {
-                        /* trigger any tied magic to STORE value */
-                        SvSETMAGIC(newhash);
-                    }
-                    else {
-                        SvREFCNT_dec(newhash);
-                    }
                     return sv_2mortal(newhash);
                 }
 
@@ -508,18 +503,11 @@ static SV *assign(pTHX_ SV *root, SV *key_sv, AV *args, SV *value, int flags) {
                 }
 
                 /* create a new SV for the value and call av_store(),
-                 * incrementing the reference count on the way; we
-                 * then invoke any set magic for tied arrays; if the
-                 * return value from av_store is NULL (as appears to
-                 * be the case with tied arrays - although the same
-                 * isn't true of hv_store() for some reason???) then
-                 * we decrement the reference counter because that's
-                 * what perlguts tells us to do...
+                 * then invoke any set magic for tied arrays;
                  */
                 newsv = newSVsv(value);
                 svp = av_store(rootav, SvIV(key_sv), newsv);
                 SvSETMAGIC(newsv);
-
                 return value;
             }
             else

@@ -55,6 +55,7 @@ sub STORE {
     my ($hash, $key, $val) = @_; 
     print STDERR "STORE($key, $val)\n" if $main::DEBUG;
     $hash->{ $key } = ref $val ? $val : "$main::STORE_PREFIX$val";
+    return $val;
 }
 
 #------------------------------------------------------------------------
@@ -85,8 +86,6 @@ run_tests('Template::TT2::Stash::XS')
 
 sub run_tests {
     my ($stash_type) = @_;
-
-    ok(1, "Running tests with $stash_type" );
 
     # setup a tied hash and a tied list
     my @list;
@@ -143,6 +142,11 @@ ready
 set:
 go:FETCH:STORE:cosmos
 
+-- test tied hash default --
+[% DEFAULT hash.d = 'delta'; hash.d %]
+-- expect --
+FETCH:STORE:delta
+
 -- test tied hash nested --
 [% hash.foo.bar = 'one' -%]
 [% hash.foo.bar %]
@@ -181,24 +185,7 @@ FETCH:STORE:50
 
 -- test --
 -- use xs --
-[% hash.a %]
--- expect --
-FETCH:alpha
-
 -- test --
-[% hash.b %]
--- expect --
-FETCH:bravo
-
--- test --
-[% hash.c = 'crazy'; hash.c %]
--- expect --
-FETCH:STORE:crazy
-
--- test --
-[% DEFAULT hash.c = 'more crazy'; hash.c %]
--- expect --
-FETCH:STORE:crazy
 
 -- test --
 [% hash.wiz = 'woz' -%]
