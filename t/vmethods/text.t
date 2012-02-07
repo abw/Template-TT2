@@ -18,7 +18,7 @@ use Badger
     Filesystem  => 'Bin Dir';
 
 use Template::TT2::Test
-    tests       => 52,
+    tests       => 54,
     debug       => 'Template::TT2::VMethods',
     args        => \@ARGV;
 
@@ -63,6 +63,7 @@ my $vars = {
     WORD     => 'BIRD',
     the_bird => "\n  The  bird\n  is  the  word  \n  ",
     quotable => "Tim O'Reilly said \"Oh really?\"",
+    markup   => 'a < b > & c "d" \'e\'',
 };
 
 test_expect( vars => $vars );
@@ -175,21 +176,29 @@ bIRD
 -- expect --
 >The bird is the word<
 
--- test --
--- name text.squote --
+-- test text.squote --
 [% quotable %]
 [% quotable.squote %]
 -- expect --
 Tim O'Reilly said "Oh really?"
 Tim O\'Reilly said "Oh really?"
 
--- test --
--- name text.dquote --
+-- test text.dquote --
 [% quotable %]
 [% quotable.dquote %]
 -- expect --
 Tim O'Reilly said "Oh really?"
 Tim O'Reilly said \"Oh really?\"
+
+-- test text.html --
+[% markup.html %]
+-- expect --
+a &lt; b &gt; &amp; c &quot;d&quot; 'e'
+
+-- test text.xml --
+[% markup.xml %]
+-- expect --
+a &lt; b &gt; &amp; c &quot;d&quot; &apos;e&apos;
 
 -- test text.repeat --
 [% animal.repeat(3) %]

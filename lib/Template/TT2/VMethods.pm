@@ -1,5 +1,6 @@
 package Template::TT2::VMethods;
 
+require Template::TT2::Filters;
 use Template::TT2::Class
     version   => 0.01,
     constants => ':stash HASH',
@@ -39,6 +40,8 @@ our $TEXT_VMETHODS = {
     collapse    => \&text_collapse,
     squote      => \&text_squote,
     dquote      => \&text_dquote,
+    html        => \&Template::TT2::Filters::html,
+    xml         => \&Template::TT2::Filters::xml,
 };
 
 our $HASH_VMETHODS = {
