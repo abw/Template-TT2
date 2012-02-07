@@ -7,7 +7,7 @@ use Template::TT2::Class
     exports   => {
         any   => '$ROOT_VMETHODS $TEXT_VMETHODS $HASH_VMETHODS $LIST_VMETHODS',
     };
-    
+
 our $PRIVATE = STASH_PRIVATE;
 
 our $ROOT_VMETHODS = {
@@ -37,6 +37,8 @@ our $TEXT_VMETHODS = {
     lcfirst     => \&text_lcfirst,
     trim        => \&text_trim,
     collapse    => \&text_collapse,
+    squote      => \&text_squote,
+    dquote      => \&text_dquote,
 };
 
 our $HASH_VMETHODS = {
@@ -87,15 +89,15 @@ our $LIST_VMETHODS = {
 # root virtual methods
 #========================================================================
 
-sub root_inc { 
+sub root_inc {
     no warnings;
-    my $item = shift; 
+    my $item = shift;
     ++$item;
 }
 
 sub root_dec {
     no warnings;
-    my $item = shift; 
+    my $item = shift;
     --$item;
 }
 
@@ -108,23 +110,23 @@ sub text_item {
     $_[0];
 }
 
-sub text_list { 
+sub text_list {
     [ $_[0] ];
 }
 
-sub text_hash { 
+sub text_hash {
     { value => $_[0] };
 }
 
-sub text_length { 
+sub text_length {
     length $_[0];
 }
 
-sub text_size { 
+sub text_size {
     return 1;
 }
 
-sub text_defined { 
+sub text_defined {
     return 1;
 }
 
@@ -136,15 +138,15 @@ sub text_match {
     return @matches ? \@matches : '';
 }
 
-sub text_search { 
+sub text_search {
     my ($str, $pattern) = @_;
     return $str unless defined $str and defined $pattern;
     return $str =~ /$pattern/;
 }
 
-sub text_repeat { 
+sub text_repeat {
     my ($str, $count) = @_;
-    $str = '' unless defined $str;  
+    $str = '' unless defined $str;
     return '' unless $count;
     $count ||= 1;
     return $str x $count;
@@ -163,14 +165,14 @@ sub text_replace {
             my ($chunk, $start, $end) = @_;
             $chunk =~ s{ \\(\\|\$) | \$ (\d+) }{
                 $1 ? $1
-                    : ($2 > $#$start || $2 == 0) ? '' 
+                    : ($2 > $#$start || $2 == 0) ? ''
                     : substr($text, $start->[$2], $end->[$2] - $start->[$2]);
             }exg;
             $chunk;
         };
         if ($global) {
             $text =~ s{$pattern}{ &$expand($replace, [@-], [@+]) }eg;
-        } 
+        }
         else {
             $text =~ s{$pattern}{ &$expand($replace, [@-], [@+]) }e;
         }
@@ -178,7 +180,7 @@ sub text_replace {
     else {
         if ($global) {
             $text =~ s/$pattern/$replace/g;
-        } 
+        }
         else {
             $text =~ s/$pattern/$replace/;
         }
@@ -186,29 +188,29 @@ sub text_replace {
     return $text;
 }
 
-sub text_remove { 
+sub text_remove {
     my ($str, $search) = @_;
     return $str unless defined $str and defined $search;
     $str =~ s/$search//g;
     return $str;
 }
-    
+
 sub text_split {
     my ($str, $split, $limit) = @_;
     $str = '' unless defined $str;
-    
-    # we have to be very careful about spelling out each possible 
+
+    # we have to be very careful about spelling out each possible
     # combination of arguments because split() is very sensitive
-    # to them, for example C<split(' ', ...)> behaves differently 
+    # to them, for example C<split(' ', ...)> behaves differently
     # to C<$space=' '; split($space, ...)>
-    
+
     if (defined $limit) {
-        return [ defined $split 
+        return [ defined $split
                  ? split($split, $str, $limit)
                  : split(' ', $str, $limit) ];
     }
     else {
-        return [ defined $split 
+        return [ defined $split
                  ? split($split, $str)
                  : split(' ', $str) ];
     }
@@ -220,11 +222,11 @@ sub text_chunk {
     $size ||= 1;
     if ($size < 0) {
         # sexeger!  It's faster to reverse the string, search
-        # it from the front and then reverse the output than to 
+        # it from the front and then reverse the output than to
         # search it from the end, believe it nor not!
         $string = reverse $string;
         $size = -$size;
-        unshift(@list, scalar reverse $1) 
+        unshift(@list, scalar reverse $1)
             while ($string =~ /((.{$size})|(.+))/g);
     }
     else {
@@ -236,7 +238,7 @@ sub text_chunk {
 sub text_substr {
     my ($text, $offset, $length, $replacement) = @_;
     $offset ||= 0;
-    
+
     if(defined $length) {
         if (defined $replacement) {
             substr( $text, $offset, $length, $replacement );
@@ -251,40 +253,57 @@ sub text_substr {
     }
 }
 
+sub text_squote {
+    my $text = shift;
+    for ($text) {
+        s/(['\\])/\\$1/g;
+    }
+    return $text;
+}
+
+sub text_dquote {
+    my $text = shift;
+    for ($text) {
+        s/(["\\])/\\$1/g;
+        s/\n/\\n/g;
+    }
+    return $text;
+}
+
 
 #-----------------------------------------------------------------------
 # new text virtual methods (DOCS TODO)
 #-----------------------------------------------------------------------
 
-sub text_upper { 
-    uc $_[0] 
+sub text_upper {
+    uc $_[0]
 }
 
-sub text_lower { 
-    lc $_[0] 
+sub text_lower {
+    lc $_[0]
 }
 
-sub text_ucfirst { 
+sub text_ucfirst {
     ucfirst $_[0];
 }
 
-sub text_lcfirst { 
+sub text_lcfirst {
     lcfirst $_[0];
 }
 
-sub text_trim { 
-    for ($_[0]) { 
-        s/^\s+//; 
+sub text_trim {
+    for ($_[0]) {
+        s/^\s+//;
         s/\s+$//;
     }
     return $_[0];
 }
 
-sub text_collapse { 
-    for ($_[0]) { 
-        s/^\s+//; 
-        s/\s+$//; 
-        s/\s+/ /g 
+sub text_collapse {
+    for ($_[0]) {
+        s/^\s+//;
+        s/\s+$//;
+        s/\s+/ /g
     }
     return $_[0];
 }
@@ -295,31 +314,31 @@ sub text_collapse {
 #========================================================================
 
 
-sub hash_item { 
-    my ($hash, $item) = @_; 
+sub hash_item {
+    my ($hash, $item) = @_;
     $item = '' unless defined $item;
     return if $PRIVATE && $item =~ /$PRIVATE/;
     $hash->{ $item };
 }
 
-sub hash_hash { 
+sub hash_hash {
     $_[0];
 }
 
-sub hash_size { 
+sub hash_size {
     scalar keys %{$_[0]};
 }
 
-sub hash_each { 
+sub hash_each {
     # this will be changed in TT3 to do what hash_pairs() does
     [ %{ $_[0] } ];
 }
 
-sub hash_keys { 
+sub hash_keys {
     [ keys   %{ $_[0] } ];
 }
 
-sub hash_values { 
+sub hash_values {
     [ values %{ $_[0] } ];
 }
 
@@ -327,44 +346,44 @@ sub hash_items {
     [ %{ $_[0] } ];
 }
 
-sub hash_pairs { 
-    [ map { 
-        { key => $_ , value => $_[0]->{ $_ } } 
+sub hash_pairs {
+    [ map {
+        { key => $_ , value => $_[0]->{ $_ } }
       }
-      sort keys %{ $_[0] } 
+      sort keys %{ $_[0] }
     ];
 }
 
-sub hash_list { 
-    my ($hash, $what) = @_;  
+sub hash_list {
+    my ($hash, $what) = @_;
     $what ||= '';
     return ($what eq 'keys')   ? [   keys %$hash ]
         :  ($what eq 'values') ? [ values %$hash ]
         :  ($what eq 'each')   ? [        %$hash ]
-        :  # for now we do what pairs does but this will be changed 
+        :  # for now we do what pairs does but this will be changed
            # in TT3 to return [ $hash ] by default
         [ map { { key => $_ , value => $hash->{ $_ } } }
-          sort keys %$hash 
+          sort keys %$hash
           ];
 }
 
-sub hash_exists { 
+sub hash_exists {
     exists $_[0]->{ $_[1] };
 }
 
-sub hash_defined { 
-    # return the item requested, or 1 if no argument 
+sub hash_defined {
+    # return the item requested, or 1 if no argument
     # to indicate that the hash itself is defined
     my $hash = shift;
     return @_ ? defined $hash->{ $_[0] } : 1;
 }
 
-sub hash_delete { 
-    my $hash = shift; 
+sub hash_delete {
+    my $hash = shift;
     delete $hash->{ $_ } for @_;
 }
 
-sub hash_import { 
+sub hash_import {
     my ($hash, $imp) = @_;
     $imp = {} unless ref $imp eq 'HASH';
     @$hash{ keys %$imp } = values %$imp;
@@ -391,56 +410,56 @@ sub list_item {
     $_[0]->[ $_[1] || 0 ];
 }
 
-sub list_list { 
+sub list_list {
     $_[0];
 }
 
-sub list_hash { 
+sub list_hash {
     my $list = shift;
     if (@_) {
         my $n = shift || 0;
-        return { map { ($n++, $_) } @$list }; 
+        return { map { ($n++, $_) } @$list };
     }
     no warnings;
     return { @$list };
 }
 
 sub list_push {
-    my $list = shift; 
-    push(@$list, @_); 
+    my $list = shift;
+    push(@$list, @_);
     return '';
 }
 
 sub list_pop {
-    my $list = shift; 
+    my $list = shift;
     pop(@$list);
 }
 
 sub list_unshift {
-    my $list = shift; 
-    unshift(@$list, @_); 
+    my $list = shift;
+    unshift(@$list, @_);
     return '';
 }
 
 sub list_shift {
-    my $list = shift; 
+    my $list = shift;
     shift(@$list);
 }
 
 sub list_max {
     no warnings;
-    my $list = shift; 
-    $#$list; 
+    my $list = shift;
+    $#$list;
 }
 
 sub list_size {
     no warnings;
-    my $list = shift; 
-    $#$list + 1; 
+    my $list = shift;
+    $#$list + 1;
 }
 
 sub list_defined {
-    # return the item requested, or 1 if no argument to 
+    # return the item requested, or 1 if no argument to
     # indicate that the hash itself is defined
     my $list = shift;
     return 1 unless @_;                     # list.defined is always true
@@ -461,7 +480,7 @@ sub list_last {
 }
 
 sub list_reverse {
-    my $list = shift; 
+    my $list = shift;
     [ reverse @$list ];
 }
 
@@ -472,8 +491,8 @@ sub list_grep {
 }
 
 sub list_join {
-    my ($list, $joint) = @_; 
-    join(defined $joint ? $joint : ' ', 
+    my ($list, $joint) = @_;
+    join(defined $joint ? $joint : ' ',
          map { defined $_ ? $_ : '' } @$list);
 }
 
@@ -491,7 +510,7 @@ sub _list_sort_make_key {
    else {
        @keys = $item;
    }
-   
+
    # ugly hack to generate a single string using a delimiter that is
    # unlikely (but not impossible) to be found in the wild.
    return lc join('/*^UNLIKELY^*/', map { defined $_ ? $_ : '' } @keys);
@@ -501,15 +520,15 @@ sub _list_sort_make_key {
 sub list_sort {
     my ($list, @fields) = @_;
     return $list unless @$list > 1;         # no need to sort 1 item lists
-    return [ 
-        @fields                             # Schwartzian Transform 
+    return [
+        @fields                             # Schwartzian Transform
         ?   map  { $_->[0] }                # for case insensitivity
             sort { $a->[1] cmp $b->[1] }
             map  { [ $_, _list_sort_make_key($_, \@fields) ] }
             @$list
         :   map  { $_->[0] }
             sort { $a->[1] cmp $b->[1] }
-            map  { [ $_, lc $_ ] } 
+            map  { [ $_, lc $_ ] }
             @$list,
     ];
 }
@@ -518,22 +537,22 @@ sub list_sort {
 sub list_nsort {
     my ($list, @fields) = @_;
     return $list unless @$list > 1;     # no need to sort 1 item lists
-    return [ 
-        @fields                         # Schwartzian Transform 
+    return [
+        @fields                         # Schwartzian Transform
         ?  map  { $_->[0] }             # for case insensitivity
            sort { $a->[1] <=> $b->[1] }
            map  { [ $_, _list_sort_make_key($_, \@fields) ] }
-           @$list 
+           @$list
         :  map  { $_->[0] }
            sort { $a->[1] <=> $b->[1] }
-           map  { [ $_, lc $_ ] } 
+           map  { [ $_, lc $_ ] }
            @$list,
     ];
 }
 
 
 sub list_unique {
-    my %u; 
+    my %u;
     [ grep { ++$u{$_} == 1 } @{$_[0]} ];
 }
 
@@ -560,7 +579,7 @@ sub list_slice {
 sub list_splice {
     my ($list, $offset, $length, @replace) = @_;
     if (@replace) {
-        # @replace can contain a list of multiple replace items, or 
+        # @replace can contain a list of multiple replace items, or
         # be a single reference to a list
         @replace = @{ $replace[0] }
         if @replace == 1 && ref $replace[0] eq 'ARRAY';
