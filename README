@@ -1,3 +1,7 @@
+
+TODO:
+ * 1244: weaken in T::Plugin::Filter: damned if I do/don't
+
 This is an alpha version of Template::TT2, a drop-in replacement for the 
 current v2 Template Toolkit modules.  Almost everything works exactly the
 same as before - the only important thing that has changed is the name.  
@@ -31,6 +35,10 @@ has been cleaned up and refactored to use the Badger toolkit.  This
 implements all the generic functionality (i.e. not directly related to 
 template processing) that is shared between TT2, TT3, and any other 
 modules or applications that might use it.
+
+With the exception of the differences noted below, Template::TT2 should be 
+fully compatible with the Template2 module version 2.24 as released on 8th 
+February 2012.
 
 The only significant change to the way Template::TT2 works is that the 
 ABSOLUTE and RELATIVE options are now officially deprecated (although they 
@@ -71,5 +79,5 @@ refactored to usher in TT3.
 
 See the Changes file for more detailed information about what has changed.
 
--- Andy Wardley, January 2012.
+-- Andy Wardley, February 2012.
 
