@@ -4,25 +4,28 @@
 #
 # Test the various filters that redirect output
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
-use Template::TT2::Test
-    tests => 5,
-    debug => 'Template::TT2::Filters',
-    args  => \@ARGV;
+use Badger
+    lib         => '../../lib ../../blib/arch',
+    Filesystem  => 'Bin';
 
-use Badger::Filesystem '$Bin Dir';
-my $tmp = Dir($Bin, 'tmp')->must_exist(1);
+use Template::TT2::Test
+    tests   => 5,
+    debug   => 'Template::TT2::Filters',
+    args    => \@ARGV;
+
+my  $tmp    = Bin->dir('tmp')->must_exist(1);
+
 
 #------------------------------------------------------------------------
 # class to tie a file handle to a variable.

@@ -4,9 +4,11 @@
 #
 # Test the Template::TT2::Filters module
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -15,17 +17,22 @@
 # 
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
-use Template::TT2::Test
-    tests => 7,
-    debug => 'Template::TT2::Filters',
-    args  => \@ARGV;
+use Badger
+    lib     => '../../lib ../../blib/arch';
 
-use Badger::Filesystem '$Bin Dir';
+use Template::TT2::Test
+    tests   => 14,
+    debug   => 'Template::TT2::Filters',
+    args    => \@ARGV;
+
+use constant {
+    ENGINE  => 'Template::TT2',
+    ERROR   => 'Template::TT2::Exception',
+};
+
 use Template::TT2::Filters;
 pass('loaded filters');
+
 
 #------------------------------------------------------------------------
 # hack to allow STDERR to be tied to a variable.
@@ -39,6 +46,7 @@ sub TIEHANDLE {
     my ($class, $textref) = @_;
     bless $textref, $class;
 }
+
 sub PRINT {
     my $self = shift;
     $$self .= join('', @_);
@@ -70,7 +78,6 @@ my $vars = {
 };
 
 my $filters = {
-#    'nonfilt'    => 'nonsense',
     'microjive'  => \&microjive,
     'microsloth' => [ \&microsloth, 0 ],
     'censor'     => [ \&censor_factory, 1 ],
@@ -80,17 +87,17 @@ my $filters = {
 };
 
 
-my $tt_default = Template::TT2->new(
+my $tt_default = ENGINE->new(
     INTERPOLATE => 1, 
     POST_CHOMP  => 1,
     FILTERS     => $filters,
-) || die Template->error;
+) || die ENGINE->error;
 
-my $tt_eval_perl = Template::TT2->new(
+my $tt_eval_perl = ENGINE->new(
     EVAL_PERL   => 1,
     FILTERS     => $filters,
     BARVAL      => 'some random value',
-) || die Template->error;
+) || die ENGINE->error;
 
 
 $tt_eval_perl->context->define_filter('another', \&another, 1);
@@ -140,16 +147,21 @@ sub barf_up {
     my $foad    = shift || 0;
 
     if ($foad == 0) {
+        die "This kind of silly return value is now frowned upon\n";
         return (undef, "barfed");
     }
     elsif ($foad == 1) {
-	    return (undef, Template::Exception->new('dead', 'deceased'));
+        die "This kind of silly return value is also frowned upon\n";
+        return (undef, ERROR->new('dead', 'deceased'));
     }
     elsif ($foad == 2) {
-	    die "keeled over\n";
+        die "keeled over\n";
     }
     else {
-	    die (Template::Exception->new('unwell', 'sick as a parrot'));
+	    die ERROR->new(
+            type => 'unwell', 
+            info => 'sick as a parrot'
+        );
     }
 }
 
@@ -240,13 +252,10 @@ At the [** CENSORED **] of the hill, he had to pinch the
 
 
 
--- stop --
-
-
 #------------------------------------------------------------------------
 # test failures
 #------------------------------------------------------------------------
--- test --
+-- test non-existing filter --
 [% TRY %]
 [% FILTER nonfilt %]
 blah blah blah
@@ -255,9 +264,9 @@ blah blah blah
 BZZZT: [% error.type %]: [% error.info %]
 [% END %]
 -- expect --
-BZZZT: filter: invalid FILTER entry for 'nonfilt' (not a CODE ref)
+BZZZT: filters: filter not found: nonfilt
 
--- test --
+-- test badfact --
 [% TRY %]
 [% FILTER badfact %]
 blah blah blah
@@ -266,20 +275,23 @@ blah blah blah
 BZZZT: [% error.type %]: [% error.info %]
 [% END %]
 -- expect --
-BZZZT: filter: invalid FILTER for 'badfact' (not a CODE ref)
+BZZZT: filters: Invalid filter definition for 'badfact' (nonsense)
 
--- test --
+-- test badfilt --
 [% TRY %]
 [% FILTER badfilt %]
 blah blah blah
 [% END %]
 [% CATCH %]
-BZZZT: [% error.type %]: [% error.info %]
+BZZZT: [% error.type %]: [% error.info.remove('\s\((.|\n)*') %]
 [% END %]
 -- expect --
-BZZZT: filter: invalid FILTER entry for 'badfilt' (not a CODE ref)
+BZZZT: filters: Invalid filter definition for 'badfilt'
 
--- test --
+-- test barfilt --
+# NOTE: Template::TT2 no longer supports (undef, $error) as a return 
+# value from a filter to indicate errors.  All errors should be thrown
+# as exceptions.
 [% TRY;
      "foo" | barfilt;
    CATCH;
@@ -287,9 +299,10 @@ BZZZT: filter: invalid FILTER entry for 'badfilt' (not a CODE ref)
    END
 %]
 -- expect --
-filter: barfed
+undef: This kind of silly return value is now frowned upon
 
--- test --
+-- test barfilt(1) --
+# As per the previous comment - we don't support this any more
 [% TRY;
      "foo" | barfilt(1);
    CATCH;
@@ -297,9 +310,9 @@ filter: barfed
    END
 %]
 -- expect --
-dead: deceased
+undef: This kind of silly return value is also frowned upon
 
--- test --
+-- test barfilt(2) --
 [% TRY;
      "foo" | barfilt(2);
    CATCH;
@@ -307,9 +320,9 @@ dead: deceased
    END
 %]
 -- expect --
-filter: keeled over
+undef: keeled over
 
--- test --
+-- test barfilt(3) --
 [% TRY;
      "foo" | barfilt(3);
    CATCH;

@@ -100,7 +100,10 @@ sub found_array {
     }
     elsif (! ref $list->[0]) {
         # new-skool Badger::Factory style: ['Module::Name', 'Class::Name']
-        return $self->SUPER::found_array($list, @$args);
+        return eval {
+            $self->SUPER::found_array($name, $list, @$args);
+        }
+        ||  $self->error_msg( bad_filter => $name, $@ );
     }
     else {
         return $self->error_msg( bad_filter => $name, $list->[0] );
