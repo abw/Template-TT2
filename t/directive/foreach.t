@@ -4,28 +4,31 @@
 #
 # Template script testing the FOREACH directive.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 # 
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib   => '../../lib ../../blib/arch';
+
 use Template::TT2::Test
     tests => 46,
     debug => 'Template::TT2::Parser',
     args  => \@ARGV;
 
 use Template::TT2;
-use constant ENGINE => 'Template::TT2';
+use constant 
+    ENGINE  => 'Template::TT2';
 
 my ($a, $b, $c, $d, $l, $o, $r, $u, $w ) = 
-	qw( alpha bravo charlie delta lima oscar romeo uncle whisky );
+    qw( alpha bravo charlie delta lima oscar romeo uncle whisky );
 
 my $day      = -1;
 my @days     = qw( Monday Tuesday Wednesday Thursday Friday Saturday Sunday );
@@ -54,10 +57,10 @@ my $params   = {
     'months' => sub { return \@months },
     'format' => \&format,
     'people' => [ 
-    	{ id => 'abw', code => 'abw', name => 'Andy Wardley' },
-    	{ id => 'aaz', code => 'zaz', name => 'Azbaz Azbaz Zazbazzer' },
-    	{ id => 'bcd', code => 'dec', name => 'Binary Coded Decimal' },
-    	{ id => 'efg', code => 'zzz', name => 'Extra Fine Grass' },
+        { id => 'abw', code => 'abw', name => 'Andy Wardley' },
+        { id => 'aaz', code => 'zaz', name => 'Azbaz Azbaz Zazbazzer' },
+        { id => 'bcd', code => 'dec', name => 'Binary Coded Decimal' },
+        { id => 'efg', code => 'zzz', name => 'Extra Fine Grass' },
     ],
     'sections' => {
         one   => 'Section One',
@@ -75,19 +78,19 @@ sub format {
     my $format = shift;
     $format = '%s' unless defined $format;
     return sub {
-	    sprintf($format, shift);
+        sprintf($format, shift);
     }
 }
 
 my $engines = {
     default => ENGINE->new(
-        INTERPOLATE => 1, 
-        POST_CHOMP  => 1, 
-        ANYCASE     => 0
+        INTERPOLATE   => 1, 
+        POST_CHOMP    => 1, 
+        ANYCASE       => 0
     ),
     debug => ENGINE->new(
-        DEBUG => 1,                 # TODO: this may not work as expected
-        DEBUG_FORMAT => '',
+        DEBUG         => 1,                 # TODO: this may not work as expected
+        DEBUG_FORMAT  => '',
     )
 };
 

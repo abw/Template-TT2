@@ -4,22 +4,24 @@
 #
 # Test the WHILE directive
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib     => '../../lib ../../blib/arch';
+
 use Template::TT2::Test
-    tests => 11,
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+    tests   => 11,
+    debug   => 'Template::TT2::Parser',
+    args    => \@ARGV;
 
 # set low limit on WHILE's maximum iteration count
 use Template::TT2::Directive;
@@ -30,9 +32,11 @@ my $config = {
     POST_CHOMP  => 1,
 };
 
-my @list = ( 'x-ray', 'yankee', 'zulu', );
 my @pending;
-my $vars  = {
+my @list = ( 
+    'x-ray', 'yankee', 'zulu', 
+);
+my $vars = {
     'a'     => 'alpha',
     'b'     => 'bravo',
     'c'     => 'charlie',

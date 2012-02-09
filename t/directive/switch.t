@@ -4,29 +4,34 @@
 #
 # Template script testing SWITCH / CASE blocks
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib     => '../../lib ../../blib/arch';
+
 use Template::TT2::Test
-    tests => 15,
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+    tests   => 15,
+    debug   => 'Template::TT2::Parser',
+    args    => \@ARGV;
     
 test_expect(
-    config => { POST_CHOMP => 1 },
     vars   => callsign,
+    config => { 
+        POST_CHOMP => 1,
+    },
 );
 
 __DATA__
+
 #------------------------------------------------------------------------
 # test simple case
 #------------------------------------------------------------------------

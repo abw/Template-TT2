@@ -4,19 +4,24 @@
 #
 # Template script testing TRY / THROW / CATCH / FINAL blocks.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
+#
+# This is free software; you can redistribute it and/or modify it
+# under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib     => '../../lib ../../blib/arch';
+
 use Template::TT2::Test
-    tests => 31,
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+    tests   => 31,
+    debug   => 'Template::TT2::Parser',
+    args    => \@ARGV;
     
 my $config = {
     INCLUDE_PATH => [ qw( t/test/lib test/lib ) ],	
@@ -24,9 +29,11 @@ my $config = {
 };
 
 my $vars = callsign;
+
 $vars->{ throw_egg } = sub { 
     die (Template::TT2::Exception->new( type => 'egg', info => 'scrambled' ));
 };
+
 $vars->{ throw_any } = sub { 
     die "undefined error\n";
 };

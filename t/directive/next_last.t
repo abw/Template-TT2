@@ -2,7 +2,9 @@
 #
 # t/language/next_last.t
 #
-# Template script testing NEXT/LAST directives.
+# Template script testing NEXT/LAST directives.  
+#
+# Run with -h option for help.
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
@@ -14,17 +16,17 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
-    Filesystem  => 'Bin Dir';
+    lib     => '../../lib ../../blib/arch';
 
 use Template::TT2::Test
-    tests       => 4,
-    debug       => 'Template::TT2::Parser',
-    args        => \@ARGV;
+    tests   => 4,
+    debug   => 'Template::TT2::Parser',
+    args    => \@ARGV;
 
 test_expect();
 
 __DATA__
+
 -- test foreach next --
 [%  FOREACH i IN [1..5];
         i;

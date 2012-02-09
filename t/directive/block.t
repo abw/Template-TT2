@@ -7,40 +7,45 @@
 # exported) to the calling template.  In the same case for PROCESS,
 # the block should become visible.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
-use Template::TT2::Test
-    tests => 9,
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+use Badger
+    lib        => '../../lib ../../blib/arch',
+    Filesystem => 'Bin';
 
-use Badger::Filesystem '$Bin Dir';
-my $tlib = Dir($Bin, 'templates');
+use Template::TT2::Test
+    tests      => 9,
+    debug      => 'Template::TT2::Parser',
+    args       => \@ARGV;
 
 my $config = {
-    INCLUDE_PATH => $tlib,	
+    INCLUDE_PATH => Bin->dir('templates'),
     POST_CHOMP   => 1,
     BLOCKS       => {
-	    header   => '<html><head><title>[% title %]</title></head><body>',
-	    footer   => '</body></html>',
-	    block_a  => sub { return 'this is block a' },
-	    block_b  => sub { return 'this is block b' },
+        header   => '<html><head><title>[% title %]</title></head><body>',
+        footer   => '</body></html>',
+        block_a  => sub { return 'this is block a' },
+        block_b  => sub { return 'this is block b' },
     },
 };
 
-test_expect(config => $config, vars => callsign, step => 0);
+test_expect(
+  config => $config, 
+  vars   => callsign, 
+  step   => 0
+);
 
 __DATA__
+
 -- test hello --
 hello world
 -- expect --

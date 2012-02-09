@@ -4,29 +4,30 @@
 #
 # Template script testing the INCLUDE and PROCESS directives.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
-#
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
-    tests => 23,
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+    tests       => 23,
+    debug       => 'Template::TT2::Parser',
+    args        => \@ARGV;
 
 use Template::TT2;
-use Badger::Filesystem '$Bin Dir';
-use constant ENGINE => 'Template::TT2';
+use constant 
+    ENGINE      => 'Template::TT2';   
 
-my $tdir = Dir($Bin, 'templates');
 
 my ($a, $b, $c, $d, $e, $f, $g, $h, $i, $j, $k, $l, $m, 
     $n, $o, $p, $q, $r, $s, $t, $u, $v, $w, $x, $y, $z) = 
@@ -50,6 +51,7 @@ my $replace = {
     't'    => $t,
 };
 
+my $tdir  = Bin->dir('templates');
 my $tproc = ENGINE->new({ 
     INTERPOLATE  => 1,
     INCLUDE_PATH => $tdir,
@@ -57,8 +59,6 @@ my $tproc = ENGINE->new({
     AUTO_RESET   => 0,
     DEFAULT      => 'default',
 });
-
-my $incpath = [ $tdir, '/nowhere' ];
 my $tt_reset = ENGINE->new({ 
     INTERPOLATE  => 1,
     INCLUDE_PATH => [ $tdir, '/nowhere/in/particular', $tdir->dir('subdir') ],
@@ -66,7 +66,6 @@ my $tt_reset = ENGINE->new({
     RECURSION    => 1,
     DEFAULT      => 'bad_default',
 });
-#$incpath->[1] = "$dir/lib";
 
 # we want to process 'metadata' directly so that the correct top-level
 # 'template' reference is set instead of 'input text'
@@ -80,6 +79,7 @@ my $engines = {
     default => $tproc,
     reset   => $tt_reset,
 };
+
 test_expect(
     vars    => $replace,
     engine  => $engines->{ default },

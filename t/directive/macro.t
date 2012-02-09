@@ -4,40 +4,37 @@
 #
 # Template script testing the MACRO directives.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib 
-            blib/lib blib/arch ../../blib/lib ../../blib/arch );
+use Badger
+    lib         => '../../lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
-    tests => 9,
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+    tests       => 9,
+    debug       => 'Template::TT2::Parser',
+    args        => \@ARGV;
 
-use Badger::Filesystem '$Bin Dir';
-my $dir = Dir($Bin, 'templates')->must_exist;
-
-my $config = {
-    INCLUDE_PATH => $dir,
-    EVAL_PERL    => 1,
-    TRIM         => 1,
-};
-
-my $vars = callsign;
 test_expect(
-    vars   => $vars,
-    config => $config,
+    vars   => callsign,
+    config => {
+        INCLUDE_PATH => Bin->dir('templates')->must_exist,
+        EVAL_PERL    => 1,
+        TRIM         => 1,
+    }
 );
 
 __DATA__
+
 -- test foo MACRO --
 [% MACRO foo INCLUDE foo -%]
 foo: [% foo %]
