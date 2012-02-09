@@ -4,9 +4,11 @@
 #
 # Test general text blocks, ensuring all characters can be used.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -14,15 +16,17 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+
+use Badger
+    lib   => '../../lib ../../blib/arch';
+
 use Template::TT2::Test
     tests => 14,
     debug => 'Template::TT2::Parser',
     args  => \@ARGV;
 
-use constant ENGINE => 'Template::TT2';
+use constant 
+    ENGINE => 'Template::TT2';
 
 #------------------------------------------------------------------------
 package Stringy;

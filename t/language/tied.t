@@ -6,7 +6,9 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Run with -h option for help.
+#
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -14,22 +16,19 @@
 #========================================================================
 
 use Badger
-    lib => [
-        '../lib',
-        '../../lib',
-        '../../blib',
-        '../../blib/arch',
-    ];
+    lib         => '../../lib ../../blib/arch',
+    Filesystem  => 'Bin';
 
 use Template::TT2::Test
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+    debug   => 'Template::TT2::Parser',
+    args    => \@ARGV;
+
+use constant 
+    ENGINE  => 'Template::TT2';
 
 use Template::TT2::Stash;
 use Template::TT2::Stash::Perl;
-use Badger::Filesystem '$Bin Dir';
-use constant ENGINE => 'Template::TT2';
-my $dir = Dir($Bin, 'templates')->must_exist;
+my $dir = Bin->dir('templates')->must_exist;
 my $xs  = Template::TT2::Stash->xs_backend;
 
 # 2 runs if we don't have XS stash, 3 if we do

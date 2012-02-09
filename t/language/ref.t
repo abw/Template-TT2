@@ -4,9 +4,11 @@
 #
 # Template script testing variable references.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -14,12 +16,7 @@
 #========================================================================
 
 use Badger
-    lib => [
-        '../lib',
-        '../../lib',
-        '../../blib',
-        '../../blib/arch',
-    ];
+    lib   => '../../lib ../../blib/arch';
 
 use Template::TT2::Test
     tests => 6,

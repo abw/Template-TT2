@@ -4,25 +4,27 @@
 #
 # Test EXPOSE_BLOCKS option
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib        => '../../lib ../../blib/arch',
+    Filesystem => 'Bin';
+
 use Template::TT2::Test
     tests => 5,
     debug => 'Template::TT2',
     args  => \@ARGV;
 
-use Badger::Filesystem '$Bin Dir';
-my $tlib = Dir($Bin, 'templates');
+my $tlib = Bin->dir('templates');
 
 my $tt_shielded = Template::TT2->new(
     INCLUDE_PATH => $tlib,

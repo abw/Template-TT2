@@ -4,29 +4,33 @@
 #
 # Template script testing variable use.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
-    tests => 61,
-    debug => 'Template::TT2::Parser',
-    args  => \@ARGV;
+    tests   => 61,
+    debug   => 'Template::TT2::Parser',
+    args    => \@ARGV;
+
+use constant 
+    ENGINE  => 'Template::TT2';
 
 use Template::TT2;
 use Template::TT2::Stash;
 use Template::TT2::Constants 'TT2_EXCEPTION';
 
-use constant 
-    ENGINE => 'Template::TT2';
 
 #use Template::Constants qw( :status );
 

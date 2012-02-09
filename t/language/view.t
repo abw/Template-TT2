@@ -4,9 +4,11 @@
 #
 # Tests the 'VIEW' directive.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2000,2012 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2000-2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -15,12 +17,14 @@
 
 use Badger
     lib     => '../../lib';
-use constant 
-    ENGINE  => 'Template::TT2';
+
 use Template::TT2::Test
     tests   => 27,
     debug   => 'Template::TT2::View Template::TT2::Plugin::View',
     args    => \@ARGV;
+
+use constant 
+    ENGINE  => 'Template::TT2';
 
 package Blessed::List;
 
