@@ -20,7 +20,7 @@ use Badger
     Filesystem  => 'Bin Dir';
 
 use Template::TT2::Test
-    tests       => 39,
+    tests       => 41,
     debug       => 'Template::TT2::Templates',
     args        => \@ARGV;
 
@@ -45,6 +45,12 @@ my $vars = {
     relfile => $relfile,
     absfile => $absfile,
     fixfile => \&update_file,
+};
+
+# catch warnings that ABSOLUTE and RELATIVE options are deprecated
+my @warnings;
+$SIG{__WARN__} = sub {
+    push(@warnings, shift);
 };
 
 
@@ -258,6 +264,8 @@ test_expect(
     vars    => $vars,
 );
 
+ok( $warnings[0] =~ /The ABSOLUTE option is deprecated/, 'got ABSOLUTE warning' );
+ok( $warnings[1] =~ /The RELATIVE option is deprecated/, 'got RELATIVE warning' );
 
 __DATA__
 -- test ttinc include relative file --

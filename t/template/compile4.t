@@ -21,7 +21,7 @@ use Badger
     Filesystem  => 'Bin';
 
 use Template::TT2::Test
-    tests => 6,
+    tests => 7,
     debug => 'Template::TT2::Templates',
     args  => \@ARGV;
 
@@ -36,6 +36,12 @@ my $config = {
     ABSOLUTE     => 1,
 };
 
+# catch warnings that ABSOLUTE and RELATIVE options are deprecated
+my @warnings;
+$SIG{__WARN__} = sub {
+    push(@warnings, shift);
+};
+
 $cache->delete if $cache->exists;
 $cache->create;
 
@@ -46,6 +52,8 @@ test_expect(
         blam => $incdir->file('blam'),
     },
 );
+
+ok( $warnings[0] =~ /The ABSOLUTE option is deprecated/, 'got ABSOLUTE warning' );
 
 
 __DATA__

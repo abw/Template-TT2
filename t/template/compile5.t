@@ -22,7 +22,7 @@ use Badger
     Filesystem  => 'Bin Dir';
 
 use Template::TT2::Test
-    tests => 9,
+    tests => 10,
     debug => 'Template::TT2::Templates',
     args  => \@ARGV;
 
@@ -36,6 +36,12 @@ my $config = {
     COMPILE_DIR  => $cache,
     COMPILE_EXT  => '.ttc',
     ABSOLUTE     => 1,
+};
+
+# catch warnings that ABSOLUTE and RELATIVE options are deprecated
+my @warnings;
+$SIG{__WARN__} = sub {
+    push(@warnings, shift);
 };
 
 my @files = ('foo.ttc', 'complex.ttc', 'blam.ttc');
@@ -73,6 +79,8 @@ test_expect(
         blam => $incdir->file('blam'),
     },
 );
+
+ok( $warnings[0] =~ /The ABSOLUTE option is deprecated/, 'got ABSOLUTE warning' );
 
 # cleanup cache directory
 #rmtree($cdir) if -d $cdir;
