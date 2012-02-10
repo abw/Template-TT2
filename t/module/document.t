@@ -17,7 +17,7 @@
 #========================================================================
 
 use Badger
-    lib   => '../../lib ../../blib/lib ../../blib/arch';
+    lib         => '../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Test
     tests => 16,
@@ -69,7 +69,11 @@ is( $doc->block->(), 'some output', 'ran main block' );
 is( $doc->blocks->{ foo }->(), 'the foo block', 'ran foo block' );
 is( $doc->blocks->{ bar }->(), 'the bar block', 'ran bar block' );
 
-test_expect( vars => { mydoc => $doc } );
+test_expect( 
+    vars => { 
+        mydoc => $doc 
+    },
+);
 
 __END__
 -- test metadata --
@@ -140,13 +144,3 @@ title: My Template Title
 -- expect --
 some output
 
--- stop --
-# test for component.caller and component.callers patch
--- test --
-[% INCLUDE one;
-   INCLUDE two;
-   INCLUDE three;
-%]
--- expect --
-one, three
-two, three

@@ -21,7 +21,7 @@ use Badger
 use CGI;
 use Template::TT2::Test
     debug => "Template::TT2::Plugin::CGI",
-    tests => 9,
+    tests => 10,
     args  => \@ARGV;
 
 
@@ -108,7 +108,6 @@ name: Andy Wardley
 -- process --
 [% cgicheck %]
 
--- stop -- 
 -- test params.item --
 [% USE cgi('item=foo&items=one&items=two') -%]
 item: [% cgi.params.item %]
@@ -118,4 +117,3 @@ items: [% cgi.params.items.join(', ') %]
 item: foo
 item: foo
 items: one, two
-
