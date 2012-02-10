@@ -4,6 +4,8 @@
 #
 # Test the Template::TT2::Templates module.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -13,7 +15,6 @@
 #
 #========================================================================
 
-use lib '/home/abw/projects/badger/lib';
 use Badger
     lib         => '../../lib',
     Filesystem  => 'Bin Dir';
@@ -36,7 +37,6 @@ my $dir     = Bin->dir('templates')->must_exist;
 my $src     = $dir->dir('src')->must_exist;
 my $lib     = $dir->dir('lib')->must_exist;
 my $file    = 'foo';
-#my $relfile = "./$dir/$file";
 my $relfile = "./t/module/templates/src/$file";
 my $absfile = $src->file($file)->absolute;
 my $newfile = $src->file('foobar');
