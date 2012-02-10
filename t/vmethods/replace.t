@@ -5,6 +5,8 @@
 # Testing the 'replace' scalar virtual method, and in particular the
 # use of backreferences.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@cpan.org> and Sergey Martynoff 
 # <sergey@martynoff.info>
 #
@@ -16,13 +18,12 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
-    Filesystem  => 'Bin Dir';
+    lib     => '../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Test
-    tests       => 19,
-    debug       => 'Template::TT2::VMethods',
-    args        => \@ARGV;
+    tests   => 19,
+    debug   => 'Template::TT2::VMethods',
+    args    => \@ARGV;
 
 test_expect();
 

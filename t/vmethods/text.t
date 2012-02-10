@@ -4,6 +4,8 @@
 #
 # Testing scalar (text) virtual variable methods.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -14,13 +16,12 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
-    Filesystem  => 'Bin Dir';
+    lib     => '../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Test
-    tests       => 54,
-    debug       => 'Template::TT2::VMethods',
-    args        => \@ARGV;
+    tests   => 54,
+    debug   => 'Template::TT2::VMethods',
+    args    => \@ARGV;
 
 use Template::TT2::Stash;
 

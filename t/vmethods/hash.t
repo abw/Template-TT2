@@ -4,6 +4,8 @@
 #
 # Testing hash virtual variable methods.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@cpan.org>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -14,12 +16,12 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib';
+    lib     => '../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Test
-    tests       => 10,
-    debug       => 'Template::TT2::VMethods',
-    args        => \@ARGV;
+    tests   => 10,
+    debug   => 'Template::TT2::VMethods',
+    args    => \@ARGV;
 
 my $tt = Template::TT2->new;
 my $tc = $tt->context;
