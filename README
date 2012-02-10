@@ -1,7 +1,3 @@
-
-TODO:
- * 1244: weaken in T::Plugin::Filter: damned if I do/don't
-
 This is an alpha version of Template::TT2, a drop-in replacement for the 
 current v2 Template Toolkit modules.  Almost everything works exactly the
 same as before - the only important thing that has changed is the name.  

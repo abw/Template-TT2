@@ -1,0 +1,5 @@
+Template::TT2 should now be fully up to date with the Template2 module 
+version 2.24 as released on 8th February 2012.
+
+TODO:
+ * 1244: weaken in T::Plugin::Filter: damned if I do/don't
