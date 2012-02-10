@@ -4,6 +4,8 @@
 #
 # Template script to test unicode data with the XS Stash
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org> based on code provided
 # by Максим Вуец.
 #
@@ -15,15 +17,10 @@
 #========================================================================
 
 use Badger
-    lib => [
-        '../../lib',
-        '../../blib',
-        '../../blib/arch',
-    ];
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
 
 use utf8;
 use Template::TT2::Test
-    #tests => 4,
     debug => 'Template::TT2::Stash',
     args  => \@ARGV;
 
@@ -35,7 +32,6 @@ BEGIN {
         require Template::TT2::Stash::XS;
     };
     if ($@) {
-    #    warn $@;
         skip_all('cannot load Template::TT2::Stash::XS');
     }
 }

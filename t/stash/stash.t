@@ -4,6 +4,8 @@
 #
 # Test the Template::TT2::Stash module.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -14,12 +16,7 @@
 #========================================================================
 
 use Badger
-    lib => [
-        '../lib',
-        '../../lib',
-        '../../blib',
-        '../../blib/arch',
-    ];
+    lib   => '../lib ../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Constants qw( :status :debug );
 use Template::TT2::Test
