@@ -17,7 +17,7 @@
 #========================================================================
 
 use Badger
-    lib     => '../../lib ../../blib/arch';
+    lib     => '../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Test
     tests   => 19,
