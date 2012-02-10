@@ -6,8 +6,8 @@ use 5.006;
 use ExtUtils::MakeMaker;
 use Config;
 
-our $MAKE  = $Config{'make'}; 
-our $TT_XS = 1;
+our $MAKE  = $Config{ make }; 
+our $TT_XS = $Config{ cc   };
 our (%config, %ttconfig);
 
 # read command line args putting TT_* into $ttconfig and
@@ -16,8 +16,10 @@ our (%config, %ttconfig);
 
 while (@ARGV) {
     my $arg = shift @ARGV;
-    print "[$arg]\n";
-    if ($arg =~ /^-*no_?xs$/i) {
+    if ($arg =~ /^-*use_?xs$/i) {
+        $TT_XS = 1;
+    }
+    elsif ($arg =~ /^-*no_?xs$/i) {
         $TT_XS = 0;
     }
     else {
@@ -26,19 +28,22 @@ while (@ARGV) {
     }
 };
 
-if ($TT_XS) {
-print <<EOF;
-The XS module(s) will be included in the build.
-Use the --no_xs option to disable them.
-e.g. perl Makefile.PL --no_xs
-EOF
-}
-else {
-print <<EOF;
-The XS module(s) will not be included in the build.
-EOF
-}
+{
+    my $to_be  = $TT_XS ? 'be' : 'not be';
+    my $option = $to_be ? '--no_xs' : '--use_xs';
+    my $action = $to_be ? 'disable' : 'enable';
+    print <<"EOF";
+Template Toolkit XS Modules
+---------------------------
 
+The XS module(s) will $to_be included in the build.
+Use the $option option to explicitly $action them.
+
+e.g. 
+    perl Makefile.PL $option
+
+EOF
+}
 
 my %opts = (
     'NAME'         => 'Template-TT2',
