@@ -23,9 +23,13 @@ use Template::TT2::Test
     tests => 7,
     args  => \@ARGV;
 
+eval "use Template::Plugin";
+my $has_tp = $@ ? 0 : 1;
+
 test_expect(
     vars => {
-        munge => sub {
+        has_tp  => $has_tp,
+        munge   => sub {
             return sub {
                 my $text = shift;
                 $text =~ s/foo/bar/g;
@@ -49,7 +53,6 @@ foo bar baz bar foo
 -- expect --
 bar bar baz bar bar
 
-
 -- test simple NoFoo plugin filter --
 [% USE NoFoo -%]
 [% FILTER $NoFoo -%]
@@ -57,7 +60,6 @@ Blah blah foo bar
 [% END -%]
 -- expect --
 Blah blah  bar
-
 
 -- test change filter --
 [% USE Change ten='eleven'-%]
@@ -80,18 +82,27 @@ This two goes up to eleven
 # This uses Template::Plugin::SimpleFilter which is a subclass
 # of Template::Plugin::Filter.  The test relates to this bug:
 # https://rt.cpan.org/Ticket/Display.html?id=46691
-[% USE SimpleFilter -%]
+[%  IF has_tp -%]
+[%      USE SimpleFilter -%]
 test 1: [% 'hello' | simple %]
-[% INCLUDE simple2 %]
+[%      INCLUDE simple2 %]
 test 3: [% 'world' | simple %]
-[% BLOCK simple2 -%]
-[% USE SimpleFilter -%]
+[%  ELSE -%]
+Template::Plugin is not installed
+[%  END -%]
+[%  BLOCK simple2 -%]
+[%      USE SimpleFilter -%]
 test 2: [% 'badger' | simple -%]
-[% END -%]
+[%  END -%]
 -- expect --
+-- process --
+[%  IF has_tp -%]
 test 1: **hello**
 test 2: **badger**
 test 3: **world**
+[%  ELSE -%]
+Template::Plugin is not installed
+[%- END -%]
 
 -- test simple2 filter with re-use --
 # Similar to the previous test but using Template::TT2::Plugin::SimpleFilter2
