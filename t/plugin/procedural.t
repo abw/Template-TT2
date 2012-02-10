@@ -26,10 +26,13 @@ use Template::TT2::Test
     tests => 9,
     args  => \@ARGV;
 
+eval "use Template::Plugin::Procedural";
+my $haz_tpp = $@ ? 0 : 1;
+
 test_expect(
     vars => {
         # we may not have Template-Toolkit installed
-        I_HAZ_TTP => eval { require Template::Plugin::Procedural },
+        I_HAZ_TTP => $haz_tpp,
         I_HAZ_NOT => 0,
     }
 );
