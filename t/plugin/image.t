@@ -4,9 +4,11 @@
 #
 # Tests the Image plugin.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2002,2008,2012 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2002,2012,2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -14,13 +16,13 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
-    Filesystem  => 'Bin Dir';
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
 
 use Template::TT2::Test
-    tests       => 7,
-    debug       => 'Template::TT2::Plugin::Image',
-    args        => \@ARGV;
+    tests => 7,
+    debug => 'Template::TT2::Plugin::Image',
+    args  => \@ARGV;
 
 my $dir = Bin->dir('data', 'images')->must_exist;
 

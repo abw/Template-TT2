@@ -4,24 +4,26 @@
 #
 # Tests the 'Pod' plugin.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2001,2008 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2001,2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../lib ../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
     debug => 'Template::TT2::Plugin::Pod',
     args  => \@ARGV;
 
-use Badger::Filesystem '$Bin Dir';
-my $pod       = Dir($Bin, 'pod')->must_exist;
+my $pod       = Bin->dir('pod')->must_exist;
 my $templates = $pod->dir('templates')->must_exist;
 
 eval "use Pod::POM";

@@ -4,6 +4,8 @@
 #
 # Test the Dumper plugin.
 #
+# Run with -h option for help.
+#
 # Written by Simon Matthews <sam@tt2.org>, updated for Template::TT2
 # by Andy Wardley.
 #
@@ -12,9 +14,9 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
+
 use Template::TT2::Test
     debug => 'Template::TT2::Plugin::Dumper', 
     tests => 6,

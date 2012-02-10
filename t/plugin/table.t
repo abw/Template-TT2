@@ -4,6 +4,8 @@
 #
 # Tests the 'Table' plugin.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 2000-2006 Andy Wardley. All Rights Reserved.
@@ -14,9 +16,9 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
+
 use Template::TT2::Test
     tests => 10,
     debug => 'Template::TT2::Plugin::Table',

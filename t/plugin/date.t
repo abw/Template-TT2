@@ -2,20 +2,22 @@
 #
 # t/plugin/date.t
 #
-# Tests the 'Date' plugin.
+# Tests the Date plugin.
+#
+# Run with -h option for help.
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2000, 2008 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2000, 2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib ../../blib/arch );
+use Badger
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
+
 use Template::TT2::Test
     debug => "Template::TT2::Plugin::Date",
     tests => 15,

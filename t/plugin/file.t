@@ -4,18 +4,21 @@
 #
 # Tests the File plugin.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2000-2008 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2000-2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib        => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem => 'Bin';
+
 use Template::TT2::Test
     debug => 'Template::TT2::Plugin::Directory 
               Template::TT2::Plugin::File',
@@ -23,8 +26,7 @@ use Template::TT2::Test
     args  => \@ARGV;
 
 use Template::TT2::Plugin::File;
-use Badger::Filesystem '$Bin Dir';
-my $dir  = Dir($Bin, 'data')->must_exist;
+my $dir  = Bin->dir('data')->must_exist;
 my $file = $dir->file( subdir1 => 'foo' );
 my @stat = stat($file);
 

@@ -2,11 +2,13 @@
 #
 # t/plugin/filter.t
 #
-# Tests the File plugin.
+# Tests the Filter plugin.
+#
+# Run with -h option for help.
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2008-2009 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2012-2009 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
@@ -14,8 +16,7 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib ../lib',
-    Filesystem  => 'Bin Dir';
+    lib   => '../lib ../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Test
     debug => 'Template::TT2::Plugin::Filter Template::TT2::Plugin::Change', 

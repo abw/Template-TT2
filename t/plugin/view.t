@@ -4,18 +4,20 @@
 #
 # Tests the 'View' plugin.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2000,2008 Andy Wardley. All Rights Reserved.
+# Copyright (C) 2000,2012 Andy Wardley. All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
+
 use Template::TT2::Test
     tests => 33,
     debug => 'Template::TT2::View Template::TT2::Plugin::View',
@@ -230,7 +232,7 @@ Something has been found
 -- expect --
 { e => 2.718, pi => 3.14 }
 
--- test Oliver Postgate 1925-2008 RIP --
+-- test Oliver Postgate 1925-2012 RIP --
 [% USE view -%]
 [% view.print( foo, method => 'reverse' ) %]
 -- expect --

@@ -4,19 +4,22 @@
 #
 # Template script testing the procedural template plugin
 #
+# Run with -h option for help.
+#
 # Written by Mark Fowler <mark@twoshortplanks.com>
 # Updated by Andy Wardley for Template::TT2
 #
-# Copyright 2002 Mark Fowler, 2008 Andy Wardley.  All Rights Reserved.
+# Copyright 2002 Mark Fowler, 2008-2012 Andy Wardley.  
+# All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( t/lib ./lib ../lib ../../lib );
+use Badger
+    lib   => '../lib ../../lib ../../blib/lib ../../blib/arch';
+
 use Template::TT2::Test
     debug => "Template::TT2::Plugin::Procedural Template::TT2::Plugins
               Template::TT2::Parser",

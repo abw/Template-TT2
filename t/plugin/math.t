@@ -4,6 +4,8 @@
 #
 # Test the Math plugin module.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org> and ...
 #
 # Copyright (C) 2002 Andy Wardley. All Rights Reserved.
@@ -14,9 +16,9 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
+
 use Template::TT2::Test
     tests => 21,
     debug => 'Template::TT2::Plugins',
