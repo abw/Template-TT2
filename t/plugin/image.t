@@ -20,7 +20,6 @@ use Badger
     Filesystem  => 'Bin';
 
 use Template::TT2::Test
-    tests => 7,
     debug => 'Template::TT2::Plugin::Image',
     args  => \@ARGV;
 
@@ -31,6 +30,8 @@ if ($@) {
     eval "use Image::Size";
     skip_all('Neither Image::Info nor Image::Size installed') if $@;
 }
+
+plan(7);
 
 my $vars = {
     dir  => $dir,
