@@ -4,25 +4,27 @@
 #
 # Test the Template::Templates module.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib  qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
     tests => 5,
     debug => 'Template::TT2::Document',
     args  => \@ARGV;
 
-use Badger::Filesystem '$Bin Dir';
-my $tdir   = Dir($Bin, 'templates');
+my $tdir   = Bin->dir('templates');
 my $ENGINE = 'Template::TT2';
 
 my $tt = $ENGINE->new(

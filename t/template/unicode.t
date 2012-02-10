@@ -4,6 +4,8 @@
 #
 # Test the handling of Unicode text in templates.
 #
+# Run with -h option for help.
+#
 # Written by Mark Fowler <mark@twoshortplanks.com> for Template v2, 
 # adapted by Andy Wardley for Template-TT2
 #
@@ -14,10 +16,9 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
-use Badger::Filesystem '$Bin Dir VFS';
+use Badger
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin VFS';
 use Template::TT2;
 use Template::TT2::Constants 'UNICODE MSWIN32';
 use Template::TT2::Test
@@ -35,7 +36,7 @@ else {
 }
 
 # temporary directory for cache files
-my $tmp = Dir($Bin, 'tmp')->must_exist(1);
+my $tmp = Bin->dir('tmp')->must_exist(1);
 my $vfs = VFS->new( root => $tmp );
 
 # This is 'moose...' (with slashes in the 'o's them, and the '...' as one char).

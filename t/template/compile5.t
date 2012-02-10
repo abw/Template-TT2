@@ -6,6 +6,8 @@
 # loaded and used.  Similar to compile2.t but using COMPILE_DIR as well
 # as COMPILE_EXT.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -16,7 +18,7 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
     Filesystem  => 'Bin Dir';
 
 use Template::TT2::Test

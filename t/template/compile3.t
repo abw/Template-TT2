@@ -5,6 +5,8 @@
 # Third test in the compile<n>.t trilogy.  Checks that modifications
 # to a source template result in a re-compilation of the template.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -15,8 +17,8 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
-    Filesystem  => 'Bin Dir';
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
 
 use Template::TT2::Test
     tests => 14,

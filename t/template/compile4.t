@@ -5,6 +5,8 @@
 # This is similar to compile1.t but defines COMPILE_DIR as well as
 # COMPILE_EXT.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -15,8 +17,8 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
-    Filesystem  => 'Bin Dir';
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
 
 use Template::TT2::Test
     tests => 6,

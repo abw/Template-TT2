@@ -2,8 +2,9 @@
 #
 # t/cache.t
 #
-# Test the Template::TT2::Cache module.  Run with -d for debugging,
-# -c for colour, -s for test summary.
+# Test the Template::TT2::Cache module.
+#
+# Run with -h option for help.
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
@@ -12,9 +13,9 @@
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
+
 use Template::TT2::Test
     tests => 18,
     debug => 'Template::TT2::Cache',
@@ -64,7 +65,11 @@ is( $cache->error(), "not found in cache: pi", 'cache declined pi error' );
 # but e should still be there
 is( $cache->get('e'), 2.718, 'still got e though' );
 
-#print STDERR $cache->_slot_report() if $DEBUG;
+if ($DEBUG) {
+    print STDERR 
+        "Cache slots\n-----------\n", 
+        $cache->_slot_report();
+}
 
 __END__
 
