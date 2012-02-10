@@ -13,8 +13,6 @@
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
-# TODO: integrate the rest of the tests following the -- stop -- marker
-# 
 #========================================================================
 
 use Badger

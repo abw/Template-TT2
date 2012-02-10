@@ -32,7 +32,7 @@ my $dir = Bin->dir('templates')->must_exist;
 my $xs  = Template::TT2::Stash->xs_backend;
 
 # 2 runs if we don't have XS stash, 3 if we do
-plan( 10 * ($xs ? 3 : 2) );
+plan( 11 * ($xs ? 3 : 2) );
 
 our $STORE_PREFIX = '';
 our $FETCH_PREFIX = '';
@@ -118,9 +118,9 @@ sub run_tests {
 
 __DATA__
 
-#------------------------------------------------------------------------
-# first try with the Perl stash
-#------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+# tied hash tests
+#-----------------------------------------------------------------------------
 
 -- test tied hash fetch --
 [% hash.a %]
@@ -152,7 +152,21 @@ FETCH:STORE:delta
 -- expect --
 one
 
-# list tests
+-- test tied hash nested person --
+[% DEFAULT hash.person = { };
+   hash.person.name  = 'Arthur Dent';
+   hash.person.email = 'dent@tt2.org'; 
+-%]
+name:  [% hash.person.name %]
+email: [% hash.person.email %]
+-- expect --
+name:  Arthur Dent
+email: dent@tt2.org
+
+
+#-----------------------------------------------------------------------------
+# tied list tests
+#-----------------------------------------------------------------------------
 
 -- test tied list item --
 [% list.0 %]
@@ -174,95 +188,4 @@ FETCH:40
 -- expect --
 FETCH:STORE:50
 
--- stop --
-
-#------------------------------------------------------------------------
-# now try using the XS stash
-#------------------------------------------------------------------------
-
-# hash tests
-
--- test --
--- use xs --
--- test --
-
--- test --
-[% hash.wiz = 'woz' -%]
-[% hash.wiz %]
--- expect --
-FETCH:STORE:woz
-
--- test --
-[% DEFAULT hash.zero = 'nothing';
-   hash.zero
-%]
--- expect --
-FETCH:STORE:nothing
-
--- test --
-before: [% hash.one %]
-after: [% DEFAULT hash.one = 'solitude';
-   hash.one
-%]
--- expect --
-before: FETCH:1
-after: FETCH:1
-
--- test --
-[% hash.foo = 10; hash.foo = 20; hash.foo %]
--- expect --
-FETCH:STORE:20
-
-# this test should create an intermediate hash
--- test --
-[% DEFAULT hash.person = { };
-   hash.person.name  = 'Arthur Dent';
-   hash.person.email = 'dent@tt2.org'; 
--%]
-name:  [% hash.person.name %]
-email: [% hash.person.email %]
--- expect --
-name:  Arthur Dent
-email: dent@tt2.org
-
-
-# list tests
-
--- test --
-[% list.0 %]
--- expect --
-FETCH:10
-
--- test --
-[% list.first %]-[% list.last %]
--- expect --
-FETCH:10-FETCH:STORE:50
-
--- test --
-[% list.push(60); list.last %]
--- expect --
-FETCH:60
-
--- test --
-[% list.5 = 70; list.5 %]
--- expect --
-FETCH:STORE:70
-
--- test --
-[% DEFAULT list.5 = 80; list.5 %]
--- expect --
-FETCH:STORE:70
-
--- test --
-[% list.10 = 100; list.10 %]
--- expect --
-FETCH:STORE:100
-
--- test --
-[% stuff = [ ];
-   stuff.0 = 'some stuff';
-   stuff.0
--%]
--- expect --
-some stuff
 
