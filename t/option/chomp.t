@@ -4,19 +4,21 @@
 #
 # Test the PRE_CHOMP and POST_CHOMP options.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
-use Badger::Filesystem '$Bin Dir';
+use Badger
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
     tests => 59,
     debug => 'Template::TT2::Parser',
@@ -24,7 +26,7 @@ use Template::TT2::Test
 
 use Template::TT2::Constants ':chomp';
 use constant ENGINE => 'Template::TT2';
-my  $tdir = Dir($Bin, 'templates');
+my  $tdir = Bin->dir('templates');
 
 is( CHOMP_NONE, 0, 'CHOMP_NONE' );
 is( CHOMP_ONE, 1, 'CHOMP_ONE' );

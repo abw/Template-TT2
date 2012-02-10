@@ -4,18 +4,21 @@
 #
 # Test the OUTPUT and OUTPUT_PATH options of the Template.pm module.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
     tests => 29,
     debug => 'Template::TT2 Template::TT2::Hub',
@@ -24,7 +27,7 @@ use Template::TT2::Test
 use Badger::Filesystem '$Bin Dir';
 use constant ENGINE => 'Template::TT2';
 
-my $dir   = Dir($Bin, 'templates')->must_exist;
+my $dir   = Bin->dir('templates')->must_exist;
 my $out   = $dir->dir('output')->must_exist(1);
 my $src   = $dir->dir('prefix_one');          # reuse foo template
 my $name1 = 'foo.bar';

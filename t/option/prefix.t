@@ -4,18 +4,21 @@
 #
 # Test template prefixes within INCLUDE, etc., directives.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
     tests => 7,
     debug => 'Template::TT2::Templates',
@@ -23,8 +26,8 @@ use Template::TT2::Test
 
 use Template::TT2::Modules;
 use constant TT2_MODULES => 'Template::TT2::Modules';
-use Badger::Filesystem '$Bin Dir';
-my $tdir = Dir($Bin, 'templates')->must_exist;
+
+my $tdir = Bin->dir('templates')->must_exist;
 
 # we'll try two different ways of creating Template::TT2::Templates objects,
 # just to make sure they both work.

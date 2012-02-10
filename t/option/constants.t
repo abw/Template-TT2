@@ -4,6 +4,8 @@
 #
 # Test constant folding via Template::TT2::Namespace::Constants
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@andywardley.com>
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.

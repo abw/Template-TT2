@@ -4,6 +4,8 @@
 #
 # Perl script to test static analysis of variables used.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley http://wardley.org/
 #
 # Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
@@ -14,13 +16,12 @@
 #========================================================================
 
 use Badger
-    lib         => '../../lib',
-    Filesystem  => 'Bin Dir';
+    lib     => '../../lib';
 
 use Template::TT2::Test
-    tests       => 13,
-    debug       => 'Template::TT2::VMethods',
-    args        => \@ARGV;
+    tests   => 13,
+    debug   => 'Template::TT2::VMethods',
+    args    => \@ARGV;
 
 my $tt       = Template::TT2->new( TRACE_VARS => 1 );
 my $template = $tt->template(\*DATA) || die $tt->error;

@@ -4,27 +4,30 @@
 #
 # Test the PROCESS option.
 #
+# Run with -h option for help.
+#
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib         => '../../lib ../../blib/lib ../../blib/arch',
+    Filesystem  => 'Bin';
+
 use Template::TT2::Test
     tests => 4,
     debug => 'Template::TT2::Service Template::TT2::Templates Template::TT2::Context',
     args  => \@ARGV;
 
-use Template::TT2;
-use Badger::Filesystem '$Bin Dir';
-use constant ENGINE => 'Template::TT2';
-my $tdir = Dir($Bin, 'templates');
+use constant 
+    ENGINE => 'Template::TT2';
+
+my $tdir = Bin->dir('templates');
 
 my $config = {
     INCLUDE_PATH => [$tdir],
