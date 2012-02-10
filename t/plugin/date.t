@@ -242,7 +242,7 @@ Bad date: Invalid time/date string: some stupid date (should be 'h:m:s d:m:y')
 2001/5/28
 [%- ELSE -%]
 not testing
-[% END -%]
+[%- END -%]
 
 -- test time format --
 [% USE date;
