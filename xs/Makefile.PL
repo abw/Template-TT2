@@ -1,13 +1,12 @@
 use lib qw( ../lib ./lib );
 use ExtUtils::MakeMaker;
-use Template::TT2;
 
 WriteMakefile(
-    'NAME'     => 'Template::TT2::Stash::XS',
-    'C'        => [ qw( Stash.c ) ],
-    'XS'       => { 'Stash.xs' => 'Stash.c' },
-    'OBJECT'   => 'Stash.o',
-    'VERSION'  => $Template::TT2::VERSION,
-    'NORECURS' => 1,
+    'NAME'         => 'Template::TT2::Stash::XS',
+    'C'            => [ qw( Stash.c ) ],
+    'XS'           => { 'Stash.xs' => 'Stash.c' },
+    'OBJECT'       => 'Stash.o',
+    'VERSION_FROM' => '../lib/Template/TT2.pm',
+    'NORECURS'     => 1,
 );
 
