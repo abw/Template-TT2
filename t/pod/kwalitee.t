@@ -6,16 +6,16 @@
 #
 # Written by Andy Wardley <abw@wardley.org>
 #
-# Copyright (C) 2008 Andy Wardley.  All Rights Reserved.
+# Copyright (C) 2008-2012 Andy Wardley.  All Rights Reserved.
 #
 # This is free software; you can redistribute it and/or modify it
 # under the same terms as Perl itself.
 #
 #========================================================================
 
-use strict;
-use warnings;
-use lib qw( ./lib ../lib ../../lib );
+use Badger
+    lib   => '../../lib ../../blib/lib ../../blib/arch';
+
 use Test::More;
 
 unless ( $ENV{AUTOMATED_TESTING} or $ENV{RELEASE_TESTING} ) {
@@ -23,6 +23,6 @@ unless ( $ENV{AUTOMATED_TESTING} or $ENV{RELEASE_TESTING} ) {
 }
 
 eval "use Test::Pod 1.00";
-plan skip_all => "Test::Pod 1.00 required for testing POD" if $@;
+plan( skip_all => "Test::Pod 1.00 required for testing POD" ) if $@;
 all_pod_files_ok();
 
