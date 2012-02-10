@@ -61,10 +61,6 @@ our $BACKEND;
 
 
 INIT: {
-    # pre-set $DEBUG flags in backend stashes
-#    $Template::TT2::Stash::XS::DEBUG   = DEBUG;
-#    $Template::TT2::Stash::Perl::DEBUG = DEBUG;
-
     # $BACKEND might be pre-defined by end user in which case, leave it alone
     unless (defined $BACKEND) {
         # otherwise we attempt to load the XS backend first, falling back 
@@ -91,13 +87,17 @@ sub new {
     my $backend = ($class eq CLASS)
         ? $BACKEND
         : $class;
+    my $debug   = $params->{ DEBUG };
+       $debug   = $DEBUG unless defined $debug;
+
     $class->debug("creating $backend stash") if DEBUG;
+
     bless {
         global  => { },
         %$params,
         %$ROOT_OPS,
         _PARENT => undef,
-        _DEBUG  => $DEBUG,
+        _DEBUG  => $debug,
     }, $backend;
 }
 
@@ -206,7 +206,8 @@ sub undefined {
         );
     }
     else {
-        # There was a time when I thought this was a good idea. But it's not.
+        # There was a time when I thought this was a good idea. But it's not
+        # and I am an idiot.
         return '';
     }
 }

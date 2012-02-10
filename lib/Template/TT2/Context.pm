@@ -11,8 +11,10 @@ use Template::TT2::Class
     words     => 'LOAD_',
     utils     => 'blessed is_object',
     accessors => 'hub',
-    constants => 'CODE DEBUG_UNDEF DEBUG_CONTEXT DEBUG_DIRS DEBUG_FLAGS HASH
-                  ARRAY SCALAR DELIMITER MSWIN32 :modules :status :error',
+    constants => ':modules :status :error
+                  CODE HASH ARRAY SCALAR DELIMITER MSWIN32 
+                  DEBUG_UNDEF DEBUG_CONTEXT DEBUG_STASH DEBUG_DIRS DEBUG_FLAGS
+                  ',
     messages  => {
         view_base_undef   => "View base is not defined: %s",
         view_base_invalid => "View base is not a %s object: %s => %s"
@@ -67,11 +69,18 @@ sub init {
     # STASH can be pre-defined or is created using VARIABLES/PRE_F
     $self->{ STASH } = $config->{ STASH } || do {
         my $predefs  = $config->{ VARIABLES } || { };
+        my $d_stash  = ($debug & DEBUG_STASH) ? 1 : 0;
+        my $d_undef  = ($debug & DEBUG_UNDEF) ? 1 : 0;
 
         # hack to get stash to know about debug/strict modes
-        $predefs->{ _DEBUG } = ($debug & DEBUG_UNDEF) ? 1 : 0
+        $predefs->{ _DEBUG } = $d_stash
              unless defined $predefs->{ _DEBUG };
         $predefs->{ _STRICT } = $config->{ STRICT }
+             unless defined $predefs->{ _STRICT };
+
+        # The STRICT option supercedes the old DEBUG_UNDEF flag, but we 
+        # still support the DEBUG_UNDEF flag as long as STRICT isn't set
+        $predefs->{ _STRICT } = $d_undef
              unless defined $predefs->{ _STRICT };
         
         TT2_MODULES->module( stash => $predefs );
