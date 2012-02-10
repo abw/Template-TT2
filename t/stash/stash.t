@@ -20,7 +20,7 @@ use Badger
 
 use Template::TT2::Constants qw( :status :debug );
 use Template::TT2::Test
-    tests => 62,
+    tests => 68,
     debug => 'Template::TT2::Stash',
     args  => \@ARGV;
 
@@ -76,6 +76,12 @@ my $data  = {
         return {
             x => 10,
             y => 20,
+        };
+    },
+    subsub   => sub {
+        return sub {
+            my $name = shift || 'World';
+            return "Hello $name";
         };
     },
     hello    => sub {
@@ -150,6 +156,14 @@ is( $stash->get(['counter']), 2, 'got counter sub from list ref' );
 # call sub returning hash ref, then access item in hash
 is( $stash->get('subhash.x'), 10, 'got sub hash x' );
 
+# call sub returning sub, then call sub
+my $sub = $stash->get('subsub');
+ok( $sub, 'got sub returning sub' );
+is( ref $sub, 'CODE', 'got CODE reference' );
+is( $sub->(), 'Hello World', 'called CODE reference' );
+is( $sub->('Badger'), 'Hello Badger', 'called CODE reference with args' );
+
+
 # call sub with args
 is( $stash->get('hello'), 'Hello World', 'called sub without args' );
 is( $stash->get([ hello => ['Badger']]), 'Hello Badger', 'called sub with args' );
@@ -219,195 +233,6 @@ is( $stash->get('answer'), '', 'got no answer from original stash' );
 # set
 #-----------------------------------------------------------------------
 
-#is( $stash->set('x', 10), 10, 'set x to 10' );
+is( $stash->set('x', 10), 10, 'set x to 10' );
+is( $stash->get('x'), 10, 'get x as 10' );
 
-__END__
-
-
-TODO:
-  assignment
-  lvalue hash creation in dotop
-  vmethods
-  exposing objects to vmethods
-  scalar list vmethods
-  
-__END__
-        
-    
-    foo => 10,
-    bar => {
-        baz => 20,
-    },
-    hashobj => HashObject->new({ planet => 'World' }),
-    listobj => ListObject->new([10, 20, 30], 'ListObject'),
-    num     => NumberLike->new("TESTING"),
-    getnum  => GetNumberLike->new,
-    cmp_ol  => CmpOverload->new(),
-    clean   => sub {
-        my $error = shift;
-        $error =~ s/(\s*\(.*?\))?\s+at.*$//;
-        return $error;
-    },
-};
-
-
-my $ttlist = [
-    'default' => Template->new(),
-    'warn'    => Template->new(DEBUG => DEBUG_UNDEF, DEBUG_FORMAT => ''),
-];
-
-test_expect(\*DATA, $ttlist, $data);
-
-__DATA__
--- test --
-a: [% a %]
--- expect --
-a: 
-
--- test --
--- use warn --
-[% TRY; a; CATCH; "ERROR: $error"; END %]
--- expect --
-ERROR: undef error - a is undefined
-
-
--- test --
-[% myitem = 'foo' -%]
-[% myitem.hash.value %]
--- expect --
-foo
-
--- test --
-[% myitem = 'foo'
-   mylist = [ 'one', myitem, 'three' ]
-   global.mylist = mylist
--%]
-[% mylist.item %]
-0: [% mylist.item(0) %]
-1: [% mylist.item(1) %]
-2: [% mylist.item(2) %]
--- expect --
-one
-0: one
-1: foo
-2: three
-
--- test --
-[% "* $item\n" FOREACH item = global.mylist -%]
-[% "+ $item\n" FOREACH item = global.mylist.list -%]
--- expect --
-* one
-* foo
-* three
-+ one
-+ foo
-+ three
-
--- test --
-[% global.mylist.push('bar');
-   "* $item.key => $item.value\n" FOREACH item = global.mylist.hash -%]
--- expect --
-* one => foo
-* three => bar
-
--- test --
-[% obj.name.list.first %]
--- expect --
-an object
-
--- test --
-[% obj.items.first %]
--- expect --
-name
-
--- test --
-[% obj.items.1 %]
--- expect --
-an object
-
--- test --
-[% bop.first.name %]
--- expect --
-an object
-
--- test --
-[% listobj.0 %] / [% listobj.first %]
--- expect --
-10 / 10
-
--- test --
-[% listobj.2 %] / [% listobj.last %]
--- expect --
-30 / 30
-
--- test --
-[% listobj.join(', ') %]
--- expect --
-10, 20, 30
-
--- test --
-=[% size %]=
--- expect --
-==
-
--- test --
-[% foo = { "one" = "bar" "" = "empty" } -%]
-foo is { [% FOREACH k IN foo.keys.sort %]"[% k %]" = "[% foo.$k %]" [% END %]}
-setting foo.one to baz
-[% fookey = "one" foo.$fookey = "baz" -%]
-foo is { [% FOREACH k IN foo.keys.sort %]"[% k %]" = "[% foo.$k %]" [% END %]}
-setting foo."" to quux
-[% fookey = "" foo.$fookey = "full" -%]
-foo is { [% FOREACH k IN foo.keys.sort %]"[% k %]" = "[% foo.$k %]" [% END %]}
---expect --
-foo is { "" = "empty" "one" = "bar" }
-setting foo.one to baz
-foo is { "" = "empty" "one" = "baz" }
-setting foo."" to quux
-foo is { "" = "full" "one" = "baz" }
-
-
-# test Dave Howorth's patch (v2.15) which makes the stash more strict
-# about what it considers to be a missing method error
-
--- test --
-[% hashobj.hello %]
--- expect --
-Hello World
-
--- test --
-[% TRY; hashobj.goodbye; CATCH; "ERROR: "; clean(error); END %]
--- expect --
-ERROR: undef error - Can't locate object method "no_such_method" via package "HashObject"
-
-
-#-----------------------------------------------------------------------
-# try and pin down the numification bug
-#-----------------------------------------------------------------------
-
--- test --
-[% FOREACH item IN num.things -%]
-* [% item %]
-[% END -%]
--- expect --
-* foo
-* bar
-* baz
-
--- test --
-[% num %]
--- expect --
-PASS: stringified Numbersome
-
--- test --
-[% getnum.num %]
--- expect --
-PASS: stringified from GetNumbersome
-
-
-# Exercise the object with the funky overloaded comparison
-
--- test --
-[% cmp_ol.hello %]
--- expect --
-Hello
