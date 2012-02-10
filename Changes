@@ -29,18 +29,18 @@ DESCRIPTION
     The Template::TT2 modules are provided for people who are relying on the
     "old" behaviour of TT2 when the new TT3 Template module comes along and
     breaks everything. Although TT3 isn't due out for a while (expected on
-    Tuesday some time shortly after lunch), this pre-release of
-    Template::TT2 gives us plenty of time to iron out any bugs and give
-    everyone plenty of opportunity to test and/or upgrade their existing
-    systems to use Template::TT2.
+    Tuesday some time shortly after lunch), this pre-release of Template::TT2
+    gives us plenty of time to iron out any bugs and give everyone plenty of
+    opportunity to test and/or upgrade their existing systems to use
+    Template::TT2.
 
     From the outside, Template::TT2 works in exactly the same way as
-    Template v2.23 with the exception of a few configuration options which
+    Template v2.24 with the exception of a few configuration options which
     have been deprecated. These are described below in the "CONFIGURATION
     OPTIONS" section.
 
     On the inside, Template::TT2 is implemented using the same basic
-    architecture as Template v2.23. In most cases, the modules have simply
+    architecture as Template v2.24. In most cases, the modules have simply
     been moved into a new namespace (i.e. Template is now Template::TT2,
     Template::Context is now Template::TT2::Context, and so on). There are a
     few exceptions to this, described below in MODULES.
@@ -61,17 +61,21 @@ DESCRIPTION
     change when TT3 is release, the Template::TT2 modules are not going
     anywhere, ever.
 
-    Maintenance of TT2 will effectively cease in the Template module(s) and
-    will continue under Template::TT2.
+    Maintenance of TT2 will effectively cease in the Template module(s) some
+    time Real Soon Now and will continue under Template::TT2.
 
-    The next milestone in the TT masterplan will be the "Template::TT3"
-    modules. This will be an implementation of the TT3 template language
-    using the same (or similar) Badger-based architecture as for
-    Template::TT2. Some time after that, the core Template modules will be
-    overhauled to patch them into TT3. At that point your existing TT2 code
-    using the Template module will break and you will need to switch to
-    "Template::TT2" (or use one of the backwards compatibility switches that
-    we'll be providing).
+    The next milestone in the TT masterplan will be the official release
+    of the "Template::TT3" modules. This is be an implementation of the TT3
+    template language using the same (or similar) Badger-based architecture
+    as for Template::TT2.  If you want to play with it, you can find it here:
+
+        http://github.com/abw/Template-TT3
+
+    Some time after that, the core Template modules will be  overhauled to
+    patch them into TT3. At that point your existing TT2 code using the
+    Template module will break and you will need to switch to "Template::TT2"
+    (or use one of the backwards compatibility switches that we'll be
+    providing).
 
     The earliest this will be happening is in the summer of 2012. Consider
     this fair warning.
@@ -143,9 +147,9 @@ DESCRIPTION
     "INCLUDE_PATH". To emulate the behaviour of the "RELATIVE" option,
     simply add the current working directory to the "INCLUDE_PATH".
 
-    The various "DEBUG" options aren't implemented yet. However, you can
-    enable debugging in various modules using the Badger::Debug module. Do
-    this before you load the Template::TT2 or other relevant modules:
+    The various "DEBUG" options aren't fully implemented yet. However, you 
+    can enable debugging in various modules using the Badger::Debug module. 
+    Do this before you load the Template::TT2 or other relevant modules:
 
         # example to enable debugging in 2 different modules
         use Badger::Debug modules => 'Template::TT2 Template::TT2::Templates';
@@ -178,7 +182,7 @@ PLUGINS
     has any practical value for the average TT user.
 
     The Autoformat plugin has been moved into a separate
-    <cpan:Template::Plugin::Autoformat> distribution, available from CPAN.
+    Template::Plugin::Autoformat distribution, available from CPAN.
 
 TOOLS
     The "ttree" and "tpage" tools are not distributed with Template::TT2
@@ -207,6 +211,11 @@ BUGS AND INCOMPATIBILITIES
     If you encounter any bugs in Template::TT2 or undocumented
     incompatibilities with the Template modules then please report them via
     <http://rt.cpan.org>.
+
+    If you're up to fixing them yourself then clone the github repository,
+    make your changes and send me a pull request.
+
+        http://github.com/abw/Template-TT2
 
     If you have any other problems or issues using Template::TT2, or if you
     are the author of a module which extends or interacts with TT and need

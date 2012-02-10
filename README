@@ -1,6 +1,9 @@
-This is an alpha version of Template::TT2, a drop-in replacement for the 
-current v2 Template Toolkit modules.  Almost everything works exactly the
-same as before - the only important thing that has changed is the name.  
+Template::TT2 / Version 0.01 / February 2012
+--------------------------------------------
+
+This is an alpha version of Template::TT2, a drop-in replacement for the
+current v2 Template Toolkit modules.  Almost everything should work exactly
+the same as before - the only important thing that has changed is the name.
 
 So if you currently have code using TT2 like this:
 
@@ -17,6 +20,14 @@ Then you should be able to do this instead.
     my $tt2 = Template::TT2->new(
         INCLUDE_PATH => '/path/to/templates',
     );
+
+This document gives a brief overview of why the modules exist and how they
+differ from the current Template Toolkit implementation.  See the Changes file
+for a more detailed discussion.
+
+
+Why Template::TT2?
+------------------
 
 When TT3 is released (on Tuesday, some time shortly after lunch) a number
 of major changes to both the template language and the template framework
@@ -36,12 +47,19 @@ With the exception of the differences noted below, Template::TT2 should be
 fully compatible with the Template2 module version 2.24 as released on 8th 
 February 2012.
 
-The only significant change to the way Template::TT2 works is that the 
-ABSOLUTE and RELATIVE options are now officially deprecated (although they 
-do still work).  If you specify the ABSOLUTE option, Template::TT2 will 
-instead add the root directory to your INCLUDE_PATH (which effectively does 
-the same thing).  If you specify the RELATIVE option, it will add the current
-working directory to your INCLUDE_PATH.  In both cases you'll get a warning.
+
+What's Different?
+-----------------
+
+Most of the changes are on the inside.
+
+The only significant change to the way Template::TT2 works from the
+perspective of an end user is that the ABSOLUTE and RELATIVE options are now
+officially deprecated (although they do still work).  If you specify the
+ABSOLUTE option, Template::TT2 will instead add the root directory to your
+INCLUDE_PATH (which effectively does the same thing).  If you specify the
+RELATIVE option, it will add the current working directory to your
+INCLUDE_PATH.  In both cases you'll get a warning.
 
 There are a few architectural changes that may affect any code that pokes
 deep into the internals of TT2.  Most notable is the Template::Provider 
@@ -60,20 +78,26 @@ Please find time to test any existing code you have that uses the Template
 modules with the new Template::TT2 implementation.  If it doesn't work as 
 expected then we'd like to know about it sooner rather than later. 
 
-The source code is at github:
-
-  https://github.com/abw/Template-TT2
-
-Please report any issues via RT:
-
-  http://rt.cpan.org/
-
 At some point in the near future I'll stop supporting the current 
 Template::* implementation and encourage everyone to switch to 
 Template::TT2.  Then the Template::* modules will be completely 
 refactored to usher in TT3.
 
 See the Changes file for more detailed information about what has changed.
+
+
+Source Code and Bug Tracking
+----------------------------
+
+The source code is hosted at github:
+
+    https://github.com/abw/Template-TT2
+
+Please report any issues via RT:
+
+    http://rt.cpan.org/
+
+
 
 -- Andy Wardley, February 2012.
 
