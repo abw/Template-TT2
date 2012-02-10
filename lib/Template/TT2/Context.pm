@@ -110,7 +110,7 @@ sub init {
     # CONFIG    - original configuration hash
     # EXPOSE_BLOCKS - make blocks visible as pseudo-files
     # DEBUG_FORMAT  - format for generating template runtime debugging messages
-    # DEBUG         - format for generating template runtime debugging messages
+    # DEBUG         - internal flag based on DEBUG_CONTEXT being set
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     $self->{ RECURSION     } = $config->{ RECURSION } || 0;
     $self->{ EVAL_PERL     } = $config->{ EVAL_PERL } || 0;

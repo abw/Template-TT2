@@ -4,9 +4,9 @@ use Template::TT2::Class
     version    => 0.01,
     debug      => 0,
     base       => 'Template::TT2::Modules',
-    utils      => 'blessed',
+    utils      => 'blessed numlike',
     filesystem => 'VFS FS',
-    constants  => 'HASH ARRAY CODE GLOB SCALAR',
+    constants  => 'HASH ARRAY CODE GLOB SCALAR :debug',
     constant   => {
         PRINT_METHOD => 'print',
     },
@@ -56,6 +56,11 @@ sub found_object {
 
 sub init {
     my ($self, $config) = @_;
+    my $debug = $config->{ DEBUG };
+
+    # convert textual DEBUG flags to number
+    $config->{ DEBUG } = $self->debug_flags($debug)
+        if defined $debug;
 
     # TODO: QUIET => ON_WARN
     $self->configure($config);
@@ -202,6 +207,27 @@ sub output_file {
     $fh->close;
 
     return $file;
+}
+
+
+sub debug_flags {
+    my ($self, $debug) = @_;
+
+    return $debug
+        if defined $debug && numlike $debug;
+
+    my @flags  = split(/\W+/, lc $debug);
+    my $result = 0;
+    my ($flag, $value);
+
+    foreach $flag (@flags) {
+        $flag  =~ s/^DEBUG_//i;
+        $value = $DEBUG_OPTIONS->{ $flag };
+        return $self->error_msg( invalid => 'debug flag', $flag )
+            unless defined $value;
+        $result |= $value;
+    }
+    return $result;
 }
 
 

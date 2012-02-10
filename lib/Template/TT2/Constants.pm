@@ -40,7 +40,8 @@ use Badger::Class
             debug   => 'DEBUG_OFF DEBUG_ON DEBUG_UNDEF DEBUG_VARS 
                         DEBUG_DIRS DEBUG_STASH DEBUG_CONTEXT DEBUG_PARSER
                         DEBUG_TEMPLATES DEBUG_PLUGINS DEBUG_FILTERS 
-                        DEBUG_SERVICE DEBUG_ALL DEBUG_CALLER DEBUG_FLAGS',
+                        DEBUG_SERVICE DEBUG_ALL DEBUG_CALLER DEBUG_FLAGS
+                        @DEBUG_VALUES $DEBUG_OPTIONS',
             cache   => 'CACHE_UNLIMITED',
             flow    => 'FLOW_STOP',
             stash   => 'STASH_PRIVATE STASH_IMPORT STASH_UNDEF',
@@ -140,63 +141,28 @@ use Badger::Class
         STASH_PRIVATE   => qr/^[_.]/,   # private members begin with _ or .
     };
 
-1;
+our @DEBUG_VALUES = qw( 
+    DEBUG_OFF DEBUG_ON DEBUG_UNDEF DEBUG_VARS DEBUG_DIRS DEBUG_STASH 
+    DEBUG_CONTEXT DEBUG_PARSER DEBUG_TEMPLATES DEBUG_PLUGINS DEBUG_FILTERS
+    DEBUG_SERVICE DEBUG_ALL DEBUG_CALLER
+);
 
-__END__
-our $DEBUG_FLAGS = {
-    off      => DEBUG_OFF,
-    on       => DEBUG_ON,
-    undef    => DEBUG_UNDEF,
-    vars     => DEBUG_VARS,
-    dirs     => DEBUG_DIRS,
-    stash    => DEBUG_STASH,
-    context  => DEBUG_CONTEXT,
-    parser   => DEBUG_PARSER,
-    provider => DEBUG_PROVIDER,
-    plugins  => DEBUG_PLUGINS,
-    filters  => DEBUG_FILTERS,
-    service  => DEBUG_SERVICE,
-    all      => DEBUG_ALL,
-    caller   => DEBUG_CALLER,
+our $DEBUG_OPTIONS = {
+    off       => DEBUG_OFF,
+    on        => DEBUG_ON,
+    undef     => DEBUG_UNDEF,
+    vars      => DEBUG_VARS,
+    dirs      => DEBUG_DIRS,
+    stash     => DEBUG_STASH,
+    context   => DEBUG_CONTEXT,
+    parser    => DEBUG_PARSER,
+    templates => DEBUG_TEMPLATES,
+    plugins   => DEBUG_PLUGINS,
+    filters   => DEBUG_FILTERS,
+    service   => DEBUG_SERVICE,
+    all       => DEBUG_ALL,
+    caller    => DEBUG_CALLER,
 };
-
-
-sub debug_flags {
-    my ($self, $debug) = @_;
-    my (@flags, $flag, $value);
-    $debug = $self unless defined($debug) || ref($self);
-    
-    if ($debug =~ /^\d+$/) {
-        foreach $flag (@DEBUG) {
-            next if $flag =~ /^DEBUG_(OFF|ALL|FLAGS)$/;
-
-            # don't trash the original
-            my $copy = $flag;
-            $flag =~ s/^DEBUG_//;
-            $flag = lc $flag;
-            return $self->error("no value for flag: $flag")
-                unless defined($value = $DEBUG_OPTIONS->{ $flag });
-            $flag = $value;
-
-            if ($debug & $flag) {
-                $value = $DEBUG_OPTIONS->{ $flag };
-                return $self->error("no value for flag: $flag") unless defined $value;
-                push(@flags, $value);
-            }
-        }
-        return wantarray ? @flags : join(', ', @flags);
-    }
-    else {
-        @flags = split(/\W+/, $debug);
-        $debug = 0;
-        foreach $flag (@flags) {
-            $value = $DEBUG_OPTIONS->{ $flag };
-            return $self->error("unknown debug flag: $flag") unless defined $value;
-            $debug |= $value;
-        }
-        return $debug;
-    }
-}
 
 
 1;

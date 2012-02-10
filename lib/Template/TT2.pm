@@ -94,11 +94,6 @@ sub init {
     $self->{ throw  } = $config->{ THROW };
     $self->{ config } = $config;
 
-    # TODO: debug flags
-    # convert textual DEBUG flags to number
-#    $config->{ DEBUG } = debug_flags($self, $debug)
-#        if defined $debug && ! looks_like_number $debug;
-
     # Trigger initialisation of service and context so that we can sample
     # any package variable defaults now before they go changing.  This is 
     # unlikely to affect anyone in the Real World, but we rely on this 

@@ -20,7 +20,7 @@ use Badger
     lib   => '../lib ../../lib ../../blib/lib ../../blib/arch';
 
 use Template::TT2::Test
-    tests => 10,
+    tests => 12,
     debug => 'Template::TT2::Stash',
     args  => \@ARGV;
 
@@ -48,6 +48,8 @@ my $data  = {
 my $engines = {
     'default' => ENGINE->new(),
     'warn'    => ENGINE->new( DEBUG => DEBUG_UNDEF, DEBUG_FORMAT => '' ),
+    'warn2'   => ENGINE->new( DEBUG => 'DEBUG_UNDEF', DEBUG_FORMAT => '' ),
+    'warn3'   => ENGINE->new( DEBUG => 'undef, vars', DEBUG_FORMAT => '' ),
     'strict'  => ENGINE->new( STRICT => 1 ),
 };
 
@@ -69,6 +71,19 @@ a:
 
 -- test undefined variable warning via DEBUG_UNDEF --
 -- use warn --
+[% TRY; a; CATCH; "ERROR: $error"; END %]
+-- expect --
+ERROR: undef error - Undefined variable: a
+
+-- test ditto with DEBUG_UNDEF specified as string --
+-- use warn2 --
+[% TRY; a; CATCH; "ERROR: $error"; END %]
+-- expect --
+ERROR: undef error - Undefined variable: a
+
+
+-- test and again with undef specified as string, among others --
+-- use warn3 --
 [% TRY; a; CATCH; "ERROR: $error"; END %]
 -- expect --
 ERROR: undef error - Undefined variable: a

@@ -12,7 +12,7 @@ use Template::TT2::Class
     accessors   => 'hub',
     filesystem  => 'FS VFS Cwd Dir File',
     constants   => 
-       'SCALAR ARRAY HASH GLOB BLANK UNICODE DEBUG_TEMPLATES DEBUG_FLAGS 
+       'SCALAR ARRAY HASH GLOB BLANK UNICODE DEBUG_TEMPLATES 
         TT2_DOCUMENT TT2_CACHE TT2_STORE TT2_PARSER MSWIN32',
     constant    => {
         INPUT_TEXT    => 'input text',
