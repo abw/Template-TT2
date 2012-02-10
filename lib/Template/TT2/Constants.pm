@@ -9,7 +9,7 @@
 #   Andy Wardley   <abw@wardley.org>
 #
 # COPYRIGHT
-#   Copyright (C) 1996-2008 Andy Wardley.  All Rights Reserved.
+#   Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 #
 #   This module is free software; you can redistribute it and/or
 #   modify it under the same terms as Perl itself.
@@ -24,9 +24,10 @@ use Badger::Class
     utils    => 'looks_like_number',
     exports  => {
         tags => {
-            modules => 'TT2_HUB TT2_MODULES TT2_CONTEXT TT2_DOCUMENT 
-                        TT2_EXCEPTION TT2_ITERATOR TT2_PARSER TT2_DIRECTIVE
-                        TT2_CACHE TT2_STORE TT2_FILTER TT2_PLUGIN TT2_VIEW
+            modules => 'TT2_CACHE TT2_CONTEXT TT2_DIRECTIVE TT2_DOCUMENT
+                        TT2_EXCEPTION TT2_FILTER TT2_HUB TT2_ITERATOR 
+                        TT2_MODULES TT2_PARSER TT2_PLUGIN TT2_STORE 
+                        TT2_STASH TT2_VIEW
                         TT_DOCUMENT TT_EXCEPTION TT_ITERATOR',
             status  => 'STATUS_OK STATUS_RETURN STATUS_STOP STATUS_DONE
                         STATUS_DECLINED STATUS_ERROR',
@@ -48,18 +49,19 @@ use Badger::Class
     },
     constant => {
         # modules
-        TT2_HUB         => 'Template::TT2::Hub',
-        TT2_MODULES     => 'Template::TT2::Modules',
+        TT2_CACHE       => 'Template::TT2::Cache',
         TT2_CONTEXT     => 'Template::TT2::Context',
+        TT2_DIRECTIVE   => 'Template::TT2::Directive',
         TT2_DOCUMENT    => 'Template::TT2::Document',
         TT2_EXCEPTION   => 'Template::TT2::Exception',
-        TT2_ITERATOR    => 'Template::TT2::Iterator',
-        TT2_PARSER      => 'Template::TT2::Parser',
-        TT2_DIRECTIVE   => 'Template::TT2::Directive',
-        TT2_CACHE       => 'Template::TT2::Cache',
-        TT2_STORE       => 'Template::TT2::Store',
         TT2_FILTER      => 'Template::TT2::Filter',
+        TT2_HUB         => 'Template::TT2::Hub',
+        TT2_ITERATOR    => 'Template::TT2::Iterator',
+        TT2_MODULES     => 'Template::TT2::Modules',
+        TT2_PARSER      => 'Template::TT2::Parser',
         TT2_PLUGIN      => 'Template::TT2::Plugin',
+        TT2_STORE       => 'Template::TT2::Store',
+        TT2_STASH       => 'Template::TT2::Stash',
         TT2_VIEW        => 'Template::TT2::View',
 
         # for backward/forward compatibility
@@ -207,80 +209,158 @@ Template::Constants - Defines constants for the Template Toolkit
 
 =head1 SYNOPSIS
 
-    use Template::Constants qw( :status :error :all );
+    use Template::TT2::Constants qw( :status :error :all );
 
 =head1 DESCRIPTION
 
 The C<Template::Constants> modules defines, and optionally exports into the
 caller's namespace, a number of constants used by the L<Template> package.
+It is a subclass of L<Badger::Contants> and inherits all of the consant
+definitions that it provides.
 
-Constants may be used by specifying the C<Template::Constants> package 
+Constants may be used by specifying the C<Template::TT2::Constants> package 
 explicitly:
 
-    use Template::Constants;
-    print Template::Constants::STATUS_DECLINED;
+    use Template::TT2::Constants;
+    print Template::TT2::Constants::STATUS_DECLINED;
 
 Constants may be imported into the caller's namespace by naming them as 
-options to the C<use Template::Constants> statement:
+options to the C<use Template::TT2::Constants> statement:
 
-    use Template::Constants qw( STATUS_DECLINED );
+    use Template::TT2::Constants qw( STATUS_DECLINED );
     print STATUS_DECLINED;
 
-Alternatively, one of the following tagset identifiers may be specified
+Alternatively, one of the tagset identifiers listed below may be specified
 to import sets of constants: 'C<:status>', 'C<:error>', 'C<:all>'.
 
-    use Template::Constants qw( :status );
+    use Template::TT2::Constants qw( :status );
     print STATUS_DECLINED;
 
-Consult the documentation for the C<Exporter> module for more information 
-on exporting variables.
+Consult the documentation for the C<Exporter> and/or C<Badger::Exporter>
+modules for more information  on exporting variables.
 
 =head1 EXPORTABLE TAG SETS
 
 The following tag sets and associated constants are defined: 
 
-    :status
-        STATUS_OK             # no problem, continue
-        STATUS_RETURN         # ended current block then continue (ok)
-        STATUS_STOP           # controlled stop (ok) 
-        STATUS_DONE           # iterator is all done (ok)
-        STATUS_DECLINED       # provider declined to service request (ok)
-        STATUS_ERROR          # general error condition (not ok)
+=head2 :cache
 
-    :error
-        ERROR_RETURN          # return a status code (e.g. 'stop')
-        ERROR_FILE            # file error: I/O, parse, recursion
-        ERROR_UNDEF           # undefined variable value used
-        ERROR_PERL            # error in [% PERL %] block
-        ERROR_FILTER          # filter error
-        ERROR_PLUGIN          # plugin error
+Exports the following constants which can be used to indicate an unlimited
+template cache size via the C<CACHE_SIZE> option
 
-    :chomp                  # for PRE_CHOMP and POST_CHOMP
-        CHOMP_NONE            # do not remove whitespace
-        CHOMP_ONE             # remove whitespace to newline
-        CHOMP_ALL             # old name for CHOMP_ONE (deprecated)
-        CHOMP_COLLAPSE        # collapse whitespace to a single space
-        CHOMP_GREEDY          # remove all whitespace including newlines
+    CACHE_UNLIMITED         # unlimited cache size
 
-    :debug
-        DEBUG_OFF             # do nothing
-        DEBUG_ON              # basic debugging flag
-        DEBUG_UNDEF           # throw undef on undefined variables
-        DEBUG_VARS            # general variable debugging
-        DEBUG_DIRS            # directive debugging
-        DEBUG_STASH           # general stash debugging
-        DEBUG_CONTEXT         # context debugging
-        DEBUG_PARSER          # parser debugging
-        DEBUG_PROVIDER        # provider debugging
-        DEBUG_PLUGINS         # plugins debugging
-        DEBUG_FILTERS         # filters debugging
-        DEBUG_SERVICE         # context debugging
-        DEBUG_ALL             # everything
-        DEBUG_CALLER          # add caller file/line info
-        DEBUG_FLAGS           # bitmap used internally
+=head2 :chomp
 
-    :all
-        All the above constants.
+Exports the following constants used to control whitespace chomping behaviour
+via the C<PRE_CHOMP> and C<POST_CHOMP> options.
+
+    CHOMP_NONE              # do not remove whitespace
+    CHOMP_ONE               # remove whitespace to newline
+    CHOMP_ALL               # old name for CHOMP_ONE (deprecated)
+    CHOMP_COLLAPSE          # collapse whitespace to a single space
+    CHOMP_GREEDY            # remove all whitespace including newlines
+
+=head2 :debug
+
+Exports the following constants used to enable debugging in various different
+components via the C<DEBUG> option.
+
+    DEBUG_OFF               # do nothing
+    DEBUG_ON                # basic debugging flag
+    DEBUG_UNDEF             # throw undef on undefined variables
+    DEBUG_VARS              # general variable debugging
+    DEBUG_DIRS              # directive debugging
+    DEBUG_STASH             # general stash debugging
+    DEBUG_CONTEXT           # context debugging
+    DEBUG_PARSER            # parser debugging
+    DEBUG_PROVIDER          # provider debugging
+    DEBUG_PLUGINS           # plugins debugging
+    DEBUG_FILTERS           # filters debugging
+    DEBUG_SERVICE           # context debugging
+    DEBUG_ALL               # everything
+    DEBUG_CALLER            # add caller file/line info
+    DEBUG_FLAGS             # bitmap used internally
+
+=head2 :error
+
+Exports the following constants used internally to indicate different
+exception types.
+
+    ERROR_RETURN            # return a status code (e.g. 'stop')
+    ERROR_FILE              # file error: I/O, parse, recursion
+    ERROR_UNDEF             # undefined variable value used
+    ERROR_PERL              # error in [% PERL %] block
+    ERROR_FILTER            # filter error
+    ERROR_PLUGIN            # plugin error
+
+=head2 :flow
+
+Exports the following constant that is used internally for flow control in 
+templates.
+
+    FLOW_STOP               # used to implement [% STOP %] directive
+
+=head2 :parse
+
+Exports the following constants used internally in the template parser.
+
+    PARSE_CONTINUE          # carry on
+    PARSE_ACCEPT            # jolly good
+    PARSE_ERROR             # oh noes
+    PARSE_ABORT             # I give up
+    STATE_DEFAULT           # default action
+    STATE_ACTIONS           # specific actions
+    STATE_GOTOS             # goto table for next state
+
+=head2 :status
+
+Exports the following constants used as status codes.
+
+    STATUS_OK               # no problem, continue
+    STATUS_RETURN           # ended current block then continue (ok)
+    STATUS_STOP             # controlled stop (ok) 
+    STATUS_DONE             # iterator is all done (ok)
+    STATUS_DECLINED         # provider declined to service request (ok)
+    STATUS_ERROR            # general error condition (not ok)
+
+=head2 :stash
+
+Exports the following constant used internally in the variable stash.
+
+    STASH_IMPORT            # name of the magical 'import' variable
+    STASH_PRIVATE           # regex to match private data members
+
+=head2 :modules
+
+Exports the following constants that define the module names of various TT2 
+components.
+
+    TT2_CACHE               # Template::TT2::Cache
+    TT2_CONTEXT             # Template::TT2::Context
+    TT2_DIRECTIVE           # Template::TT2::Directive
+    TT2_DOCUMENT            # Template::TT2::Document
+    TT2_EXCEPTION           # Template::TT2::Exception
+    TT2_FILTER              # Template::TT2::Filter
+    TT2_HUB                 # Template::TT2::Hub
+    TT2_ITERATOR            # Template::TT2::Iterator
+    TT2_MODULES             # Template::TT2::Modules
+    TT2_PARSER              # Template::TT2::Parser
+    TT2_PLUGIN              # Template::TT2::Plugin
+    TT2_STORE               # Template::TT2::Store
+    TT2_STASH               # Template::TT2::Stash
+    TT2_VIEW                # Template::TT2::View
+
+The following are also included for backward/forward compatibility with 
+other versions of the Template Toolkit.
+
+    TT_DOCUMENT             # Template::Document
+    TT_EXCEPTION            # Template::Exception
+    TT_ITERATOR             # Template::Iterator
+
+=head2 :all
+
+Exports all the above constants.
 
 =head1 AUTHOR
 
@@ -288,14 +368,14 @@ Andy Wardley E<lt>abw@wardley.orgE<gt> L<http://wardley.org/>
 
 =head1 COPYRIGHT
 
-Copyright (C) 1996-2007 Andy Wardley.  All Rights Reserved.
+Copyright (C) 1996-2012 Andy Wardley.  All Rights Reserved.
 
 This module is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Template>, C<Exporter>
+L<Template>, C<Badger::Constants>, L<Badger::Exporter>
 
 =cut
 
